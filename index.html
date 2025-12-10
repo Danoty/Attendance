@@ -2,30 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>JOOUST Attendance System</title>
+  <title>JOOUST Attendance Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- SheetJS for Excel export -->
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-Nu7Y0qF2G1AR5pXKqXniCXu2eziJg8wqN0l6c3d3mB5q2dTccqJQyUl9U0Xy2u9Gy6RbnpfqhZ0J6R4p6r5Yg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- XLSX for Excel export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- jsPDF + html2canvas for PDF export -->
+
+  <!-- jsPDF & AutoTable for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- Signature Pad -->
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     :root {
-      --jooust-blue: #003366;
-      --jooust-blue-dark: #002247;
-      --jooust-green: #4caf50;
-      --bg-light: #f4f7fb;
+      --jooust-blue: #004b8d;
+      --jooust-blue-dark: #003364;
+      --jooust-gold: #f9a825;
+      --jooust-light: #e3f2fd;
+      --bg-soft: #f5f7fb;
       --card-bg: #ffffff;
-      --border-soft: #dde4f0;
+      --text-main: #1f2933;
+      --border-soft: #e0e7ff;
+      --danger: #e11d48;
+      --success: #16a34a;
     }
 
     * {
@@ -34,714 +38,1543 @@
 
     body {
       margin: 0;
-      font-family: "Poppins", sans-serif;
-      background: var(--bg-light);
-      color: #222;
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f3f4ff, #fdfdfd);
+      color: var(--text-main);
     }
 
+    /* Header */
     header {
       background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
       color: #fff;
-      padding: 1rem 1.5rem;
+      padding: 10px 20px;
       display: flex;
       align-items: center;
-      gap: 1rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      justify-content: space-between;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
-    header img {
-      height: 60px;
-      width: auto;
-      border-radius: 8px;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid rgba(255, 255, 255, 0.75);
       background: #fff;
-      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    header h1 {
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .header-title h1 {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
+      letter-spacing: 0.04em;
       font-weight: 600;
+      text-transform: uppercase;
     }
 
-    header p {
-      margin: 0;
+    .header-title span {
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    .header-right {
       font-size: 0.85rem;
+      text-align: right;
       opacity: 0.9;
     }
 
-    main {
-      padding: 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(249, 168, 37, 0.12);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(249, 168, 37, 0.5);
+      color: #fff;
+      font-size: 0.75rem;
+      margin-bottom: 4px;
     }
 
-    .grid {
+    /* Layout */
+    .layout {
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 1rem;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 80px);
     }
 
     @media (max-width: 900px) {
-      .grid {
+      .layout {
         grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: sticky;
+        top: 70px;
+        z-index: 40;
+      }
+    }
+
+    aside {
+      background: #ffffff;
+      border-right: 1px solid var(--border-soft);
+      padding: 14px 10px 18px;
+    }
+
+    main {
+      padding: 16px;
+    }
+
+    /* Sidebar */
+    .nav-section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin: 4px 14px 10px;
+    }
+
+    .side-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0 6px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .side-nav button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #374151;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .side-nav button i {
+      width: 18px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--jooust-blue);
+    }
+
+    .side-nav button.active {
+      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .side-nav button.active i {
+      color: #fef3c7;
+    }
+
+    .side-nav button:hover:not(.active) {
+      background: var(--bg-soft);
+    }
+
+    .side-footer {
+      margin-top: 16px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(0, 75, 141, 0.05), rgba(249, 168, 37, 0.08));
+      font-size: 0.75rem;
+      color: #4b5563;
+    }
+
+    .side-footer strong {
+      color: var(--jooust-blue);
+    }
+
+    /* Cards & content */
+    .content-header {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .content-header h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--jooust-blue-dark);
+    }
+
+    .content-header span {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .card-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    @media (min-width: 900px) {
+      .card-grid.two {
+        grid-template-columns: 1.2fr 1fr;
       }
     }
 
     .card {
       background: var(--card-bg);
-      border-radius: 10px;
-      padding: 1rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 14px 14px 16px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(226, 232, 240, 0.9);
     }
 
-    .card h2 {
-      margin-top: 0;
-      font-size: 1.1rem;
-      color: var(--jooust-blue-dark);
-      border-left: 4px solid var(--jooust-green);
-      padding-left: 0.5rem;
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #111827;
+    }
+
+    .card-header small {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px dashed var(--border-soft);
+      color: #6b7280;
+    }
+
+    .chip i {
+      color: var(--jooust-blue);
+    }
+
+    /* Forms */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     label {
-      display: block;
-      margin-bottom: 0.25rem;
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.78rem;
+      color: #4b5563;
+      font-weight: 500;
     }
 
     input[type="text"],
     input[type="date"],
-    select {
-      width: 100%;
-      padding: 0.4rem 0.5rem;
-      border-radius: 6px;
-      border: 1px solid var(--border-soft);
+    select,
+    textarea {
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.85rem;
       font-family: inherit;
-      font-size: 0.9rem;
-      margin-bottom: 0.6rem;
+      outline: none;
+      transition: 0.18s ease;
+      background: #f9fafb;
     }
 
-    button {
-      font-family: inherit;
-      border-radius: 6px;
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--jooust-blue);
+      box-shadow: 0 0 0 1px rgba(0, 75, 141, 0.12);
+      background: #ffffff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      border-radius: 999px;
       border: none;
-      padding: 0.45rem 0.8rem;
-      cursor: pointer;
-      font-size: 0.85rem;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.18s ease;
+      font-family: inherit;
     }
 
     .btn-primary {
-      background: var(--jooust-blue);
+      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
       color: #fff;
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.26);
     }
 
     .btn-primary:hover {
-      background: var(--jooust-blue-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(15, 23, 42, 0.3);
     }
 
-    .btn-secondary {
-      background: var(--jooust-green);
-      color: #fff;
+    .btn-outline {
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      color: #374151;
+    }
+
+    .btn-outline:hover {
+      background: #f3f4ff;
     }
 
     .btn-danger {
-      background: #e53935;
-      color: #fff;
+      background: #fee2e2;
+      color: var(--danger);
     }
 
-    .btn-light {
-      background: #f0f3fa;
-      color: #333;
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    .tag {
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      border-radius: 12px;
       border: 1px solid var(--border-soft);
-    }
-
-    .btn-sm {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .row > div {
-      flex: 1 1 150px;
+      overflow: hidden;
+      background: #ffffff;
+      max-height: 340px;
+      overflow-y: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 0.5rem;
       font-size: 0.8rem;
+    }
+
+    thead {
+      background: linear-gradient(135deg, var(--jooust-blue), #0f172a);
+      color: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
 
     th,
     td {
-      border: 1px solid var(--border-soft);
-      padding: 0.35rem 0.4rem;
+      padding: 6px 8px;
+      border-bottom: 1px solid #e5e7eb;
       text-align: left;
     }
 
-    th {
-      background: var(--jooust-blue);
-      color: #fff;
-    }
-
     tbody tr:nth-child(even) {
-      background: #f8fafc;
+      background: #f9fafb;
     }
 
-    .badge {
-      display: inline-block;
-      padding: 0.15rem 0.4rem;
+    tbody tr:hover {
+      background: #eef2ff;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .pill-present {
+      padding: 1px 8px;
       border-radius: 999px;
       font-size: 0.7rem;
-      font-weight: 600;
-      color: #fff;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
     }
 
-    .badge-present {
-      background: var(--jooust-green);
+    .pill-absent {
+      padding: 1px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
     }
 
-    .badge-absent {
-      background: #e53935;
+    /* Signature pad */
+    .signature-container {
+      border-radius: 12px;
+      border: 1px dashed var(--border-soft);
+      padding: 8px;
+      background: #f9fafb;
     }
 
-    /* Signature modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
+    .signature-container small {
+      font-size: 0.75rem;
+      color: #6b7280;
     }
 
-    .modal {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 10px;
-      width: 95%;
-      max-width: 450px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .modal-header h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
-
-    .signature-wrapper {
-      border: 1px solid var(--border-soft);
-      border-radius: 6px;
-      overflow: hidden;
-      background: #fafafa;
-    }
-
-    #signatureCanvas {
+    canvas#signaturePad {
       width: 100%;
-      height: 200px;
-      display: block;
+      height: 140px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .alert {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      margin-top: 6px;
+    }
+
+    .alert i {
+      color: #16a34a;
     }
 
     .muted {
-      font-size: 0.8rem;
-      color: #777;
+      font-size: 0.78rem;
+      color: #6b7280;
     }
 
-    .report-actions {
-      margin-top: 0.5rem;
+    .stats-row {
       display: flex;
+      gap: 10px;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: flex-end;
+      margin-top: 6px;
+      font-size: 0.78rem;
     }
 
-    .report-header {
-      display: flex;
+    .stat-chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      display: inline-flex;
+      gap: 6px;
       align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.4rem;
-      border-bottom: 2px solid var(--jooust-blue);
-      padding-bottom: 0.3rem;
     }
 
-    .report-header img {
-      height: 40px;
-      width: auto;
-    }
-
-    .report-title-block {
-      font-size: 0.9rem;
-    }
-
-    .report-title-block strong {
-      font-size: 1rem;
-      color: var(--jooust-blue-dark);
-    }
-
-    .summary-box {
-      margin-top: 0.5rem;
-      background: #f8fff8;
-      border: 1px dashed #a5d6a7;
-      padding: 0.4rem 0.6rem;
-      border-radius: 6px;
+    .stat-chip i {
       font-size: 0.8rem;
+    }
+
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
 <body>
-<header>
-  <img src="jooust-logo.png" alt="JOOUST Logo" onerror="this.style.display='none'" />
-  <div>
-    <h1>JOOUST Attendance Management</h1>
-    <p>Class attendance with signatures, multi-class support & exportable reports.</p>
-  </div>
-</header>
+  <!-- Hidden logo for PDF export -->
+  <img id="jooustLogo" src="logo.jpg" alt="JOOUST Logo" style="display:none" />
 
-<main>
-  <div class="grid">
-    <!-- Left: Attendance Capture -->
-    <section class="card">
-      <h2>1. Capture Attendance</h2>
-
-      <div class="row">
-        <div>
-          <label for="className">Class / Course</label>
-          <input type="text" id="className" placeholder="e.g. BIT 101, CS 102" />
-        </div>
-        <div>
-          <label for="attendanceDate">Date</label>
-          <input type="date" id="attendanceDate" />
-        </div>
+  <header>
+    <div class="header-left">
+      <div class="header-logo">
+        <!-- Visible logo -->
+        <img src="logo.jpg" alt="JOOUST Logo">
       </div>
-
-      <div class="row">
-        <div>
-          <label for="studentName">Student Name</label>
-          <input type="text" id="studentName" placeholder="Enter student full name" />
-        </div>
-        <div>
-          <label>Status</label>
-          <select id="status">
-            <option value="Present">Present</option>
-            <option value="Absent">Absent</option>
-          </select>
-        </div>
+      <div class="header-title">
+        <h1>JOOUST Attendance Manager</h1>
+        <span>Smart class attendance · secure records · quick reports</span>
       </div>
-
-      <div class="row" style="align-items:flex-end;">
-        <div>
-          <button class="btn-light" id="btnOpenSignature">✍️ Add Signature</button>
-          <div class="muted" id="signatureInfo">No signature captured yet.</div>
-        </div>
-        <div style="text-align:right;">
-          <button class="btn-primary" id="btnAddRecord">➕ Add to Attendance List</button>
-        </div>
-      </div>
-
-      <table id="attendanceTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Class</th>
-            <th>Date</th>
-            <th>Student</th>
-            <th>Status</th>
-            <th>Signature</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- rows will be injected -->
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Right: Reports -->
-    <section class="card">
-      <h2>2. Reports & Export</h2>
-
-      <div class="row">
-        <div>
-          <label for="reportClass">Class (optional)</label>
-          <input type="text" id="reportClass" placeholder="Leave empty for all classes" />
-        </div>
-        <div>
-          <label for="reportType">Report Type</label>
-          <select id="reportType">
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="classSummary">Class Summary</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="reportStart">Start Date</label>
-          <input type="date" id="reportStart" />
-        </div>
-        <div>
-          <label for="reportEnd">End Date</label>
-          <input type="date" id="reportEnd" />
-        </div>
-      </div>
-
-      <button class="btn-secondary" id="btnGenerateReport">📊 Generate Report</button>
-
-      <div class="report-actions">
-        <button class="btn-light btn-sm" id="btnExportExcel">📥 Export to Excel</button>
-        <button class="btn-light btn-sm" id="btnExportPDF">📄 Export to PDF</button>
-      </div>
-
-      <div id="reportArea" style="margin-top:0.6rem; max-height:420px; overflow:auto; background:#fff; padding:0.5rem; border-radius:6px; border:1px solid var(--border-soft);">
-        <div class="muted">Generate a report to see results here.</div>
-      </div>
-    </section>
-  </div>
-</main>
-
-<!-- Signature Modal -->
-<div class="modal-backdrop" id="signatureModalBackdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Sign Attendance</h3>
-      <button class="btn-light btn-sm" id="btnCloseModal">✖</button>
     </div>
-    <p class="muted">Use your mouse, touchpad or finger (on touch devices) to sign below.</p>
-    <div class="signature-wrapper">
-      <canvas id="signatureCanvas"></canvas>
+    <div class="header-right">
+      <div class="badge">
+        <i class="fa-solid fa-graduation-cap"></i>
+        Jaramogi Oginga Odinga University of Science &amp; Technology
+      </div>
+      <div>Attendance · Classes · Excel &amp; PDF Reports</div>
     </div>
-    <div style="margin-top:0.5rem; display:flex; justify-content:space-between; gap:0.5rem;">
-      <button class="btn-light btn-sm" id="btnClearSignature">🧹 Clear</button>
-      <div style="flex:1;"></div>
-      <button class="btn-primary btn-sm" id="btnSaveSignature">💾 Save Signature</button>
-    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside>
+      <div class="nav-section-title">Navigation</div>
+      <ul class="side-nav">
+        <li>
+          <button class="nav-btn active" data-target="section-classes">
+            <i class="fa-solid fa-layer-group"></i>
+            Classes &amp; Setup
+          </button>
+        </li>
+        <li>
+          <button class="nav-btn" data-target="section-attendance">
+            <i class="fa-solid fa-clipboard-check"></i>
+            Register Attendance
+          </button>
+        </li>
+        <li>
+          <button class="nav-btn" data-target="section-reports">
+            <i class="fa-solid fa-chart-bar"></i>
+            Reports &amp; Exports
+          </button>
+        </li>
+      </ul>
+
+      <div class="side-footer">
+        <strong>Tip:</strong> Data is stored in your browser (Local Storage).
+        You can safely refresh the page. Use Excel or PDF export for official reporting.
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main>
+      <!-- CLASSES SECTION -->
+      <section id="section-classes">
+        <div class="content-header">
+          <h2>Classes &amp; Configuration</h2>
+          <span>Define teaching groups before taking attendance.</span>
+        </div>
+
+        <div class="card-grid two">
+          <!-- Create class -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Create / Edit Classes</h3>
+                <small>Each class can have multiple attendance sessions.</small>
+              </div>
+              <div class="chip">
+                <i class="fa-solid fa-circle-info"></i> Required once per unit
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="className">Class / Unit Name</label>
+                <input type="text" id="className" placeholder="e.g. CSC 201: Networking Fundamentals">
+              </div>
+              <div class="form-group">
+                <label for="classCode">Class Code</label>
+                <input type="text" id="classCode" placeholder="e.g. CSC201">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="lecturerName">Lecturer / Facilitator</label>
+                <input type="text" id="lecturerName" placeholder="e.g. Eng. Dan Otieno">
+              </div>
+              <div class="form-group">
+                <label for="semester">Semester / Term (optional)</label>
+                <input type="text" id="semester" placeholder="e.g. Sept–Dec 2025">
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btnAddClass">
+                <i class="fa-solid fa-plus"></i> Save Class
+              </button>
+              <button class="btn btn-outline" id="btnClearClasses">
+                <i class="fa-solid fa-trash-can"></i> Clear All Classes
+              </button>
+            </div>
+
+            <div class="alert" id="classAlert" style="display:none;">
+              <i class="fa-solid fa-check-circle"></i>
+              Class saved successfully.
+            </div>
+          </div>
+
+          <!-- List classes -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Existing Classes</h3>
+                <small>Click a row to pre-fill when taking attendance.</small>
+              </div>
+            </div>
+            <div class="table-wrapper" id="classesTableWrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Class Name</th>
+                    <th>Lecturer</th>
+                    <th>Semester</th>
+                  </tr>
+                </thead>
+                <tbody id="classesTableBody">
+                  <!-- Filled by JS -->
+                </tbody>
+              </table>
+            </div>
+            <p class="muted" style="margin-top:6px;">
+              If you click on a class here, it will auto-select it on the
+              <strong>Register Attendance</strong> tab.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ATTENDANCE SECTION -->
+      <section id="section-attendance" class="hidden">
+        <div class="content-header">
+          <h2>Register Attendance</h2>
+          <span>Capture presence, timestamp and lecturer signature.</span>
+        </div>
+
+        <div class="card-grid two">
+          <!-- Left: attendance form -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Attendance Session Details</h3>
+                <small>Choose class &amp; date, then add learners.</small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="attendanceClassSelect">Class</label>
+                <select id="attendanceClassSelect"></select>
+              </div>
+              <div class="form-group">
+                <label for="attendanceDate">Date</label>
+                <input type="date" id="attendanceDate">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sessionTopic">Session topic / description (optional)</label>
+                <input type="text" id="sessionTopic" placeholder="e.g. OSI model &amp; TCP/IP layers">
+              </div>
+            </div>
+
+            <div class="card-header" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-soft);">
+              <div>
+                <h3>Learners</h3>
+                <small>Mark present / absent for each learner.</small>
+              </div>
+              <button class="btn btn-outline" id="btnAddStudentRow">
+                <i class="fa-solid fa-user-plus"></i> Add Row
+              </button>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Learner Name</th>
+                    <th>Reg / Adm No.</th>
+                    <th class="text-center">Present?</th>
+                    <th class="text-center">Remove</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                  <!-- dynamically added rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="btn-row" style="margin-top:8px;">
+              <button class="btn btn-primary" id="btnSaveAttendance">
+                <i class="fa-solid fa-save"></i> Save Attendance
+              </button>
+              <button class="btn btn-outline" id="btnClearStudents">
+                <i class="fa-solid fa-broom"></i> Clear Learner Rows
+              </button>
+            </div>
+
+            <p class="muted" style="margin-top:6px;">
+              Hint: You can reuse the same learner list on future dates – after saving,
+              the list remains available in this browser.
+            </p>
+
+            <div class="alert" id="attendanceAlert" style="display:none;">
+              <i class="fa-solid fa-check-circle"></i>
+              Attendance saved to browser storage.
+            </div>
+          </div>
+
+          <!-- Right: Signature -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Lecturer Signature</h3>
+                <small>Captured and attached to PDF reports (when possible).</small>
+              </div>
+              <span class="tag">Digital signature</span>
+            </div>
+
+            <div class="signature-container">
+              <small>Sign inside the box using mouse or touch. This will be stored with the attendance session.</small>
+              <canvas id="signaturePad"></canvas>
+
+              <div class="btn-row" style="margin-top:6px;">
+                <button class="btn btn-outline" id="btnClearSignature">
+                  <i class="fa-solid fa-eraser"></i> Clear Signature
+                </button>
+              </div>
+
+              <p class="muted" style="margin-top:6px;">
+                The signature is attached only to the sessions you save after signing.
+                For multi-day summary reports, signatures may not appear.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPORTS SECTION -->
+      <section id="section-reports" class="hidden">
+        <div class="content-header">
+          <h2>Reports &amp; Exports</h2>
+          <span>Generate weekly, monthly and class summaries, then export to Excel or PDF.</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Report Filters</h3>
+              <small>Select what you want to see and export.</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reportClassSelect">Class</label>
+              <select id="reportClassSelect">
+                <!-- filled by JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="reportType">Report type</label>
+              <select id="reportType">
+                <option value="detailed">Detailed list (all records)</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly (summary by learner)</option>
+                <option value="monthly">Monthly (summary by learner)</option>
+                <option value="classSummary">Class summary (overall)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="reportStart">From date</label>
+              <input type="date" id="reportStart">
+            </div>
+            <div class="form-group">
+              <label for="reportEnd">To date</label>
+              <input type="date" id="reportEnd">
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnGenerateReport">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate report
+            </button>
+            <button class="btn btn-outline" id="btnExportExcel">
+              <i class="fa-solid fa-file-excel"></i> Export to Excel
+            </button>
+            <button class="btn btn-outline" id="btnExportPDF">
+              <i class="fa-solid fa-file-pdf"></i> Export to PDF
+            </button>
+          </div>
+
+          <div class="stats-row" id="reportStats" style="display:none;">
+            <div class="stat-chip">
+              <i class="fa-solid fa-users"></i>
+              <span id="statLearners"></span>
+            </div>
+            <div class="stat-chip">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span id="statSessions"></span>
+            </div>
+            <div class="stat-chip">
+              <i class="fa-solid fa-circle-check"></i>
+              <span id="statPresent"></span>
+            </div>
+            <div class="stat-chip">
+              <i class="fa-solid fa-circle-xmark"></i>
+              <span id="statAbsent"></span>
+            </div>
+          </div>
+
+          <p class="muted" style="margin-top:4px;">
+            For <strong>Weekly</strong> or <strong>Monthly</strong> reports, set
+            the appropriate <em>From</em> and <em>To</em> dates (e.g. 1st to 7th
+            of the week, or 1st to 30th of the month). The app will generate
+            class summaries within that range.
+          </p>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+          <div class="card-header">
+            <div>
+              <h3>Report Preview</h3>
+              <small>Whatever you see here is what will be exported.</small>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table id="reportTable">
+              <thead>
+                <tr id="reportHeaderRow">
+                  <!-- filled by JS -->
+                </tr>
+              </thead>
+              <tbody id="reportTableBody">
+                <!-- filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
-</div>
 
-<script>
-  // In-memory store of attendance records
-  // { id, className, date, studentName, status, signatureData }
-  let attendanceRecords = [];
-  let nextId = 1;
-  let currentSignatureData = null;
+  <script>
+    // ----------------------------
+    // Data model & local storage
+    // ----------------------------
+    const STORAGE_KEY = 'jooustAttendanceData_v1';
 
-  // DOM references
-  const classNameInput = document.getElementById("className");
-  const attendanceDateInput = document.getElementById("attendanceDate");
-  const studentNameInput = document.getElementById("studentName");
-  const statusInput = document.getElementById("status");
-  const btnAddRecord = document.getElementById("btnAddRecord");
-  const attendanceTableBody = document.querySelector("#attendanceTable tbody");
-  const signatureInfo = document.getElementById("signatureInfo");
-
-  const reportClassInput = document.getElementById("reportClass");
-  const reportTypeInput = document.getElementById("reportType");
-  const reportStartInput = document.getElementById("reportStart");
-  const reportEndInput = document.getElementById("reportEnd");
-  const btnGenerateReport = document.getElementById("btnGenerateReport");
-  const reportArea = document.getElementById("reportArea");
-  const btnExportExcel = document.getElementById("btnExportExcel");
-  const btnExportPDF = document.getElementById("btnExportPDF");
-
-  // Initialize date inputs with today
-  const today = new Date().toISOString().split("T")[0];
-  attendanceDateInput.value = today;
-  reportStartInput.value = today;
-  reportEndInput.value = today;
-
-  // Signature modal logic
-  const modalBackdrop = document.getElementById("signatureModalBackdrop");
-  const btnOpenSignature = document.getElementById("btnOpenSignature");
-  const btnCloseModal = document.getElementById("btnCloseModal");
-  const btnClearSignature = document.getElementById("btnClearSignature");
-  const btnSaveSignature = document.getElementById("btnSaveSignature");
-  const signatureCanvas = document.getElementById("signatureCanvas");
-  let signaturePad = null;
-
-  function openSignatureModal() {
-    modalBackdrop.style.display = "flex";
-    resizeSignatureCanvas();
-    if (!signaturePad) {
-      signaturePad = new SignaturePad(signatureCanvas);
-    }
-    signaturePad.clear();
-  }
-
-  function closeSignatureModal() {
-    modalBackdrop.style.display = "none";
-  }
-
-  function resizeSignatureCanvas() {
-    const rect = signatureCanvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
-    signatureCanvas.width = rect.width * ratio;
-    signatureCanvas.height = rect.height * ratio;
-    const ctx = signatureCanvas.getContext("2d");
-    ctx.scale(ratio, ratio);
-  }
-
-  window.addEventListener("resize", () => {
-    if (modalBackdrop.style.display === "flex" && signaturePad) {
-      resizeSignatureCanvas();
-      signaturePad.clear();
-    }
-  });
-
-  btnOpenSignature.addEventListener("click", openSignatureModal);
-  btnCloseModal.addEventListener("click", closeSignatureModal);
-  btnClearSignature.addEventListener("click", () => {
-    if (signaturePad) signaturePad.clear();
-  });
-
-  btnSaveSignature.addEventListener("click", () => {
-    if (signaturePad && !signaturePad.isEmpty()) {
-      currentSignatureData = signaturePad.toDataURL();
-      signatureInfo.textContent = "Signature captured ✔";
-      signatureInfo.style.color = "green";
-      closeSignatureModal();
-    } else {
-      alert("Please sign before saving.");
-    }
-  });
-
-  // Add attendance record
-  btnAddRecord.addEventListener("click", () => {
-    const className = classNameInput.value.trim();
-    const date = attendanceDateInput.value;
-    const studentName = studentNameInput.value.trim();
-    const status = statusInput.value;
-
-    if (!className || !date || !studentName) {
-      alert("Please fill Class, Date and Student Name.");
-      return;
-    }
-
-    const record = {
-      id: nextId++,
-      className,
-      date,
-      studentName,
-      status,
-      signatureData: currentSignatureData
+    let state = {
+      classes: [],
+      sessions: [] // {id, classId, date, topic, records: [{name, regNo, present}], signature}
     };
 
-    attendanceRecords.push(record);
-    renderAttendanceTable();
-    // Reset student & signature for next entry
-    studentNameInput.value = "";
-    currentSignatureData = null;
-    signatureInfo.textContent = "No signature captured yet.";
-    signatureInfo.style.color = "#777";
-  });
-
-  function renderAttendanceTable() {
-    attendanceTableBody.innerHTML = "";
-    attendanceRecords.forEach((rec, index) => {
-      const tr = document.createElement("tr");
-
-      const tdIndex = document.createElement("td");
-      tdIndex.textContent = index + 1;
-
-      const tdClass = document.createElement("td");
-      tdClass.textContent = rec.className;
-
-      const tdDate = document.createElement("td");
-      tdDate.textContent = rec.date;
-
-      const tdStudent = document.createElement("td");
-      tdStudent.textContent = rec.studentName;
-
-      const tdStatus = document.createElement("td");
-      const spanStatus = document.createElement("span");
-      spanStatus.className = "badge " + (rec.status === "Present" ? "badge-present" : "badge-absent");
-      spanStatus.textContent = rec.status;
-      tdStatus.appendChild(spanStatus);
-
-      const tdSignature = document.createElement("td");
-      if (rec.signatureData) {
-        const img = document.createElement("img");
-        img.src = rec.signatureData;
-        img.alt = "Signature";
-        img.style.maxHeight = "30px";
-        img.style.maxWidth = "100px";
-        tdSignature.appendChild(img);
-      } else {
-        tdSignature.innerHTML = "<span class='muted'>None</span>";
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          state = JSON.parse(raw);
+        }
+      } catch (e) {
+        console.error('Failed to parse stored data', e);
       }
+    }
 
-      const tdRemove = document.createElement("td");
-      const btnRemove = document.createElement("button");
-      btnRemove.className = "btn-danger btn-sm";
-      btnRemove.textContent = "🗑";
-      btnRemove.addEventListener("click", () => {
-        attendanceRecords = attendanceRecords.filter(r => r.id !== rec.id);
-        renderAttendanceTable();
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function generateId(prefix) {
+      return prefix + '_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    }
+
+    // ----------------------------
+    // UI Helpers
+    // ----------------------------
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const sections = document.querySelectorAll('main section');
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const targetId = btn.getAttribute('data-target');
+        sections.forEach(sec => {
+          if (sec.id === targetId) sec.classList.remove('hidden');
+          else sec.classList.add('hidden');
+        });
       });
-      tdRemove.appendChild(btnRemove);
-
-      tr.appendChild(tdIndex);
-      tr.appendChild(tdClass);
-      tr.appendChild(tdDate);
-      tr.appendChild(tdStudent);
-      tr.appendChild(tdStatus);
-      tr.appendChild(tdSignature);
-      tr.appendChild(tdRemove);
-
-      attendanceTableBody.appendChild(tr);
-    });
-  }
-
-  // Helper to parse dates
-  function toDate(str) {
-    return new Date(str + "T00:00:00");
-  }
-
-  // Generate report
-  btnGenerateReport.addEventListener("click", () => {
-    const reportClass = reportClassInput.value.trim().toLowerCase();
-    const reportType = reportTypeInput.value;
-    const start = reportStartInput.value;
-    const end = reportEndInput.value;
-
-    if (!start || !end) {
-      alert("Please select Start and End dates.");
-      return;
-    }
-
-    const startDate = toDate(start);
-    const endDate = toDate(end);
-    if (endDate < startDate) {
-      alert("End date cannot be before start date.");
-      return;
-    }
-
-    // Filter records by class & date range
-    let filtered = attendanceRecords.filter(rec => {
-      const d = toDate(rec.date);
-      const inRange = d >= startDate && d <= endDate;
-      const classMatch = reportClass ? rec.className.toLowerCase().includes(reportClass) : true;
-      return inRange && classMatch;
     });
 
-    if (filtered.length === 0) {
-      reportArea.innerHTML = "<div class='muted'>No records found for the selected criteria.</div>";
-      return;
-    }
+    // ----------------------------
+    // Classes
+    // ----------------------------
+    const classNameInput = document.getElementById('className');
+    const classCodeInput = document.getElementById('classCode');
+    const lecturerInput = document.getElementById('lecturerName');
+    const semesterInput = document.getElementById('semester');
+    const classesTableBody = document.getElementById('classesTableBody');
+    const classAlert = document.getElementById('classAlert');
 
-    // If weekly or monthly, we still show all rows but compute summary differently
-    let titleText = "";
-    if (reportType === "daily") {
-      titleText = "Daily Attendance Report";
-    } else if (reportType === "weekly") {
-      titleText = "Weekly Attendance Report";
-    } else if (reportType === "monthly") {
-      titleText = "Monthly Attendance Report";
-    } else {
-      titleText = "Class Summary Report";
-    }
+    document.getElementById('btnAddClass').addEventListener('click', () => {
+      const name = classNameInput.value.trim();
+      const code = classCodeInput.value.trim();
+      const lecturer = lecturerInput.value.trim();
+      const semester = semesterInput.value.trim();
 
-    // Build HTML for report
-    let html = "";
-
-    html += "<div id='reportContent'>";
-    html += "<div class='report-header'>";
-    html += "<img src='jooust-logo.png' alt='JOOUST Logo' onerror=\"this.style.display='none'\" />";
-    html += "<div class='report-title-block'>";
-    html += "<strong>Jaramogi Oginga Odinga University of Science and Technology (JOOUST)</strong><br/>";
-    html += titleText + "<br/>";
-    html += "<span class='muted'>From " + start + " to " + end + "</span>";
-    html += "</div></div>";
-
-    // Summary section
-    const totalRecords = filtered.length;
-    const presents = filtered.filter(r => r.status === "Present").length;
-    const absents = filtered.filter(r => r.status === "Absent").length;
-    html += "<div class='summary-box'>";
-    html += "<strong>Summary:</strong> Total entries: " + totalRecords +
-      " | Present: " + presents + " | Absent: " + absents;
-    if (reportClass) {
-      html += " | Class filter: <strong>" + reportClassInput.value + "</strong>";
-    }
-    html += "</div>";
-
-    // Table of details
-    html += "<table id='reportTable'><thead><tr>";
-    html += "<th>#</th><th>Class</th><th>Date</th><th>Student</th><th>Status</th><th>Signature</th>";
-    html += "</tr></thead><tbody>";
-
-    filtered.forEach((rec, idx) => {
-      html += "<tr>";
-      html += "<td>" + (idx + 1) + "</td>";
-      html += "<td>" + rec.className + "</td>";
-      html += "<td>" + rec.date + "</td>";
-      html += "<td>" + rec.studentName + "</td>";
-      html += "<td>" + rec.status + "</td>";
-      if (rec.signatureData) {
-        html += "<td><img src='" + rec.signatureData + "' style='max-height:30px;max-width:100px;' /></td>";
-      } else {
-        html += "<td>—</td>";
+      if (!name || !code) {
+        alert('Please enter at least Class Name and Class Code.');
+        return;
       }
-      html += "</tr>";
+
+      state.classes.push({
+        id: generateId('class'),
+        name,
+        code,
+        lecturer,
+        semester
+      });
+
+      saveState();
+      refreshClassLists();
+      classNameInput.value = '';
+      classCodeInput.value = '';
+      lecturerInput.value = '';
+      semesterInput.value = '';
+
+      classAlert.style.display = 'inline-flex';
+      setTimeout(() => (classAlert.style.display = 'none'), 1800);
     });
 
-    html += "</tbody></table>";
-    html += "</div>";
+    document.getElementById('btnClearClasses').addEventListener('click', () => {
+      if (!confirm('This will remove all classes (attendance data will remain). Continue?')) return;
+      state.classes = [];
+      saveState();
+      refreshClassLists();
+    });
 
-    reportArea.innerHTML = html;
-  });
+    function refreshClassLists() {
+      // Classes table
+      classesTableBody.innerHTML = '';
+      if (state.classes.length === 0) {
+        classesTableBody.innerHTML = '<tr><td colspan="4" class="text-center muted">No classes yet. Add your first class on the left.</td></tr>';
+      } else {
+        state.classes.forEach(cls => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${cls.code}</td>
+            <td>${cls.name}</td>
+            <td>${cls.lecturer || '-'}</td>
+            <td>${cls.semester || '-'}</td>
+          `;
+          tr.addEventListener('click', () => {
+            // Switch to attendance tab & pre-select
+            document.querySelector('[data-target="section-attendance"]').click();
+            attendanceClassSelect.value = cls.id;
+          });
+          classesTableBody.appendChild(tr);
+        });
+      }
 
-  // Export to Excel
-  btnExportExcel.addEventListener("click", () => {
-    const reportTable = document.getElementById("reportTable");
-    if (!reportTable) {
-      alert("Please generate a report first.");
-      return;
+      // Attendance select
+      const classSelects = [attendanceClassSelect, reportClassSelect];
+      classSelects.forEach(sel => {
+        const currentValue = sel.value;
+        sel.innerHTML = '';
+        if (sel === reportClassSelect) {
+          const optAll = document.createElement('option');
+          optAll.value = 'all';
+          optAll.textContent = 'All classes';
+          sel.appendChild(optAll);
+        }
+        state.classes.forEach(cls => {
+          const opt = document.createElement('option');
+          opt.value = cls.id;
+          opt.textContent = `${cls.code} – ${cls.name}`;
+          sel.appendChild(opt);
+        });
+        if (Array.from(sel.options).some(o => o.value === currentValue)) {
+          sel.value = currentValue;
+        }
+      });
     }
-    const wb = XLSX.utils.table_to_book(reportTable, { sheet: "Attendance" });
-    const todayStr = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(wb, "jooust_attendance_" + todayStr + ".xlsx");
-  });
 
-  // Export to PDF (captures the report area including JOOUST logo & colours)
-  btnExportPDF.addEventListener("click", async () => {
-    const reportContent = document.getElementById("reportContent");
-    if (!reportContent) {
-      alert("Please generate a report first.");
-      return;
+    // ----------------------------
+    // Attendance
+    // ----------------------------
+    const attendanceClassSelect = document.getElementById('attendanceClassSelect');
+    const attendanceDateInput = document.getElementById('attendanceDate');
+    const sessionTopicInput = document.getElementById('sessionTopic');
+    const studentsTableBody = document.getElementById('studentsTableBody');
+    const attendanceAlert = document.getElementById('attendanceAlert');
+
+    function setTodayDate(input) {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      input.value = `${yyyy}-${mm}-${dd}`;
     }
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "mm", "a4");
+    setTodayDate(attendanceDateInput);
 
-    const canvas = await html2canvas(reportContent, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    function addStudentRow(name = '', regNo = '') {
+      const rowIndex = studentsTableBody.children.length + 1;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-center">${rowIndex}</td>
+        <td><input type="text" class="student-name" placeholder="Learner name" value="${name}"></td>
+        <td><input type="text" class="student-reg" placeholder="Reg / Adm number" value="${regNo}"></td>
+        <td class="text-center">
+          <input type="checkbox" class="student-present" checked>
+        </td>
+        <td class="text-center">
+          <button class="btn btn-danger btn-sm-remove" type="button">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </td>
+      `;
+      studentsTableBody.appendChild(tr);
 
-    pdf.addImage(imgData, "PNG", 5, 5, pdfWidth - 10, pdfHeight);
-    const todayStr = new Date().toISOString().slice(0, 10);
-    pdf.save("jooust_attendance_" + todayStr + ".pdf");
-  });
-</script>
+      tr.querySelector('.btn-sm-remove').addEventListener('click', () => {
+        tr.remove();
+        renumberStudentRows();
+      });
+    }
+
+    function renumberStudentRows() {
+      Array.from(studentsTableBody.children).forEach((tr, idx) => {
+        tr.children[0].textContent = idx + 1;
+      });
+    }
+
+    document.getElementById('btnAddStudentRow').addEventListener('click', () => {
+      addStudentRow();
+    });
+
+    document.getElementById('btnClearStudents').addEventListener('click', () => {
+      if (!confirm('Remove all learner rows?')) return;
+      studentsTableBody.innerHTML = '';
+    });
+
+    document.getElementById('btnSaveAttendance').addEventListener('click', () => {
+      const classId = attendanceClassSelect.value;
+      const date = attendanceDateInput.value;
+      const topic = sessionTopicInput.value.trim();
+
+      if (!classId) {
+        alert('Please select a class.');
+        return;
+      }
+      if (!date) {
+        alert('Please select a date.');
+        return;
+      }
+
+      const rows = Array.from(studentsTableBody.querySelectorAll('tr'));
+      if (rows.length === 0) {
+        alert('Add at least one learner row before saving.');
+        return;
+      }
+
+      const records = [];
+      for (const tr of rows) {
+        const name = tr.querySelector('.student-name').value.trim();
+        const regNo = tr.querySelector('.student-reg').value.trim();
+        const present = tr.querySelector('.student-present').checked;
+
+        if (!name && !regNo) continue; // ignore empty rows
+
+        records.push({ name, regNo, present });
+      }
+
+      if (records.length === 0) {
+        alert('Please fill at least one learner entry (name or reg no).');
+        return;
+      }
+
+      const session = {
+        id: generateId('session'),
+        classId,
+        date,
+        topic,
+        records,
+        signature: signatureDataUrl || null
+      };
+
+      state.sessions.push(session);
+      saveState();
+
+      attendanceAlert.style.display = 'inline-flex';
+      setTimeout(() => (attendanceAlert.style.display = 'none'), 1800);
+    });
+
+    // ----------------------------
+    // Signature pad
+    // ----------------------------
+    const signatureCanvas = document.getElementById('signaturePad');
+    const ctx = signatureCanvas.getContext('2d');
+    let drawing = false;
+    let signatureDataUrl = null;
+
+    function resizeSignatureCanvas() {
+      const rect = signatureCanvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      signatureCanvas.width = rect.width * ratio;
+      signatureCanvas.height = rect.height * ratio;
+      ctx.scale(ratio, ratio);
+      clearSignature();
+    }
+
+    function clearSignature() {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#111827';
+      signatureDataUrl = null;
+    }
+
+    resizeSignatureCanvas();
+    window.addEventListener('resize', resizeSignatureCanvas);
+
+    function getCanvasPos(e) {
+      const rect = signatureCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function startDrawing(e) {
+      e.preventDefault();
+      drawing = true;
+      const pos = getCanvasPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      e.preventDefault();
+      const pos = getCanvasPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    function stopDrawing(e) {
+      if (!drawing) return;
+      drawing = false;
+      signatureDataUrl = signatureCanvas.toDataURL('image/png');
+    }
+
+    signatureCanvas.addEventListener('mousedown', startDrawing);
+    signatureCanvas.addEventListener('mousemove', draw);
+    signatureCanvas.addEventListener('mouseup', stopDrawing);
+    signatureCanvas.addEventListener('mouseleave', stopDrawing);
+
+    signatureCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+    signatureCanvas.addEventListener('touchmove', draw, { passive: false });
+    signatureCanvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+    document.getElementById('btnClearSignature').addEventListener('click', () => {
+      clearSignature();
+    });
+
+    // ----------------------------
+    // Reports
+    // ----------------------------
+    const reportClassSelect = document.getElementById('reportClassSelect');
+    const reportTypeSelect = document.getElementById('reportType');
+    const reportStartInput = document.getElementById('reportStart');
+    const reportEndInput = document.getElementById('reportEnd');
+    const reportTableBody = document.getElementById('reportTableBody');
+    const reportHeaderRow = document.getElementById('reportHeaderRow');
+
+    const reportStats = document.getElementById('reportStats');
+    const statLearners = document.getElementById('statLearners');
+    const statSessions = document.getElementById('statSessions');
+    const statPresent = document.getElementById('statPresent');
+    const statAbsent = document.getElementById('statAbsent');
+
+    document.getElementById('btnGenerateReport').addEventListener('click', () => {
+      renderReportTable();
+    });
+
+    function parseDate(str) {
+      if (!str) return null;
+      const parts = str.split('-').map(Number);
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function isWithin(dateStr, startStr, endStr) {
+      const d = parseDate(dateStr);
+      if (!d) return false;
+      const start = startStr ? parseDate(startStr) : null;
+      const end = endStr ? parseDate(endStr) : null;
+      if (start && d < start) return false;
+      if (end && d > end) return false;
+      return true;
+    }
+
+    function renderReportTable() {
+      const classId = reportClassSelect.value;
+      const type = reportTypeSelect.value;
+      const start = reportStartInput.value;
+      const end = reportEndInput.value;
+
+      let sessions = state.sessions;
+      if (classId !== 'all') {
+        sessions = sessions.filter(s => s.classId === classId);
+      }
+      if (start || end) {
+        sessions = sessions.filter(s => isWithin(s.date, start, end));
+      }
+
+      reportTableBody.innerHTML = '';
+      reportHeaderRow.innerHTML = '';
+      reportStats.style.display = 'none';
+
+      if (sessions.length === 0) {
+        reportHeaderRow.innerHTML = '<th class="text-center">No data</th>';
+        reportTableBody.innerHTML = '<tr><td class="text-center muted">No attendance records found for this selection.</td></tr>';
+        return;
+      }
+
+      if (type === 'classSummary') {
+        renderClassSummary(sessions);
+      } else if (type === 'weekly' || type === 'monthly') {
+        renderAggregatedLearnerSummary(sessions);
+      } else { // detailed or daily
+        renderDetailedRecords(sessions);
+      }
+    }
+
+    function renderDetailedRecords(sessions) {
+      reportHeaderRow.innerHTML = `
+        <th>Date</th>
+        <th>Class</th>
+        <th>Learner</th>
+        <th>Reg/Adm No.</th>
+        <th>Status</th>
+        <th>Topic</th>
+      `;
+      reportTableBody.innerHTML = '';
+
+      let presentCount = 0;
+      let absentCount = 0;
+      const learnerSet = new Set();
+
+      sessions.sort((a, b) => a.date.localeCompare(b.date)).forEach(sess => {
+        const cls = state.classes.find(c => c.id === sess.classId);
+        sess.records.forEach(rec => {
+          const tr = document.createElement('tr');
+          const statusSpan = rec.present
+            ? `<span class="pill-present">Present</span>`
+            : `<span class="pill-absent">Absent</span>`;
+          tr.innerHTML = `
+            <td>${sess.date}</td>
+            <td>${cls ? cls.code : ''}</td>
+            <td>${rec.name || '-'}</td>
+            <td>${rec.regNo || '-'}</td>
+            <td>${statusSpan}</td>
+            <td>${sess.topic || '-'}</td>
+          `;
+          reportTableBody.appendChild(tr);
+
+          if (rec.present) presentCount++;
+          else absentCount++;
+          if (rec.regNo || rec.name) {
+            learnerSet.add((rec.regNo || '').trim() + '|' + (rec.name || '').trim());
+          }
+        });
+      });
+
+      statLearners.textContent = `Learners: ${learnerSet.size}`;
+      statSessions.textContent = `Sessions: ${sessions.length}`;
+      statPresent.textContent = `Present marks: ${presentCount}`;
+      statAbsent.textContent = `Absent marks: ${absentCount}`;
+      reportStats.style.display = 'flex';
+    }
+
+    function renderAggregatedLearnerSummary(sessions) {
+      reportHeaderRow.innerHTML = `
+        <th>Learner</th>
+        <th>Reg/Adm No.</th>
+        <th>Sessions marked</th>
+        <th>Present</th>
+        <th>Absent</th>
+        <th>Attendance %</th>
+      `;
+      reportTableBody.innerHTML = '';
+
+      const map = new Map(); // key: name|reg, value: {name, regNo, total, present}
+
+      sessions.forEach(sess => {
+        sess.records.forEach(rec => {
+          const key = (rec.regNo || '') + '|' + (rec.name || '');
+          if (!key.trim()) return;
+          if (!map.has(key)) {
+            map.set(key, {
+              name: rec.name || '',
+              regNo: rec.regNo || '',
+              total: 0,
+              present: 0
+            });
+          }
+          const entry = map.get(key);
+          entry.total += 1;
+          if (rec.present) entry.present += 1;
+        });
+      });
+
+      let presentSum = 0;
+      let absentSum = 0;
+
+      Array.from(map.values())
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach(entry => {
+          const absent = entry.total - entry.present;
+          const percent = entry.total ? ((entry.present / entry.total) * 100).toFixed(1) : '0.0';
+          presentSum += entry.present;
+          absentSum += absent;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${entry.name || '-'}</td>
+            <td>${entry.regNo || '-'}</td>
+            <td>${entry.total}</td>
+            <td><span class="pill-present">${entry.present}</span></td>
+            <td><span class="pill-absent">${absent}</span></td>
+            <td>${percent}%</td>
+          `;
+          reportTableBody.appendChild(tr);
+        });
+
+      statLearners.textContent = `Learners: ${map.size}`;
+      statSessions.textContent = `Sessions in range: ${sessions.length}`;
+      statPresent.textContent = `Total present marks: ${presentSum}`;
+      statAbsent.textContent = `Total absent marks: ${absentSum}`;
+      reportStats.style.display = 'flex';
+    }
+
+    function renderClassSummary(sessions) {
+      reportHeaderRow.innerHTML = `
+        <th>Class</th>
+        <th>Sessions</th>
+        <th>Total marks</th>
+        <th>Total present</th>
+        <th>Total absent</th>
+        <th>Overall attendance %</th>
+      `;
+      reportTableBody.innerHTML = '';
+
+      const clsMap = new Map(); // classId -> stats
+
+      sessions.forEach(sess => {
+        if (!clsMap.has(sess.classId)) {
+          clsMap.set(sess.classId, { sessions: 0, total: 0, present: 0 });
+        }
+        const entry = clsMap.get(sess.classId);
+        entry.sessions += 1;
+        sess.records.forEach(rec => {
+          entry.total += 1;
+          if (rec.present) entry.present += 1;
+        });
+      });
+
+      let presentSum = 0;
+      let absentSum = 0;
+
+      clsMap.forEach((entry, classId) => {
+        const cls = state.classes.find(c => c.id === classId);
+        const absent = entry.total - entry.present;
+        const percent = entry.total ? ((entry.present / entry.total) * 100).toFixed(1) : '0.0';
+        presentSum += entry.present;
+        absentSum += absent;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${cls ? cls.code + ' – ' + cls.name : 'Unknown class'}</td>
+          <td>${entry.sessions}</td>
+          <td>${entry.total}</td>
+          <td><span class="pill-present">${entry.present}</span></td>
+          <td><span class="pill-absent">${absent}</span></td>
+          <td>${percent}%</td>
+        `;
+        reportTableBody.appendChild(tr);
+      });
+
+      statLearners.textContent = `Classes: ${clsMap.size}`;
+      statSessions.textContent = `Sessions: ${sessions.length}`;
+      statPresent.textContent = `Total present marks: ${presentSum}`;
+      statAbsent.textContent = `Total absent marks: ${absentSum}`;
+      reportStats.style.display = 'flex';
+    }
+
+    // ----------------------------
+    // Export: Excel & PDF
+    // ----------------------------
+    function getReportTableAsArray() {
+      const table = document.getElementById('reportTable');
+      const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+      const rows = [];
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        const cells = Array.from(tr.children).map(td => td.textContent.trim());
+        rows.push(cells);
+      });
+      return { headers, rows };
+    }
+
+    document.getElementById('btnExportExcel').addEventListener('click', () => {
+      const { headers, rows } = getReportTableAsArray();
+      if (!headers.length || rows.length === 0) {
+        alert('No report data to export. Generate a report first.');
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+      const wsData = [headers, ...rows];
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
+      const fileName = 'JOOUST_Attendance_Report.xlsx';
+      XLSX.writeFile(wb, fileName);
+    });
+
+    let jooustLogoDataUrl = null;
+    const logoImg = document.getElementById('jooustLogo');
+    logoImg.addEventListener('load', () => {
+      // draw into canvas to get dataURL
+      const c = document.createElement('canvas');
+      c.width = logoImg.naturalWidth;
+      c.height = logoImg.naturalHeight;
+      const cctx = c.getContext('2d');
+      cctx.drawImage(logoImg, 0, 0);
+      jooustLogoDataUrl = c.toDataURL('image/jpeg');
+    });
+
+    document.getElementById('btnExportPDF').addEventListener('click', () => {
+      const { headers, rows } = getReportTableAsArray();
+      if (!headers.length || rows.length === 0) {
+        alert('No report data to export. Generate a report first.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+
+      // Header with logo and title
+      if (jooustLogoDataUrl) {
+        doc.addImage(jooustLogoDataUrl, 'JPEG', 10, 8, 30, 30);
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Jaramogi Oginga Odinga University of Science & Technology', 45, 16);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Class Attendance Report', 45, 24);
+
+      const type = reportTypeSelect.value;
+      const classId = reportClassSelect.value;
+      let subtitle = `Report type: ${reportTypeSelect.options[reportTypeSelect.selectedIndex].text}`;
+      if (classId !== 'all') {
+        const cls = state.classes.find(c => c.id === classId);
+        if (cls) subtitle += ` | Class: ${cls.code} – ${cls.name}`;
+      }
+      const start = reportStartInput.value;
+      const end = reportEndInput.value;
+      if (start || end) {
+        subtitle += ` | Period: ${start || '...'} to ${end || '...'}`;
+      }
+
+      doc.setFontSize(9);
+      doc.text(subtitle, 45, 30);
+
+      // Table
+      doc.autoTable({
+        startY: 40,
+        head: [headers],
+        body: rows,
+        styles: {
+          fontSize: 8
+        },
+        headStyles: {
+          fillColor: [0, 75, 141],
+          textColor: [255, 255, 255]
+        }
+      });
+
+      // Signature (only if we can find a matching single session with signature)
+      if (type === 'daily' && classId !== 'all') {
+        const date = reportStartInput.value || reportEndInput.value;
+        if (date) {
+          const sess = state.sessions.find(s => s.classId === classId && s.date === date && s.signature);
+          if (sess && sess.signature) {
+            const finalY = doc.lastAutoTable.finalY || 260;
+            if (finalY < 250) {
+              doc.addImage(sess.signature, 'PNG', 20, finalY + 8, 60, 20);
+              doc.text('Lecturer Signature', 25, finalY + 32);
+            }
+          }
+        }
+      }
+
+      const fileName = 'JOOUST_Attendance_Report.pdf';
+      doc.save(fileName);
+    });
+
+    // ----------------------------
+    // Initial load
+    // ----------------------------
+    loadState();
+    refreshClassLists();
+    renderReportTable(); // default empty view
+
+    // Add one default student row for convenience
+    if (studentsTableBody.children.length === 0) {
+      addStudentRow();
+    }
+  </script>
 </body>
 </html>
