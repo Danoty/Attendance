@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Attendance Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap for quick, clean UI -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      background: #f5f7fb;
+    }
+    .card {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      border-radius: 14px;
+    }
+    .present-toggle {
+      cursor: pointer;
+    }
+    .badge-present {
+      background-color: #198754;
+    }
+    .badge-absent {
+      background-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h2 class="mb-4 text-center">Attendance Register Web App</h2>
+
+    <div class="row g-4">
+      <!-- Left: Learner registration -->
+      <div class="col-md-4">
+        <div class="card p-3">
+          <h5 class="mb-3">Register Learners</h5>
+          <form id="studentForm" class="mb-3">
+            <div class="mb-2">
+              <label class="form-label">Learner Name</label>
+              <input type="text" id="studentName" class="form-control" required />
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Admission / ID</label>
+              <input type="text" id="studentId" class="form-control" required />
+            </div>
+            <button class="btn btn-primary w-100" type="submit">
+              Add Learner
+            </button>
+          </form>
+
+          <h6>Registered Learners</h6>
+          <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+            <table class="table table-sm table-striped mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>ID</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="studentsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Attendance -->
+      <div class="col-md-8">
+        <div class="card p-3 mb-3">
+          <div class="d-flex flex-wrap align-items-end justify-content-between gap-3">
+            <div>
+              <label class="form-label mb-0">Attendance Date</label>
+              <input type="date" id="attendanceDate" class="form-control" />
+            </div>
+            <div class="d-flex gap-2">
+              <button id="saveAttendanceBtn" class="btn btn-success">
+                Save Attendance
+              </button>
+              <button id="exportCsvBtn" class="btn btn-outline-secondary">
+                Export All as CSV
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-3">
+          <h5 class="mb-3">Mark Attendance</h5>
+          <p class="text-muted mb-2">
+            Tick <strong>Present</strong> for each learner. Unticked = Absent.
+          </p>
+          <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+            <table class="table table-bordered align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>ID</th>
+                  <th class="text-center">Present?</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (optional for some behaviours) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ---------- Storage Keys ----------
+    const STUDENTS_KEY = "attendance_students";
+    const ATTENDANCE_KEY = "attendance_records";
+
+    // ---------- State ----------
+    let students = [];
+    // attendanceRecords[date][studentId] = "P" | "A"
+    let attendanceRecords = {};
+
+    // ---------- Helpers for Storage ----------
+    function loadData() {
+      const storedStudents = localStorage.getItem(STUDENTS_KEY);
+      const storedAttendance = localStorage.getItem(ATTENDANCE_KEY);
+
+      students = storedStudents ? JSON.parse(storedStudents) : [];
+      attendanceRecords = storedAttendance ? JSON.parse(storedAttendance) : {};
+    }
+
+    function saveStudents() {
+      localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+    }
+
+    function saveAttendance() {
+      localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(attendanceRecords));
+    }
+
+    // ---------- Rendering ----------
+    function renderStudentsTable() {
+      const tbody = document.getElementById("studentsTableBody");
+      tbody.innerHTML = "";
+
+      students.forEach((s, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${s.name}</td>
+          <td>${s.id}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-danger" data-id="${s.id}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAttendanceTable() {
+      const tbody = document.getElementById("attendanceTableBody");
+      tbody.innerHTML = "";
+
+      const date = document.getElementById("attendanceDate").value;
+      if (!date) return;
+
+      const dateRecords = attendanceRecords[date] || {};
+
+      students.forEach((s, index) => {
+        const status = dateRecords[s.id] || "A"; // default Absent
+        const isPresent = status === "P";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${s.name}</td>
+          <td>${s.id}</td>
+          <td class="text-center">
+            <input 
+              type="checkbox" 
+              class="form-check-input present-toggle" 
+              data-id="${s.id}"
+              ${isPresent ? "checked" : ""} />
+          </td>
+          <td class="text-center">
+            <span class="badge ${isPresent ? "badge-present" : "badge-absent"} status-badge" data-id="${s.id}">
+              ${isPresent ? "Present" : "Absent"}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ---------- Event Handlers ----------
+    document.getElementById("studentForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("studentName").value.trim();
+      const id = document.getElementById("studentId").value.trim();
+
+      if (!name || !id) return;
+
+      // Avoid duplicates by ID
+      if (students.some(s => s.id === id)) {
+        alert("A learner with that ID already exists.");
+        return;
+      }
+
+      students.push({ name, id });
+      saveStudents();
+      renderStudentsTable();
+      renderAttendanceTable(); // update list for current date
+
+      document.getElementById("studentName").value = "";
+      document.getElementById("studentId").value = "";
+    });
+
+    // Delete learner
+    document.getElementById("studentsTableBody").addEventListener("click", function(e) {
+      if (e.target.tagName === "BUTTON") {
+        const id = e.target.getAttribute("data-id");
+        if (confirm("Delete this learner?")) {
+          students = students.filter(s => s.id !== id);
+          saveStudents();
+
+          // Also remove from attendance records
+          for (const date in attendanceRecords) {
+            if (attendanceRecords[date][id]) {
+              delete attendanceRecords[date][id];
+            }
+          }
+          saveAttendance();
+
+          renderStudentsTable();
+          renderAttendanceTable();
+        }
+      }
+    });
+
+    // Change date
+    document.getElementById("attendanceDate").addEventListener("change", function() {
+      renderAttendanceTable();
+    });
+
+    // Toggle present/absent + update badge in real time
+    document.getElementById("attendanceTableBody").addEventListener("change", function(e) {
+      if (e.target.classList.contains("present-toggle")) {
+        const id = e.target.getAttribute("data-id");
+        const date = document.getElementById("attendanceDate").value;
+        if (!date) return;
+
+        const isPresent = e.target.checked;
+
+        if (!attendanceRecords[date]) {
+          attendanceRecords[date] = {};
+        }
+        attendanceRecords[date][id] = isPresent ? "P" : "A";
+
+        // update badge
+        const badge = document.querySelector(`.status-badge[data-id="${id}"]`);
+        if (badge) {
+          if (isPresent) {
+            badge.textContent = "Present";
+            badge.classList.remove("badge-absent");
+            badge.classList.add("badge-present");
+          } else {
+            badge.textContent = "Absent";
+            badge.classList.remove("badge-present");
+            badge.classList.add("badge-absent");
+          }
+        }
+      }
+    });
+
+    // Save attendance explicitly
+    document.getElementById("saveAttendanceBtn").addEventListener("click", function() {
+      const date = document.getElementById("attendanceDate").value;
+      if (!date) {
+        alert("Please select a date first.");
+        return;
+      }
+
+      // Loop through rows and update attendance
+      const checkboxes = document.querySelectorAll(".present-toggle");
+      if (!attendanceRecords[date]) {
+        attendanceRecords[date] = {};
+      }
+
+      checkboxes.forEach(cb => {
+        const id = cb.getAttribute("data-id");
+        attendanceRecords[date][id] = cb.checked ? "P" : "A";
+      });
+
+      saveAttendance();
+      alert("Attendance saved for " + date);
+    });
+
+    // Export all attendance as CSV
+    document.getElementById("exportCsvBtn").addEventListener("click", function() {
+      if (Object.keys(attendanceRecords).length === 0) {
+        alert("No attendance data to export.");
+        return;
+      }
+
+      let csv = "Date,Student ID,Student Name,Status\n";
+
+      for (const date in attendanceRecords) {
+        const recordForDate = attendanceRecords[date];
+        for (const studentId in recordForDate) {
+          const status = recordForDate[studentId];
+          const student = students.find(s => s.id === studentId);
+          const name = student ? student.name : "";
+          csv += `${date},${studentId},${name},${status === "P" ? "Present" : "Absent"}\n`;
+        }
+      }
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "attendance_export.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // ---------- Init ----------
+    (function init() {
+      loadData();
+      renderStudentsTable();
+
+      // Default date = today
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("attendanceDate").value = today;
+
+      renderAttendanceTable();
+    })();
+  </script>
+</body>
+</html>
