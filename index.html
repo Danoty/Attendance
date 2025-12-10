@@ -393,11 +393,11 @@
 <body>
   <header id="mainHeader">
     <div class="left">
-      <!-- Your logo: place logo.jpg next to index.html -->
+      <!-- Use your logo.jpg from repo -->
       <img src="logo.jpg" alt="JOOUST Logo" />
       <h1>
         JOOUST Attendance System
-        <span>Faculty · Course · Unit · Academic Year · Digital Signatures · Smart Reports</span>
+        <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
       </h1>
     </div>
     <div id="userSummary" class="muted"></div>
@@ -493,7 +493,7 @@
         <div class="row">
           <div>
             <label for="regUnit">Unit</label>
-            <input id="regUnit" type="text" placeholder="e.g. CCS 101 – Intro to Computing" />
+            <input id="regUnit" type="text" placeholder="e.g. CCS 101" />
           </div>
           <div>
             <label for="regYear">Year of Study</label>
@@ -548,35 +548,14 @@
         <label>Digital Signature (use finger or mouse)</label>
         <canvas id="stSignaturePad" class="signature-pad"></canvas>
         <div class="signature-actions">
-          <button class="btn btn-secondary" id="stClearSignature" type="button">Clear</button>
+          <button class="btn btn-secondary" id="stClearSignature">Clear</button>
         </div>
 
         <div class="btn-group">
-          <button class="btn btn-success" id="stSubmit" type="button">Submit Attendance</button>
+          <button class="btn btn-success" id="stSubmit">Submit Attendance</button>
         </div>
         <div id="studentSubmitMsg" class="alert hidden" style="margin-top:0.75rem;"></div>
       </div>
-    </section>
-
-    <!-- LECTURER / HOD SIGN-OFF VIEW (SHARED LINK) -->
-    <section id="signoffSection" class="card hidden">
-      <h2 id="signoffTitle">Class Sign-Off</h2>
-      <div id="signoffClassInfo" class="alert alert-info"></div>
-      <div class="row">
-        <div>
-          <label for="signoffName">Name</label>
-          <input id="signoffName" type="text" />
-        </div>
-      </div>
-      <label>Digital Signature</label>
-      <canvas id="signoffPad" class="signature-pad"></canvas>
-      <div class="signature-actions">
-        <button class="btn btn-secondary" id="signoffClear" type="button">Clear</button>
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-success" id="signoffSave" type="button">Save Signature</button>
-      </div>
-      <div id="signoffMessage" class="alert hidden" style="margin-top:0.75rem;"></div>
     </section>
 
     <!-- ADMIN DASHBOARD -->
@@ -633,7 +612,7 @@
       <section id="reportsTab" class="card admin-tab hidden">
         <h3>Reports</h3>
         <p class="muted">
-          Filter by Faculty, Course, Unit, Academic Year, Year & Semester then export as PDF, Word or Excel.
+          Filter by Faculty, Course, Unit, Year & Semester then export as PDF, Word or Excel.
         </p>
         <div class="row">
           <div><label for="repFaculty">Faculty</label><input id="repFaculty" type="text" /></div>
@@ -641,7 +620,6 @@
           <div><label for="repUnit">Unit</label><input id="repUnit" type="text" /></div>
         </div>
         <div class="row">
-          <div><label for="repAcademicYear">Academic Year</label><input id="repAcademicYear" type="text" placeholder="e.g. 2024/2025" /></div>
           <div><label for="repYear">Year</label><input id="repYear" type="text" /></div>
           <div><label for="repSemester">Semester</label><input id="repSemester" type="text" /></div>
         </div>
@@ -672,24 +650,20 @@
       <section class="card">
         <div class="pill-header">
           <h3>Create / Start Class</h3>
-          <small>Fill details; system will generate unique links (Student, Lecturer Sign, HOD Sign).</small>
+          <small>Fill details; system will generate a unique attendance link.</small>
         </div>
         <div class="row">
           <div><label for="lcFaculty">Faculty</label><input id="lcFaculty" type="text" /></div>
           <div><label for="lcCourse">Course</label><input id="lcCourse" type="text" /></div>
         </div>
         <div class="row">
-          <div><label for="lcUnit">Unit (Code & Name)</label><input id="lcUnit" type="text" placeholder="e.g. CCS 101 – Intro to Computing" /></div>
+          <div><label for="lcUnit">Unit</label><input id="lcUnit" type="text" /></div>
           <div><label for="lcYear">Year</label><input id="lcYear" type="text" /></div>
           <div><label for="lcSemester">Semester</label><input id="lcSemester" type="text" /></div>
         </div>
         <div class="row">
-          <div><label for="lcAcademicYear">Academic Year</label><input id="lcAcademicYear" type="text" placeholder="e.g. 2024/2025" /></div>
-        </div>
-        <div class="row">
           <div><label for="lcVenue">Venue</label><input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" /></div>
-          <div><label for="lcDateTime">Start Date & Time</label><input id="lcDateTime" type="datetime-local" /></div>
-          <div><label for="lcEndTime">End Time</label><input id="lcEndTime" type="datetime-local" /></div>
+          <div><label for="lcDateTime">Date & Time</label><input id="lcDateTime" type="datetime-local" /></div>
         </div>
         <div class="btn-group">
           <button class="btn btn-success" id="createClassBtn">Create / Start Class</button>
@@ -714,9 +688,6 @@
           <div><label for="repFacultyL">Faculty</label><input id="repFacultyL" type="text" /></div>
           <div><label for="repCourseL">Course</label><input id="repCourseL" type="text" /></div>
           <div><label for="repUnitL">Unit</label><input id="repUnitL" type="text" /></div>
-        </div>
-        <div class="row">
-          <div><label for="repAcademicYearL">Academic Year</label><input id="repAcademicYearL" type="text" placeholder="e.g. 2024/2025" /></div>
         </div>
         <div class="row">
           <div><label for="repYearL">Year</label><input id="repYearL" type="text" /></div>
@@ -793,7 +764,6 @@
         "adminDashboard",
         "lecturerDashboard",
         "studentSection",
-        "signoffSection",
       ].forEach((sid) => {
         const el = $(sid);
         if (!el) return;
@@ -814,9 +784,7 @@
       const d = new Date(dt);
       if (isNaN(d)) return dt;
       return (
-        d.toLocaleDateString() +
-        " " +
-        d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       );
     }
 
@@ -835,21 +803,6 @@
     function getQueryParam(name) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name);
-    }
-
-    // Effective status: uses stored status + start/end times
-    function getEffectiveStatus(cls) {
-      const baseStatus = cls.status || "open";
-      const start = cls.dateTime ? new Date(cls.dateTime) : null;
-      const end = cls.endTime ? new Date(cls.endTime) : null;
-      const now = new Date();
-
-      if (baseStatus === "closed") return "Closed";
-
-      if (start && now < start) return "Upcoming";
-      if (end && now > end) return "Closed";
-
-      return "Open";
     }
 
     // ========================== LOGO TO DATA URL ==========================
@@ -880,7 +833,7 @@
       if (currentUser.role === "admin") {
         el.textContent = "Logged in as Admin: " + currentUser.username;
       } else if (currentUser.role === "lecturer") {
-        const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
+        const lec = DATA.lecLecturerById?.(currentUser.id) || DATA.lecturers.find((l) => l.id === currentUser.id);
         const name = lec ? lec.salutation + " " + lec.fullName : currentUser.username;
         el.textContent = "Logged in as Lecturer: " + name;
       }
@@ -1163,10 +1116,8 @@
       const u = $("lcUnit").value.trim();
       const y = $("lcYear").value.trim();
       const s = $("lcSemester").value.trim();
-      const ay = $("lcAcademicYear").value.trim();
       const v = $("lcVenue").value.trim();
       const dt = $("lcDateTime").value;
-      const end = $("lcEndTime").value;
       const msgEl = $("createClassMsg");
 
       if (!currentUser || currentUser.role !== "lecturer") {
@@ -1178,15 +1129,8 @@
         return;
       }
 
-      if (!f || !c || !u || !y || !s || !v || !dt || !end || !ay) {
-        setAlert(msgEl, "Please fill all class details including Academic Year and End Time.", "danger");
-        return;
-      }
-
-      const startDate = new Date(dt);
-      const endDate = new Date(end);
-      if (isNaN(startDate) || isNaN(endDate) || endDate <= startDate) {
-        setAlert(msgEl, "End Time must be after Start Time.", "danger");
+      if (!f || !c || !u || !y || !s || !v || !dt) {
+        setAlert(msgEl, "Please fill all class details.", "danger");
         return;
       }
 
@@ -1202,13 +1146,11 @@
         lecturerId: lec.id,
         faculty: f,
         course: c,
-        unit: u,            // store full "code – name" string
-        academicYear: ay,
+        unit: u,
         year: y,
         semester: s,
         venue: v,
-        dateTime: dt,       // start time
-        endTime: end,       // end time for auto-lock
+        dateTime: dt,
         status: "open",
         lecturerName: lec.salutation + " " + lec.fullName,
         lecturerSignature: null,
@@ -1220,13 +1162,15 @@
       saveData(DATA);
       renderLecturerClasses();
 
-      const baseUrl = window.location.origin + window.location.pathname;
-      const studentLink =
-        baseUrl + "?mode=student&classId=" + encodeURIComponent(classId);
+      const link =
+        window.location.origin +
+        window.location.pathname +
+        "?mode=student&classId=" +
+        encodeURIComponent(classId);
 
       setAlert(
         msgEl,
-        "Class created. Share this student link: " + studentLink,
+        "Class created. Share this link with students: " + link,
         "success"
       );
     });
@@ -1253,43 +1197,32 @@
         <th>Links & Actions</th>
       </tr></thead><tbody>`;
 
-      const baseUrl = window.location.origin + window.location.pathname;
-
       my.forEach((cls) => {
         const att = DATA.attendance.filter((a) => a.classId === cls.id);
-        const statusText = getEffectiveStatus(cls);
         const statusBadge =
-          statusText === "Open"
+          cls.status === "open"
             ? '<span class="badge open">Open</span>'
-            : statusText === "Upcoming"
-            ? '<span class="badge">Upcoming</span>'
             : '<span class="badge closed">Closed</span>';
-
-        const studentLink =
-          baseUrl + "?mode=student&classId=" + encodeURIComponent(cls.id);
-        const lecturerLink =
-          baseUrl + "?mode=lecturerSign&classId=" + encodeURIComponent(cls.id);
-        const hodLink =
-          baseUrl + "?mode=hodSign&classId=" + encodeURIComponent(cls.id);
-
+        const link =
+          window.location.origin +
+          window.location.pathname +
+          "?mode=student&classId=" +
+          encodeURIComponent(cls.id);
         html += `<tr>
           <td>
             <strong>${cls.unit}</strong><br>
             <span class="muted">${cls.course}</span><br>
             <span class="muted">${cls.faculty}</span><br>
-            <span class="muted">Year: ${cls.year}, Sem: ${cls.semester}, AY: ${cls.academicYear || "-"}</span>
+            <span class="muted">${cls.year}, ${cls.semester}</span>
           </td>
           <td>
             <span>${cls.venue}</span><br>
-            <span class="muted">Start: ${formatDateTime(cls.dateTime)}</span><br>
-            <span class="muted">End: ${formatDateTime(cls.endTime)}</span>
+            <span class="muted">${formatDateTime(cls.dateTime)}</span>
           </td>
           <td>${statusBadge}</td>
           <td>${att.length} student(s)</td>
           <td>
-            <button class="btn btn-secondary" data-action="copy-link" data-link="student" data-id="${cls.id}">Student Link</button>
-            <button class="btn btn-secondary" data-action="copy-link" data-link="lecturer" data-id="${cls.id}">Lecturer Sign</button>
-            <button class="btn btn-secondary" data-action="copy-link" data-link="hod" data-id="${cls.id}">HOD Sign</button>
+            <button class="btn btn-secondary" data-action="copy-link" data-id="${cls.id}">Copy Link</button>
             ${
               cls.status === "open"
                 ? `<button class="btn btn-danger" data-action="close-class" data-id="${cls.id}">End Class</button>`
@@ -1307,17 +1240,12 @@
         const action = btn.getAttribute("data-action");
         const id = btn.getAttribute("data-id");
         btn.addEventListener("click", () => {
-          const baseUrl = window.location.origin + window.location.pathname;
           if (action === "copy-link") {
-            const linkType = btn.getAttribute("data-link") || "student";
-            let link;
-            if (linkType === "student") {
-              link = baseUrl + "?mode=student&classId=" + encodeURIComponent(id);
-            } else if (linkType === "lecturer") {
-              link = baseUrl + "?mode=lecturerSign&classId=" + encodeURIComponent(id);
-            } else {
-              link = baseUrl + "?mode=hodSign&classId=" + encodeURIComponent(id);
-            }
+            const link =
+              window.location.origin +
+              window.location.pathname +
+              "?mode=student&classId=" +
+              encodeURIComponent(id);
             navigator.clipboard
               .writeText(link)
               .then(() => alert("Link copied: " + link))
@@ -1361,14 +1289,10 @@
 
       DATA.classes.forEach((cls) => {
         const att = DATA.attendance.filter((a) => a.classId === cls.id);
-        const statusText = getEffectiveStatus(cls);
         const statusBadge =
-          statusText === "Open"
+          cls.status === "open"
             ? '<span class="badge open">Open</span>'
-            : statusText === "Upcoming"
-            ? '<span class="badge">Upcoming</span>'
             : '<span class="badge closed">Closed</span>';
-
         const lec =
           DATA.lecturers.find((l) => l.id === cls.lecturerId) || {};
         html += `<tr>
@@ -1376,13 +1300,12 @@
             <strong>${cls.unit}</strong><br>
             <span class="muted">${cls.course}</span><br>
             <span class="muted">${cls.faculty}</span><br>
-            <span class="muted">Year: ${cls.year}, Sem: ${cls.semester}, AY: ${cls.academicYear || "-"}</span>
+            <span class="muted">${cls.year}, ${cls.semester}</span>
           </td>
           <td>${lec.salutation || ""} ${lec.fullName || ""}</td>
           <td>
             <span>${cls.venue}</span><br>
-            <span class="muted">Start: ${formatDateTime(cls.dateTime)}</span><br>
-            <span class="muted">End: ${formatDateTime(cls.endTime)}</span>
+            <span class="muted">${formatDateTime(cls.dateTime)}</span>
           </td>
           <td>${statusBadge}</td>
           <td>${att.length}</td>
@@ -1438,12 +1361,10 @@
           Faculty: <strong>${cls.faculty}</strong> &nbsp; | &nbsp;
           Course: <strong>${cls.course}</strong> &nbsp; | &nbsp;
           Unit: <strong>${cls.unit}</strong><br>
-          Academic Year: <strong>${cls.academicYear || "-"}</strong> &nbsp; | &nbsp;
           Year: <strong>${cls.year}</strong> &nbsp; | &nbsp;
           Semester: <strong>${cls.semester}</strong> &nbsp; | &nbsp;
           Venue: <strong>${cls.venue}</strong><br>
-          Start: <strong>${formatDateTime(cls.dateTime)}</strong> &nbsp; | &nbsp;
-          End: <strong>${formatDateTime(cls.endTime)}</strong>
+          Date & Time: <strong>${formatDateTime(cls.dateTime)}</strong>
         </p>
         <h3>Attendance List (${att.length})</h3>
         ${
@@ -1569,6 +1490,8 @@
         }
 
         return {
+          canvas,
+          ctx,
           clear: () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
           },
@@ -1595,6 +1518,7 @@
         if (callerRole === "admin") {
           cls.hodSignature = hodSig.getDataUrl();
         } else if (callerRole === "lecturer" && hodName) {
+          // lecturer can also capture HOD sig if together
           cls.hodSignature = hodSig.getDataUrl();
         }
 
@@ -1609,52 +1533,37 @@
       };
     }
 
-    // ========================== STUDENT FORM (LINK) ==========================
+    // ========================== STUDENT FORM ==========================
     function setupStudentView() {
       const mode = getQueryParam("mode");
       const classId = getQueryParam("classId");
       if (mode !== "student" || !classId) return;
 
+      // hide main header login features; show only student section
+      $("mainHeader"); // header still useful
       showSection("studentSection");
 
       DATA = loadData();
       const cls = DATA.classes.find((c) => c.id === classId);
       const infoEl = $("studentClassInfo");
-      const msgEl = $("studentSubmitMsg");
-
       if (!cls) {
-        setAlert(infoEl, "Class not found. Check the link.", "danger");
-        $("studentFormWrapper").classList.add("hidden");
+        infoEl.textContent = "Class not found. Check the link.";
         return;
       }
-
-      const statusText = getEffectiveStatus(cls);
 
       infoEl.innerHTML = `
         <strong>${cls.unit}</strong> – ${cls.course}<br>
-        Faculty: <strong>${cls.faculty}</strong> | Year: <strong>${cls.year}</strong> | Semester: <strong>${cls.semester}</strong> | AY: <strong>${cls.academicYear || "-"}</strong><br>
-        Venue: <strong>${cls.venue}</strong><br>
-        Start: <strong>${formatDateTime(cls.dateTime)}</strong> | End: <strong>${formatDateTime(
-          cls.endTime
-        )}</strong><br>
-        Lecturer: <strong>${cls.lecturerName || "N/A"}</strong><br>
-        Status: <strong>${statusText}</strong>
+        Faculty: <strong>${cls.faculty}</strong> | Year: <strong>${cls.year}</strong> | Semester: <strong>${cls.semester}</strong><br>
+        Venue: <strong>${cls.venue}</strong> | Date & Time: <strong>${formatDateTime(
+        cls.dateTime
+      )}</strong><br>
+        Lecturer: <strong>${cls.lecturerName || "N/A"}</strong>
       `;
 
-      if (statusText === "Upcoming") {
+      if (cls.status !== "open") {
         setAlert(
-          msgEl,
-          "This class has not started yet. Attendance will open at the start time.",
-          "danger"
-        );
-        $("studentFormWrapper").classList.add("hidden");
-        return;
-      }
-
-      if (statusText !== "Open") {
-        setAlert(
-          msgEl,
-          "This class is closed. Attendance link is no longer active.",
+          $("studentSubmitMsg"),
+          "This class has been closed. Attendance link is no longer active.",
           "danger"
         );
         $("studentFormWrapper").classList.add("hidden");
@@ -1666,6 +1575,7 @@
         $("studentAlreadySubmitted").classList.remove("hidden");
       }
 
+      // Signature pad
       const canvas = $("stSignaturePad");
       const ctx = canvas.getContext("2d");
       ctx.lineWidth = 2;
@@ -1721,6 +1631,7 @@
         const middle = $("stMiddleName").value.trim();
         const first = $("stFirstName").value.trim();
         const adm = $("stAdmission").value.trim();
+        const msgEl = $("studentSubmitMsg");
 
         if (!surname || !first || !adm) {
           setAlert(msgEl, "Surname, First Name and Admission are required.", "danger");
@@ -1729,15 +1640,8 @@
 
         DATA = loadData();
         const cls = DATA.classes.find((c) => c.id === classId);
-        if (!cls) {
-          setAlert(msgEl, "Class not found.", "danger");
-          return;
-        }
-
-        const currentStatus = getEffectiveStatus(cls);
-        if (currentStatus !== "Open") {
-          setAlert(msgEl, "Class is not open for attendance.", "danger");
-          $("studentFormWrapper").classList.add("hidden");
+        if (!cls || cls.status !== "open") {
+          setAlert(msgEl, "Class is not open.", "danger");
           return;
         }
 
@@ -1774,119 +1678,11 @@
       });
     }
 
-    // ========================== LECTURER/HOD SIGN-OFF (LINK) ==========================
-    function setupSignoffView() {
-      const mode = getQueryParam("mode");
-      const classId = getQueryParam("classId");
-      if (!classId || (mode !== "lecturerSign" && mode !== "hodSign")) return;
-
-      showSection("signoffSection");
-
-      DATA = loadData();
-      const cls = DATA.classes.find((c) => c.id === classId);
-      const infoEl = $("signoffClassInfo");
-      const msgEl = $("signoffMessage");
-
-      if (!cls) {
-        setAlert(infoEl, "Class not found. Check the link.", "danger");
-        return;
-      }
-
-      const roleLabel = mode === "lecturerSign" ? "Lecturer" : "HOD";
-      $("signoffTitle").textContent = roleLabel + " Class Sign-Off";
-
-      infoEl.innerHTML = `
-        <strong>${cls.unit}</strong> – ${cls.course}<br>
-        Faculty: <strong>${cls.faculty}</strong> | Year: <strong>${cls.year}</strong> | Semester: <strong>${cls.semester}</strong> | AY: <strong>${cls.academicYear || "-"}</strong><br>
-        Venue: <strong>${cls.venue}</strong><br>
-        Start: <strong>${formatDateTime(cls.dateTime)}</strong> | End: <strong>${formatDateTime(
-          cls.endTime
-        )}</strong><br>
-        Role: <strong>${roleLabel}</strong>
-      `;
-
-      $("signoffName").value =
-        mode === "lecturerSign"
-          ? cls.lecturerName || ""
-          : cls.hodName || "";
-
-      const canvas = $("signoffPad");
-      const ctx = canvas.getContext("2d");
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      let drawing = false;
-
-      const rect = () => canvas.getBoundingClientRect();
-      function getPos(e) {
-        const r = rect();
-        const x =
-          (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-        const y =
-          (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-        return { x, y };
-      }
-
-      canvas.addEventListener("mousedown", (e) => {
-        drawing = true;
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-      });
-      canvas.addEventListener("mousemove", (e) => {
-        if (!drawing) return;
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-      });
-      window.addEventListener("mouseup", () => (drawing = false));
-
-      canvas.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        drawing = true;
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-      });
-      canvas.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        if (!drawing) return;
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-      });
-      window.addEventListener("touchend", () => (drawing = false));
-
-      $("signoffClear").addEventListener("click", () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      });
-
-      $("signoffSave").addEventListener("click", () => {
-        const name = $("signoffName").value.trim();
-        if (!name) {
-          setAlert(msgEl, "Please enter your name.", "danger");
-          return;
-        }
-        const sigDataUrl = canvas.toDataURL("image/png");
-
-        if (mode === "lecturerSign") {
-          cls.lecturerName = name;
-          cls.lecturerSignature = sigDataUrl;
-        } else {
-          cls.hodName = name;
-          cls.hodSignature = sigDataUrl;
-        }
-
-        saveData(DATA);
-        setAlert(msgEl, "Signature saved successfully.", "success");
-      });
-    }
-
     // ========================== REPORTING (ADMIN + LECTURER) ==========================
     function buildReportRows({
       faculty,
       course,
       unit,
-      academicYear,
       year,
       semester,
       lecturerOnlyId = null,
@@ -1899,11 +1695,6 @@
         if (course && !cls.course.toLowerCase().includes(course.toLowerCase()))
           return false;
         if (unit && !cls.unit.toLowerCase().includes(unit.toLowerCase()))
-          return false;
-        if (
-          academicYear &&
-          !(cls.academicYear || "").toLowerCase().includes(academicYear.toLowerCase())
-        )
           return false;
         if (year && !cls.year.toLowerCase().includes(year.toLowerCase()))
           return false;
@@ -1922,14 +1713,13 @@
           faculty: cls.faculty,
           course: cls.course,
           unit: cls.unit,
-          academicYear: cls.academicYear || "",
           year: cls.year,
           semester: cls.semester,
           venue: cls.venue,
           dateTime: formatDateTime(cls.dateTime),
           lecturer: cls.lecturerName || "",
           students: att.length,
-          status: getEffectiveStatus(cls),
+          status: cls.status,
         });
       });
       return rows;
@@ -1941,14 +1731,13 @@
         return;
       }
       let html =
-        "<thead><tr><th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>AY</th><th>Year</th><th>Sem</th><th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th></tr></thead><tbody>";
+        "<thead><tr><th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th><th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th></tr></thead><tbody>";
       rows.forEach((r, i) => {
         html += `<tr>
           <td>${i + 1}</td>
           <td>${r.faculty}</td>
           <td>${r.course}</td>
           <td>${r.unit}</td>
-          <td>${r.academicYear}</td>
           <td>${r.year}</td>
           <td>${r.semester}</td>
           <td>${r.venue}</td>
@@ -1967,7 +1756,6 @@
         faculty: $("repFaculty").value.trim(),
         course: $("repCourse").value.trim(),
         unit: $("repUnit").value.trim(),
-        academicYear: $("repAcademicYear").value.trim(),
         year: $("repYear").value.trim(),
         semester: $("repSemester").value.trim(),
       });
@@ -1984,7 +1772,6 @@
         faculty: $("repFacultyL").value.trim(),
         course: $("repCourseL").value.trim(),
         unit: $("repUnitL").value.trim(),
-        academicYear: $("repAcademicYearL").value.trim(),
         year: $("repYearL").value.trim(),
         semester: $("repSemesterL").value.trim(),
         lecturerOnlyId: currentUser.id,
@@ -2017,7 +1804,6 @@
         r.faculty,
         r.course,
         r.unit,
-        r.academicYear,
         r.year,
         r.semester,
         r.venue,
@@ -2035,7 +1821,6 @@
             "Faculty",
             "Course",
             "Unit",
-            "AY",
             "Year",
             "Sem",
             "Venue",
@@ -2065,7 +1850,6 @@
           <td>${r.faculty}</td>
           <td>${r.course}</td>
           <td>${r.unit}</td>
-          <td>${r.academicYear}</td>
           <td>${r.year}</td>
           <td>${r.semester}</td>
           <td>${r.venue}</td>
@@ -2097,17 +1881,17 @@
           <table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;width:100%;font-size:11px;">
             <thead>
               <tr style="background:#eff6ff;color:#1d4ed8;">
-                <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>AY</th><th>Year</th><th>Sem</th>
+                <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th>
                 <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th>
               </tr>
             </thead>
             <tbody>
-              ${tableRows || "<tr><td colspan='12'>No records.</td></tr>"}
+              ${tableRows || "<tr><td colspan='11'>No records.</td></tr>"}
             </tbody>
           </table>
         </body>
         </html>
-      ";
+      `;
 
       const blob = new Blob(["\ufeff", html], {
         type: "application/msword",
@@ -2131,7 +1915,6 @@
           "Faculty",
           "Course",
           "Unit",
-          "AY",
           "Year",
           "Sem",
           "Venue",
@@ -2147,7 +1930,6 @@
           r.faculty,
           r.course,
           r.unit,
-          r.academicYear,
           r.year,
           r.semester,
           r.venue,
@@ -2213,7 +1995,6 @@
     window.addEventListener("load", () => {
       loadLogoAsDataUrl();
       setupStudentView();
-      setupSignoffView();
     });
   </script>
 </body>
