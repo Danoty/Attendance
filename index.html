@@ -2,272 +2,1030 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Simple Attendance Register + Signature</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+  <title>Attendance Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { background: #f5f7fb; }
-    .card { border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
-    #signaturePad { border: 2px dashed #0d6efd; border-radius: 10px; background: white; cursor: crosshair; }
+    :root {
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --bg:#f1f5f9;
+      --card:#ffffff;
+      --border:#e2e8f0;
+      --text:#0f172a;
+      --muted:#64748b;
+      --danger:#dc2626;
+      --success:#16a34a;
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+    }
+    header{
+      background:var(--primary);
+      color:white;
+      padding:0.8rem 1.5rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    header h1{margin:0;font-size:1.2rem;font-weight:600}
+    header span{font-size:0.8rem;opacity:.9}
+    main{
+      display:flex;
+      min-height:calc(100vh - 56px);
+    }
+    /* Sidebar */
+    .sidebar{
+      width:260px;
+      background:#0f172a;
+      color:#e5e7eb;
+      padding:1rem;
+    }
+    .sidebar h2{
+      font-size:0.9rem;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin:0 0 .6rem;
+      color:#9ca3af;
+    }
+    .sidebar-section{margin-bottom:1.5rem}
+    .sidebar label{font-size:.8rem;display:block;margin-bottom:.25rem}
+    .sidebar input{
+      width:100%;
+      padding:.4rem .5rem;
+      border-radius:.4rem;
+      border:1px solid #374151;
+      background:#111827;
+      color:#e5e7eb;
+      font-size:.85rem;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.25rem;
+      padding:.4rem .7rem;
+      border-radius:.5rem;
+      border:none;
+      font-size:.8rem;
+      cursor:pointer;
+      transition:background .15s,transform .05s;
+      white-space:nowrap;
+    }
+    .btn-primary{
+      background:var(--primary);
+      color:white;
+    }
+    .btn-primary:hover{background:var(--primary-dark)}
+    .btn-outline{
+      background:transparent;
+      border:1px solid #4b5563;
+      color:#e5e7eb;
+    }
+    .btn-outline:hover{background:#111827}
+    .btn-ghost{
+      background:transparent;
+      color:var(--muted);
+    }
+    .btn-ghost.active{
+      color:var(--primary-dark);
+      background:#dbeafe;
+      border-radius:999px;
+    }
+    .btn:active{transform:scale(.97)}
+    .class-list{
+      margin-top:.7rem;
+      max-height:200px;
+      overflow:auto;
+      border-top:1px solid #1f2937;
+      padding-top:.5rem;
+    }
+    .class-item{
+      font-size:.83rem;
+      padding:.3rem .4rem;
+      border-radius:.4rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
+    }
+    .class-item span:first-child{flex:1}
+    .class-item:hover{background:#111827}
+    .class-item.active{background:#1d4ed8;color:white}
+
+    /* Content area */
+    .content{
+      flex:1;
+      padding:1rem 1.5rem;
+      overflow:auto;
+    }
+    .tabs{
+      display:flex;
+      gap:.5rem;
+      margin-bottom:1rem;
+      flex-wrap:wrap;
+    }
+    .card{
+      background:var(--card);
+      border-radius:.9rem;
+      border:1px solid var(--border);
+      padding:1rem;
+      margin-bottom:1rem;
+      box-shadow:0 10px 20px rgba(15,23,42,.06);
+    }
+    .card h3{
+      margin:0 0 .7rem;
+      font-size:1rem;
+    }
+    .row{
+      display:flex;
+      gap:.7rem;
+      flex-wrap:wrap;
+      margin-bottom:.7rem;
+      align-items:flex-end;
+    }
+    .row > *{flex:1 1 160px}
+    label{font-size:.8rem;display:block;margin-bottom:.2rem;color:var(--muted)}
+    input[type="text"], input[type="date"], input[type="month"], select{
+      width:100%;
+      padding:.45rem .55rem;
+      border-radius:.5rem;
+      border:1px solid var(--border);
+      font-size:.85rem;
+      background:white;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.85rem;
+    }
+    th,td{
+      padding:.4rem .5rem;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+    }
+    th{background:#f8fafc;font-weight:600;font-size:.8rem}
+    tr:nth-child(even){background:#f9fafb}
+    .badge{
+      padding:.1rem .4rem;
+      border-radius:999px;
+      font-size:.7rem;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+    }
+    .badge-green{
+      background:#dcfce7;
+      color:#15803d;
+    }
+    .badge-red{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+    .muted{color:var(--muted);font-size:.8rem}
+    .signature-box{
+      border:1px dashed var(--border);
+      border-radius:.6rem;
+      padding:.6rem;
+      background:#f9fafb;
+    }
+    canvas{
+      background:white;
+      width:100%;
+      max-width:400px;
+      height:140px;
+      border-radius:.5rem;
+      border:1px solid var(--border);
+      display:block;
+    }
+    .notice{font-size:.8rem;margin-top:.3rem;color:var(--muted)}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.3rem;
+      padding:.18rem .5rem;
+      border-radius:999px;
+      background:#eff6ff;
+      font-size:.74rem;
+      color:#1d4ed8;
+    }
+    .stats-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.7rem;
+      margin:.4rem 0 .8rem;
+    }
+    .stat{
+      flex:1 1 160px;
+      background:#f9fafb;
+      padding:.6rem .7rem;
+      border-radius:.7rem;
+      border:1px solid var(--border);
+      font-size:.8rem;
+    }
+    .stat strong{display:block;font-size:1.1rem;margin-bottom:.1rem}
+    .text-right{text-align:right}
+    .text-center{text-align:center}
+    @media (max-width:768px){
+      main{flex-direction:column}
+      .sidebar{width:100%}
+    }
   </style>
 </head>
 <body>
-<div class="container py-4">
-  <h2 class="mb-4 text-center">Attendance Register With Signature</h2>
-
-  <div class="row g-4">
-
-    <!-- LEFT SECTION: Add Learners -->
-    <div class="col-md-4">
-      <div class="card p-3">
-        <h5 class="mb-3">Register Learners</h5>
-
-        <form id="studentForm" class="mb-3">
-          <label class="form-label">Learner Name</label>
-          <input type="text" id="studentName" class="form-control mb-2" required>
-
-          <label class="form-label">Admission / ID</label>
-          <input type="text" id="studentId" class="form-control mb-2" required>
-
-          <button class="btn btn-primary w-100" type="submit">Add Learner</button>
-        </form>
-
-        <h6>Registered Learners</h6>
-        <div class="table-responsive" style="max-height:260px;overflow-y:auto;">
-          <table class="table table-sm table-striped">
-            <thead><tr><th>#</th><th>Name</th><th>ID</th><th></th></tr></thead>
-            <tbody id="studentsTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT SECTION -->
-    <div class="col-md-8">
-
-      <!-- Attendance -->
-      <div class="card p-3 mb-3">
-        <div class="d-flex flex-wrap gap-3 justify-content-between">
-          <div>
-            <label class="form-label mb-0">Date</label>
-            <input type="date" id="attendanceDate" class="form-control">
-          </div>
-
-          <button id="saveAttendanceBtn" class="btn btn-success align-self-end">Save Attendance</button>
-
-          <button id="exportCsvBtn" class="btn btn-outline-secondary align-self-end">Export CSV</button>
-        </div>
-      </div>
-
-      <!-- Signature -->
-      <div class="card p-3 mb-3">
-        <h5>Signature</h5>
-        <canvas id="signaturePad" width="500" height="200"></canvas>
-
-        <div class="mt-2 d-flex gap-3">
-          <button id="clearSignatureBtn" class="btn btn-warning">Clear</button>
-          <button id="saveSignatureBtn" class="btn btn-primary">Save Signature</button>
-        </div>
-
-        <div class="mt-3">
-          <h6>Saved Signature Preview:</h6>
-          <img id="signaturePreview" src="" style="max-width:300px;border:1px solid #ddd;border-radius:6px;">
-        </div>
-      </div>
-
-      <!-- Mark Attendance -->
-      <div class="card p-3">
-        <h5 class="mb-3">Mark Attendance</h5>
-        <div class="table-responsive" style="max-height:350px;overflow-y:auto;">
-          <table class="table table-bordered mb-0">
-            <thead class="table-light">
-              <tr><th>#</th><th>Name</th><th>ID</th><th class="text-center">Present?</th></tr>
-            </thead>
-            <tbody id="attendanceTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
+<header>
+  <div>
+    <h1>Smart Attendance Register</h1>
+    <span>Multi-class · Signature · Reports</span>
   </div>
-</div>
+  <div>
+    <span id="activeClassLabel" style="font-size:.8rem;"></span>
+  </div>
+</header>
+
+<main>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h2>Classes</h2>
+      <label for="newClassName">Add new class</label>
+      <input id="newClassName" type="text" placeholder="e.g. Grade 7 West" />
+      <div style="margin-top:.4rem;display:flex;gap:.4rem;">
+        <button class="btn btn-primary" id="addClassBtn">Add</button>
+        <button class="btn btn-outline" id="clearAllBtn" title="Delete all data">
+          Clear all
+        </button>
+      </div>
+      <div class="class-list" id="classList"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <h2>Quick actions</h2>
+      <button class="btn btn-outline" id="quickTodayBtn" style="width:100%;margin-bottom:.3rem;">
+        Today attendance
+      </button>
+      <button class="btn btn-outline" id="quickWeekReportBtn" style="width:100%;">
+        This week report
+      </button>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <section class="content">
+    <div class="tabs">
+      <button class="btn btn-ghost active" data-tab="tab-attendance">Take Attendance</button>
+      <button class="btn btn-ghost" data-tab="tab-students">Manage Students</button>
+      <button class="btn btn-ghost" data-tab="tab-reports">Reports</button>
+    </div>
+
+    <!-- TAKE ATTENDANCE -->
+    <div id="tab-attendance" class="tab card">
+      <h3>Take Attendance</h3>
+      <div class="row">
+        <div>
+          <label>Class</label>
+          <select id="attendanceClassSelect"></select>
+        </div>
+        <div>
+          <label>Date</label>
+          <input type="date" id="attendanceDate" />
+        </div>
+        <div>
+          <button class="btn btn-primary" id="loadStudentsBtn" style="margin-top:1.3rem;">
+            Load students
+          </button>
+        </div>
+      </div>
+
+      <div id="attendanceArea" style="display:none;">
+        <div class="row">
+          <div class="pill">
+            <span>Mark Present ✔ | leave unchecked = Absent ✖</span>
+          </div>
+          <div class="muted text-right" id="attendanceSummary"></div>
+        </div>
+        <div style="overflow:auto;margin-bottom:.8rem;">
+          <table id="attendanceTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Present</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="row">
+          <div class="signature-box">
+            <label>Teacher's Signature</label>
+            <canvas id="signatureCanvas"></canvas>
+            <div style="margin-top:.4rem;display:flex;gap:.4rem;">
+              <button class="btn btn-outline" id="clearSignatureBtn">Clear Signature</button>
+              <span class="notice">Sign with mouse or touch. Signature will be stored with this attendance record.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <button class="btn btn-primary" id="saveAttendanceBtn">
+            Save Attendance
+          </button>
+        </div>
+      </div>
+      <div id="attendanceEmptyNotice" class="muted">Select class and date, then click <b>Load students</b>.</div>
+    </div>
+
+    <!-- MANAGE STUDENTS -->
+    <div id="tab-students" class="tab card" style="display:none;">
+      <h3>Manage Students</h3>
+      <div class="row">
+        <div>
+          <label>Class</label>
+          <select id="studentsClassSelect"></select>
+        </div>
+        <div>
+          <label>Student name</label>
+          <input type="text" id="newStudentName" placeholder="e.g. Jane Achieng" />
+        </div>
+        <div>
+          <button class="btn btn-primary" id="addStudentBtn" style="margin-top:1.3rem;">
+            Add Student
+          </button>
+        </div>
+      </div>
+      <div id="studentsListArea" style="max-height:270px;overflow:auto;">
+        <table id="studentsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="muted" id="studentsEmptyNotice">Add students to selected class.</div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="tab-reports" class="tab">
+      <!-- Weekly / Monthly card -->
+      <div class="card">
+        <h3>Weekly & Monthly Reports</h3>
+        <div class="row">
+          <div>
+            <label>Class</label>
+            <select id="reportClassSelect"></select>
+          </div>
+          <div>
+            <label>Weekly report (Start date)</label>
+            <input type="date" id="weekStartInput" />
+          </div>
+          <div>
+            <label>Monthly report (Month)</label>
+            <input type="month" id="monthInput" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <button class="btn btn-primary" id="generateWeekReportBtn">Generate Weekly</button>
+          </div>
+          <div>
+            <button class="btn btn-primary" id="generateMonthReportBtn">Generate Monthly</button>
+          </div>
+        </div>
+        <div id="rangeInfo" class="muted"></div>
+
+        <div class="stats-row" id="reportStats" style="display:none;">
+          <div class="stat">
+            <span class="muted">Total sessions</span>
+            <strong id="statSessions">0</strong>
+          </div>
+          <div class="stat">
+            <span class="muted">Total students</span>
+            <strong id="statStudents">0</strong>
+          </div>
+          <div class="stat">
+            <span class="muted">Overall attendance</span>
+            <strong id="statOverall">0%</strong>
+          </div>
+        </div>
+
+        <div style="overflow:auto;">
+          <table id="reportTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Present days</th>
+                <th>Total sessions</th>
+                <th>% Attendance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="muted" id="reportEmptyNotice">Generate weekly or monthly report for a class.</div>
+      </div>
+
+      <!-- Class summary card -->
+      <div class="card">
+        <h3>Class Summary (All Time)</h3>
+        <div class="row">
+          <div>
+            <label>Class</label>
+            <select id="summaryClassSelect"></select>
+          </div>
+          <div>
+            <button class="btn btn-primary" id="generateSummaryBtn" style="margin-top:1.3rem;">
+              Generate Summary
+            </button>
+          </div>
+        </div>
+
+        <div style="overflow:auto;">
+          <table id="summaryTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Present sessions</th>
+                <th>Total sessions</th>
+                <th>% Attendance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="muted" id="summaryEmptyNotice">Run a summary to see overall performance.</div>
+      </div>
+    </div>
+  </section>
+</main>
 
 <script>
-  const STUDENTS_KEY = "attendance_students";
-  const ATTENDANCE_KEY = "attendance_records";
-  const SIGNATURE_KEY = "attendance_signatures";
+  // ---------- DATA LAYER (localStorage) ----------
+  const STORAGE_KEY = 'attendance_app_v1';
 
-  let students = [];
-  let attendanceRecords = {};
-  let signatures = {}; // date → signaturePNG
-
-  loadData();
-
-  // Load stored data
   function loadData() {
-    students = JSON.parse(localStorage.getItem(STUDENTS_KEY) || "[]");
-    attendanceRecords = JSON.parse(localStorage.getItem(ATTENDANCE_KEY) || "{}");
-    signatures = JSON.parse(localStorage.getItem(SIGNATURE_KEY) || "{}");
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return { classes: [], attendance: [] };
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return { classes: [], attendance: [] };
+    }
   }
 
-  function saveAll() {
-    localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
-    localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(attendanceRecords));
-    localStorage.setItem(SIGNATURE_KEY, JSON.stringify(signatures));
+  function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
-  // Render learners
-  function renderStudents() {
-    const tbody = document.getElementById("studentsTableBody");
-    tbody.innerHTML = "";
-    students.forEach((s, i) => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${i+1}</td>
-          <td>${s.name}</td>
-          <td>${s.id}</td>
-          <td><button class="btn btn-sm btn-danger" onclick="deleteStudent('${s.id}')">X</button></td>
-        </tr>`;
-    });
+  let data = loadData();
+  let selectedClassId = data.classes[0]?.id || null;
+
+  function createId() {
+    return 'id-' + Math.random().toString(36).slice(2, 9);
   }
 
-  function deleteStudent(id) {
-    students = students.filter(s => s.id !== id);
-    saveAll();
-    renderStudents();
-    renderAttendanceTable();
-  }
+  // ---------- UI HELPERS ----------
+  const $ = (id) => document.getElementById(id);
 
-  // Add student
-  document.getElementById("studentForm").onsubmit = (e) => {
-    e.preventDefault();
-    let name = studentName.value.trim();
-    let id = studentId.value.trim();
-    if (!name || !id) return;
+  function refreshClassUI() {
+    const classListDiv = $('classList');
+    const selects = [
+      $('attendanceClassSelect'),
+      $('studentsClassSelect'),
+      $('reportClassSelect'),
+      $('summaryClassSelect')
+    ];
+    classListDiv.innerHTML = '';
+    selects.forEach(sel => sel.innerHTML = '');
 
-    students.push({ name, id });
-    saveAll();
-    studentName.value = "";
-    studentId.value = "";
-    renderStudents();
-    renderAttendanceTable();
-  };
-
-  // Render attendance
-  function renderAttendanceTable() {
-    const date = attendanceDate.value;
-    const tbody = document.getElementById("attendanceTableBody");
-    tbody.innerHTML = "";
-
-    if (!date) return;
-
-    const dayRecord = attendanceRecords[date] || {};
-
-    students.forEach((s, i) => {
-      const checked = dayRecord[s.id] === "P" ? "checked" : "";
-      tbody.innerHTML += `
-        <tr>
-          <td>${i+1}</td>
-          <td>${s.name}</td>
-          <td>${s.id}</td>
-          <td class="text-center">
-            <input type="checkbox" data-id="${s.id}" class="form-check-input" ${checked}>
-          </td>
-        </tr>`;
-    });
-  }
-
-  attendanceDate.onchange = () => {
-    renderAttendanceTable();
-    loadSignaturePreview();
-  };
-
-  // Save attendance
-  saveAttendanceBtn.onclick = () => {
-    const date = attendanceDate.value;
-    if (!date) return alert("Select date first.");
-
-    if (!attendanceRecords[date]) attendanceRecords[date] = {};
-
-    document.querySelectorAll("#attendanceTableBody input").forEach(cb => {
-      const id = cb.dataset.id;
-      attendanceRecords[date][id] = cb.checked ? "P" : "A";
-    });
-
-    saveAll();
-    alert("Attendance saved!");
-  };
-
-  // ---------------- SIGNATURE PAD ----------------
-  const canvas = document.getElementById("signaturePad");
-  const ctx = canvas.getContext("2d");
-  let drawing = false;
-
-  canvas.addEventListener("mousedown", e => { drawing = true; draw(e); });
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("mouseup", () => drawing = false);
-  canvas.addEventListener("mouseleave", () => drawing = false);
-
-  function draw(e) {
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "black";
-
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-  }
-
-  clearSignatureBtn.onclick = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  };
-
-  saveSignatureBtn.onclick = () => {
-    const date = attendanceDate.value;
-    if (!date) return alert("Select date first.");
-
-    const dataUrl = canvas.toDataURL("image/png");
-    signatures[date] = dataUrl;
-    saveAll();
-    loadSignaturePreview();
-    alert("Signature saved!");
-  };
-
-  function loadSignaturePreview() {
-    const date = attendanceDate.value;
-    signaturePreview.src = signatures[date] || "";
-  }
-
-  // Export CSV
-  exportCsvBtn.onclick = () => {
-    let csv = "Date,ID,Name,Status\n";
-
-    for (let date in attendanceRecords) {
-      for (let id in attendanceRecords[date]) {
-        const st = attendanceRecords[date][id];
-        const student = students.find(s => s.id === id);
-        csv += `${date},${id},${student?.name ?? ""},${st}\n`;
-      }
+    if (data.classes.length === 0) {
+      selectedClassId = null;
+      $('activeClassLabel').textContent = 'No class selected';
+      return;
     }
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "attendance.csv";
-    a.click();
-  };
+    data.classes.forEach((cls, index) => {
+      // sidebar list
+      const div = document.createElement('div');
+      div.className = 'class-item' + (cls.id === selectedClassId ? ' active' : '');
+      const spanName = document.createElement('span');
+      spanName.textContent = cls.name;
+      const spanCount = document.createElement('span');
+      spanCount.className = 'muted';
+      spanCount.textContent = (cls.students?.length || 0);
+      div.appendChild(spanName);
+      div.appendChild(spanCount);
+      div.onclick = () => {
+        selectedClassId = cls.id;
+        refreshClassUI();
+        fillAllSelectsSelected();
+      };
+      classListDiv.appendChild(div);
 
-  // Init
-  attendanceDate.value = new Date().toISOString().split("T")[0];
-  renderStudents();
-  renderAttendanceTable();
-  loadSignaturePreview();
+      // selects
+      selects.forEach(sel => {
+        const opt = document.createElement('option');
+        opt.value = cls.id;
+        opt.textContent = cls.name;
+        sel.appendChild(opt);
+      });
+
+      // sync selected for selects
+      if (!selectedClassId && index === 0) {
+        selectedClassId = cls.id;
+      }
+    });
+
+    if (selectedClassId) {
+      $('activeClassLabel').textContent =
+        'Active class: ' + (data.classes.find(c => c.id === selectedClassId)?.name || '');
+    } else {
+      $('activeClassLabel').textContent = 'No class selected';
+    }
+
+    fillAllSelectsSelected();
+    refreshStudentsTable();
+  }
+
+  function fillAllSelectsSelected() {
+    ['attendanceClassSelect','studentsClassSelect','reportClassSelect','summaryClassSelect']
+      .forEach(id => {
+        const sel = $(id);
+        if (!sel) return;
+        sel.value = selectedClassId || (sel.options[0]?.value || '');
+      });
+  }
+
+  function getClassById(id) {
+    return data.classes.find(c => c.id === id) || null;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    return d.toLocaleDateString();
+  }
+
+  // ---------- TABS ----------
+  document.querySelectorAll('.tabs .btn-ghost').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabs .btn-ghost').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tabId = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.style.display = (tab.id === tabId) ? (tabId === 'tab-reports' ? 'block' : 'block') : 'none';
+      });
+    });
+  });
+
+  // ---------- CLASSES ----------
+  $('addClassBtn').addEventListener('click', () => {
+    const name = $('newClassName').value.trim();
+    if (!name) return alert('Please enter class name');
+    const cls = { id: createId(), name, students: [] };
+    data.classes.push(cls);
+    selectedClassId = cls.id;
+    $('newClassName').value = '';
+    saveData();
+    refreshClassUI();
+  });
+
+  $('clearAllBtn').addEventListener('click', () => {
+    if (!confirm('This will delete ALL classes & attendance data. Continue?')) return;
+    data = { classes: [], attendance: [] };
+    saveData();
+    selectedClassId = null;
+    refreshClassUI();
+    refreshStudentsTable();
+    resetAttendanceView();
+    resetReportsView();
+  });
+
+  // ---------- STUDENTS ----------
+  function refreshStudentsTable() {
+    const clsId = $('studentsClassSelect').value;
+    const cls = getClassById(clsId);
+    const tbody = $('studentsTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    if (!cls || !cls.students || cls.students.length === 0) {
+      $('studentsEmptyNotice').style.display = 'block';
+      return;
+    }
+    $('studentsEmptyNotice').style.display = 'none';
+
+    cls.students.forEach((s, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${s.name}</td>
+        <td class="text-right">
+          <button class="btn" data-id="${s.id}" style="font-size:.7rem;">Remove</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('button[data-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!confirm('Remove this student? Their attendance data will remain but listed as unknown name if deleted.')) return;
+        const id = btn.dataset.id;
+        const clsNow = getClassById(clsId);
+        if (!clsNow) return;
+        clsNow.students = clsNow.students.filter(s => s.id !== id);
+        saveData();
+        refreshStudentsTable();
+        // no need to touch attendance records; they retain studentId
+      });
+    });
+  }
+
+  $('studentsClassSelect').addEventListener('change', refreshStudentsTable);
+
+  $('addStudentBtn').addEventListener('click', () => {
+    const clsId = $('studentsClassSelect').value;
+    const cls = getClassById(clsId);
+    if (!cls) return alert('Please create/select a class first.');
+    const name = $('newStudentName').value.trim();
+    if (!name) return alert('Enter a student name.');
+    cls.students.push({ id: createId(), name });
+    $('newStudentName').value = '';
+    saveData();
+    refreshStudentsTable();
+  });
+
+  // ---------- ATTENDANCE ----------
+  function resetAttendanceView() {
+    $('attendanceArea').style.display = 'none';
+    $('attendanceEmptyNotice').style.display = 'block';
+    $('attendanceTable').querySelector('tbody').innerHTML = '';
+    $('attendanceSummary').textContent = '';
+    clearSignature();
+  }
+
+  // set default date today
+  (function setToday() {
+    const today = new Date().toISOString().slice(0,10);
+    $('attendanceDate').value = today;
+  })();
+
+  $('attendanceClassSelect').addEventListener('change', () => {
+    selectedClassId = $('attendanceClassSelect').value;
+    refreshClassUI();
+  });
+
+  $('loadStudentsBtn').addEventListener('click', () => {
+    const clsId = $('attendanceClassSelect').value;
+    const date = $('attendanceDate').value;
+    if (!clsId) return alert('Select a class.');
+    if (!date) return alert('Select a date.');
+    const cls = getClassById(clsId);
+    if (!cls) return;
+    const tbody = $('attendanceTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    if (!cls.students || cls.students.length === 0) {
+      $('attendanceArea').style.display = 'none';
+      $('attendanceEmptyNotice').style.display = 'block';
+      alert('No students in this class. Add students under "Manage Students" tab.');
+      return;
+    }
+    $('attendanceArea').style.display = 'block';
+    $('attendanceEmptyNotice').style.display = 'none';
+
+    cls.students.forEach((s, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${s.name}</td>
+        <td><input type="checkbox" data-student-id="${s.id}" checked /></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    updateAttendanceSummary();
+  });
+
+  function updateAttendanceSummary() {
+    const checks = $('attendanceTable').querySelectorAll('input[type="checkbox"]');
+    if (checks.length === 0) {
+      $('attendanceSummary').textContent = '';
+      return;
+    }
+    let present = 0;
+    checks.forEach(ch => { if (ch.checked) present++; });
+    $('attendanceSummary').textContent =
+      `Present: ${present} / ${checks.length} (${Math.round((present/checks.length)*100)}%)`;
+  }
+
+  $('attendanceTable').addEventListener('change', (e) => {
+    if (e.target.matches('input[type="checkbox"]')) updateAttendanceSummary();
+  });
+
+  // ---------- SIGNATURE CANVAS ----------
+  const canvas = $('signatureCanvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let lastPos = {x:0,y:0};
+
+  function getCanvasPos(e){
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches && e.touches[0]) {
+      return {
+        x:(e.touches[0].clientX - rect.left) * (canvas.width/rect.width),
+        y:(e.touches[0].clientY - rect.top) * (canvas.height/rect.height)
+      };
+    } else {
+      return {
+        x:(e.clientX - rect.left) * (canvas.width/rect.width),
+        y:(e.clientY - rect.top) * (canvas.height/rect.height)
+      };
+    }
+  }
+
+  function startDraw(e){
+    drawing = true;
+    lastPos = getCanvasPos(e);
+  }
+  function endDraw(){
+    drawing = false;
+  }
+  function draw(e){
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getCanvasPos(e);
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(lastPos.x,lastPos.y);
+    ctx.lineTo(pos.x,pos.y);
+    ctx.stroke();
+    lastPos = pos;
+  }
+
+  function clearSignature(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+
+  canvas.addEventListener('mousedown',startDraw);
+  canvas.addEventListener('touchstart',startDraw);
+  canvas.addEventListener('mousemove',draw);
+  canvas.addEventListener('touchmove',draw,{passive:false});
+  window.addEventListener('mouseup',endDraw);
+  window.addEventListener('touchend',endDraw);
+
+  $('clearSignatureBtn').addEventListener('click',clearSignature);
+
+  // fix canvas resolution
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    clearSignature();
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // ---------- SAVE ATTENDANCE ----------
+  $('saveAttendanceBtn').addEventListener('click', () => {
+    const clsId = $('attendanceClassSelect').value;
+    const date = $('attendanceDate').value;
+    const cls = getClassById(clsId);
+    if (!cls) return alert('Select a class.');
+    if (!date) return alert('Select a date.');
+
+    const checks = $('attendanceTable').querySelectorAll('input[type="checkbox"]');
+    if (checks.length === 0) return alert('No students loaded.');
+
+    const records = [];
+    checks.forEach(ch => {
+      records.push({
+        studentId: ch.dataset.studentId,
+        present: !!ch.checked
+      });
+    });
+
+    const signatureData = canvas.toDataURL('image/png');
+
+    // remove existing attendance for same class/date
+    data.attendance = data.attendance.filter(a => !(a.classId === clsId && a.date === date));
+
+    data.attendance.push({
+      id: createId(),
+      classId: clsId,
+      date,
+      records,
+      signatureData
+    });
+
+    saveData();
+    alert('Attendance saved with signature for ' + cls.name + ' on ' + formatDate(date));
+  });
+
+  // ---------- REPORTS ----------
+  function resetReportsView(){
+    $('reportTable').querySelector('tbody').innerHTML = '';
+    $('reportEmptyNotice').style.display = 'block';
+    $('reportStats').style.display = 'none';
+    $('rangeInfo').textContent = '';
+    $('summaryTable').querySelector('tbody').innerHTML = '';
+    $('summaryEmptyNotice').style.display = 'block';
+  }
+
+  function buildReportForRange(classId, startDate, endDate) {
+    const cls = getClassById(classId);
+    if (!cls) {
+      alert('Select a class.');
+      return;
+    }
+    const sDate = new Date(startDate);
+    const eDate = new Date(endDate);
+    if (isNaN(sDate) || isNaN(eDate)) {
+      alert('Invalid date range.');
+      return;
+    }
+
+    // filter attendance for class & range
+    const sessions = data.attendance.filter(a => {
+      if (a.classId !== classId) return false;
+      const d = new Date(a.date);
+      return d >= sDate && d <= eDate;
+    });
+
+    const tbody = $('reportTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    if (sessions.length === 0) {
+      $('reportEmptyNotice').style.display = 'block';
+      $('reportStats').style.display = 'none';
+      $('rangeInfo').textContent = 'No attendance records found for this period.';
+      return;
+    }
+    $('reportEmptyNotice').style.display = 'none';
+
+    // aggregate per student
+    const map = new Map(); // studentId -> {present,total}
+    sessions.forEach(sess => {
+      sess.records.forEach(r => {
+        if (!map.has(r.studentId)) map.set(r.studentId,{present:0,total:0});
+        const item = map.get(r.studentId);
+        item.total += 1;
+        if (r.present) item.present += 1;
+      });
+    });
+
+    // stats
+    let totalPossible = 0;
+    let totalPresent = 0;
+
+    const rows = [];
+    cls.students.forEach((s) => {
+      const agg = map.get(s.id) || {present:0,total:sessions.length};
+      totalPossible += agg.total;
+      totalPresent += agg.present;
+      const percent = agg.total === 0 ? 0 : Math.round((agg.present/agg.total)*100);
+      rows.push({
+        name: s.name,
+        present: agg.present,
+        total: agg.total,
+        percent
+      });
+    });
+
+    rows.sort((a,b)=> b.percent - a.percent);
+
+    rows.forEach((r, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${r.name}</td>
+        <td>${r.present}</td>
+        <td>${r.total}</td>
+        <td>${r.percent}%</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const overall = totalPossible === 0 ? 0 : Math.round((totalPresent/totalPossible)*100);
+    $('statSessions').textContent = sessions.length;
+    $('statStudents').textContent = cls.students.length;
+    $('statOverall').textContent = overall + '%';
+    $('reportStats').style.display = 'flex';
+    $('rangeInfo').textContent =
+      `From ${formatDate(startDate)} to ${formatDate(endDate)} · ${sessions.length} sessions`;
+  }
+
+  $('generateWeekReportBtn').addEventListener('click', () => {
+    const classId = $('reportClassSelect').value;
+    const start = $('weekStartInput').value;
+    if (!start) return alert('Select week start date.');
+    const sDate = new Date(start);
+    const eDate = new Date(sDate);
+    eDate.setDate(eDate.getDate() + 6); // 7-day window
+    buildReportForRange(classId, sDate.toISOString().slice(0,10), eDate.toISOString().slice(0,10));
+  });
+
+  $('generateMonthReportBtn').addEventListener('click', () => {
+    const classId = $('reportClassSelect').value;
+    const monthVal = $('monthInput').value; // yyyy-mm
+    if (!monthVal) return alert('Select a month.');
+    const [year,month] = monthVal.split('-').map(Number);
+    const start = new Date(year, month-1, 1);
+    const end = new Date(year, month, 0);
+    buildReportForRange(classId, start.toISOString().slice(0,10), end.toISOString().slice(0,10));
+  });
+
+  // Class Summary (all time)
+  $('generateSummaryBtn').addEventListener('click', () => {
+    const classId = $('summaryClassSelect').value;
+    const cls = getClassById(classId);
+    const tbody = $('summaryTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    if (!cls) {
+      $('summaryEmptyNotice').style.display = 'block';
+      return alert('Select a class.');
+    }
+
+    const sessions = data.attendance.filter(a => a.classId === classId);
+    if (sessions.length === 0) {
+      $('summaryEmptyNotice').style.display = 'block';
+      return alert('No attendance records for this class yet.');
+    }
+    $('summaryEmptyNotice').style.display = 'none';
+
+    // aggregate
+    const map = new Map();
+    sessions.forEach(sess => {
+      sess.records.forEach(r => {
+        if (!map.has(r.studentId)) map.set(r.studentId,{present:0,total:0});
+        const item = map.get(r.studentId);
+        item.total += 1;
+        if (r.present) item.present += 1;
+      });
+    });
+
+    const rows = [];
+    cls.students.forEach(s => {
+      const agg = map.get(s.id) || {present:0,total:0};
+      const percent = agg.total === 0 ? 0 : Math.round((agg.present/agg.total)*100);
+      rows.push({
+        name: s.name,
+        present: agg.present,
+        total: agg.total,
+        percent
+      });
+    });
+
+    rows.sort((a,b)=> b.percent - a.percent);
+
+    rows.forEach((r, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${r.name}</td>
+        <td>${r.present}</td>
+        <td>${r.total}</td>
+        <td>${r.percent}%</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+
+  // ---------- QUICK BUTTONS ----------
+  $('quickTodayBtn').addEventListener('click', () => {
+    // switch to attendance tab
+    document.querySelector('[data-tab="tab-attendance"]').click();
+    const today = new Date().toISOString().slice(0,10);
+    $('attendanceDate').value = today;
+    $('attendanceClassSelect').value = selectedClassId || $('attendanceClassSelect').value;
+    $('loadStudentsBtn').click();
+  });
+
+  $('quickWeekReportBtn').addEventListener('click', () => {
+    document.querySelector('[data-tab="tab-reports"]').click();
+    const now = new Date();
+    const day = now.getDay(); // 0-6
+    const diff = now.getDate() - day + 1; // Monday as start (1)
+    const monday = new Date(now.setDate(diff));
+    $('weekStartInput').value = monday.toISOString().slice(0,10);
+    $('reportClassSelect').value = selectedClassId || $('reportClassSelect').value;
+    $('generateWeekReportBtn').click();
+  });
+
+  // ---------- INIT ----------
+  refreshClassUI();
+  resetAttendanceView();
+  resetReportsView();
 </script>
-
 </body>
 </html>
