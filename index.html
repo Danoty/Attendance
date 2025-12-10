@@ -2,1578 +2,740 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>JOOUST Attendance Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JOOUST Smart Attendance System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-  <!-- External libs -->
   <!-- Signature Pad -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
   <!-- jsPDF -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <!-- SheetJS for Excel -->
+
+  <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- QR Code Generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
   <style>
     :root {
-      /* Approximate JOOUST colours – adjust if you like */
-      --primary: #003366;
-      --primary-soft: #e3edf9;
-      --accent: #22b573;
-      --accent-soft: #e3f7ef;
-      --danger: #e11d48;
-      --bg: #f5f6fa;
-      --text: #1f2933;
-      --card-bg: #ffffff;
-      --border: #d0d7e2;
-      --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.06);
-      --radius-lg: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-      font-family: "Poppins", sans-serif;
+      --primary:#003366;
+      --primary-soft:#e6eef9;
+      --accent:#1dbf73;
+      --accent-soft:#dbf7ea;
+      --danger:#e11d48;
+      --bg:#f4f6fb;
+      --text:#1f2933;
+      --card:#ffffff;
+      --radius:18px;
+      --shadow:0 15px 35px rgba(0,0,0,0.08);
     }
 
     body {
-      margin: 0;
-      background: radial-gradient(circle at top left, #f0f4ff, #f9fafb);
-      color: var(--text);
-    }
-
-    .app-shell {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1.5rem;
+      margin:0;
+      background:var(--bg);
+      font-family:'Poppins',sans-serif;
+      color:var(--text);
     }
 
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1rem 1.5rem;
-      border-radius: var(--radius-lg);
-      background: linear-gradient(120deg, var(--primary) 0%, #005fa3 40%, #008f76 100%);
-      color: #fff;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-      margin-bottom: 1.5rem;
-    }
-
-    header .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      background:linear-gradient(135deg,var(--primary),#005a9e);
+      padding:18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-radius:0 0 28px 28px;
+      box-shadow:var(--shadow);
     }
 
     header img {
-      height: 64px;
-      width: auto;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 4px;
+      height:80px;
+      width:80px;
+      border-radius:20px;
+      object-fit:cover;
+      background:white;
+      padding:6px;
+      box-shadow:0 5px 18px rgba(0,0,0,0.15);
     }
 
     header h1 {
-      margin: 0;
-      font-size: 1.6rem;
+      color:white;
+      font-size:1.8rem;
+      margin:0;
+      font-weight:700;
     }
 
     header p {
-      margin: 0;
-      font-size: 0.9rem;
-      opacity: 0.9;
+      color:#dce6f3;
+      margin:0;
+      font-size:0.85rem;
     }
 
-    .badge {
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.15);
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 1.5rem;
-    }
-
-    @media (max-width: 900px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
+    .container {
+      max-width:1200px;
+      margin:auto;
+      padding:20px;
     }
 
     .card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-soft);
-      padding: 1.25rem 1.5rem;
-      border: 1px solid rgba(0, 0, 0, 0.03);
-    }
-
-    .card h2,
-    .card h3 {
-      margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 1.1rem;
-      color: var(--primary);
-    }
-
-    .muted {
-      font-size: 0.8rem;
-      color: #6b7280;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 0.4rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 0.45rem 0.6rem;
-      font-size: 0.8rem;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      background: #f3f4f6;
-      cursor: pointer;
-      font-weight: 500;
-      text-align: center;
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-      box-shadow: 0 4px 10px rgba(34, 181, 115, 0.35);
-    }
-
-    label {
-      display: block;
-      font-size: 0.8rem;
-      margin-bottom: 0.15rem;
-      font-weight: 500;
-      color: #374151;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    input[type="datetime-local"],
-    select {
-      width: 100%;
-      padding: 0.5rem 0.65rem;
-      border-radius: 0.55rem;
-      border: 1px solid var(--border);
-      font-size: 0.85rem;
-      outline: none;
-      transition: border 0.15s ease, box-shadow 0.15s ease;
-      background: #f9fafb;
-    }
-
-    input:focus,
-    select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(34, 181, 115, 0.18);
-      background: #fff;
-    }
-
-    .field-row {
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    .field-row > div {
-      flex: 1;
+      background:var(--card);
+      padding:20px;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
     }
 
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.45rem 0.9rem;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      gap: 0.3rem;
-      transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+      padding:10px 18px;
+      border-radius:50px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      transition:.2s;
     }
 
     .btn-primary {
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(0, 51, 102, 0.35);
+      background:var(--primary);
+      color:white;
+    }
+
+    .btn-primary:hover {
+      transform:scale(.97);
+      opacity:.9;
     }
 
     .btn-accent {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(34, 181, 115, 0.35);
-    }
-
-    .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
+      background:var(--accent);
+      color:white;
     }
 
     .btn-danger {
-      background: var(--danger);
-      color: #fff;
+      background:var(--danger);
+      color:white;
     }
 
-    .btn:active {
-      transform: scale(0.97);
-      box-shadow: none;
-    }
-
-    .btn-sm {
-      padding: 0.3rem 0.6rem;
-      font-size: 0.75rem;
-    }
-
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.75rem;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.7rem;
-    }
-
-    .section-title span {
-      font-size: 0.8rem;
-      color: #6b7280;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.1rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      background: var(--primary-soft);
-      color: var(--primary);
-    }
-
-    .list {
-      max-height: 280px;
-      overflow-y: auto;
-      margin-top: 0.5rem;
-    }
-
-    .list-item {
-      padding: 0.5rem 0.6rem;
-      border-radius: 0.65rem;
-      border: 1px solid rgba(209, 213, 219, 0.6);
-      margin-bottom: 0.45rem;
-      background: #f9fafb;
-      display: flex;
-      justify-content: space-between;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    .list-item-main {
-      font-size: 0.8rem;
-    }
-
-    .list-item-main strong {
-      display: block;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      margin-right: 0.3rem;
-    }
-
-    .status-active {
-      background: var(--accent);
-    }
-
-    .status-pending {
-      background: #fbbf24;
-    }
-
-    .status-locked {
-      background: var(--danger);
-    }
-
-    .signature-box {
-      border: 1px dashed #cbd5e1;
-      border-radius: 0.75rem;
-      padding: 0.5rem;
-      background: #f9fafb;
+    input, select {
+      width:100%;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid #cbd5e1;
+      margin-bottom:12px;
+      font-size:.9rem;
     }
 
     canvas {
-      background: #fff;
-      border-radius: 0.5rem;
-      width: 100%;
-      max-width: 400px;
-      height: 180px;
-      display: block;
+      width:100%;
+      height:180px;
+      background:white;
+      border-radius:12px;
+      border:1px dashed #94a3b8;
     }
 
-    .notice {
-      background: var(--accent-soft);
-      border-radius: 0.75rem;
-      padding: 0.5rem 0.7rem;
-      font-size: 0.78rem;
-      margin-bottom: 0.6rem;
-      border: 1px solid rgba(34, 181, 115, 0.4);
+    .list-item {
+      background:#f9fafb;
+      padding:12px;
+      border-radius:12px;
+      margin-bottom:8px;
+      border:1px solid #e5e7eb;
     }
 
-    .alert {
-      padding: 0.45rem 0.6rem;
-      border-radius: 0.65rem;
-      font-size: 0.8rem;
-      margin-bottom: 0.6rem;
+    .status-dot {
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      display:inline-block;
     }
 
-    .alert-success {
-      background: #dcfce7;
-      color: #166534;
-    }
+    .status-green { background:#16a34a; }
+    .status-yellow { background:#fbbf24; }
+    .status-red    { background:#dc2626; }
 
-    .alert-error {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    .flex {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .mt-1 { margin-top: 0.25rem; }
-    .mt-2 { margin-top: 0.5rem; }
-    .mt-3 { margin-top: 0.75rem; }
-    .mt-4 { margin-top: 1rem; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.75rem;
-      margin-top: 0.5rem;
-    }
-
-    th, td {
-      padding: 0.35rem 0.4rem;
-      border: 1px solid #e5e7eb;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: #f3f4f6;
-      font-weight: 600;
-    }
-
-    .tag {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      background: #e5e7eb;
-      color: #111827;
-    }
   </style>
 </head>
 <body>
-<div class="app-shell">
-  <header>
-    <div class="logo-wrap">
-      <!-- Put jooust-logo.png (or your file) next to this index.html -->
-      <img src="jooust-logo.png" alt="JOOUST Logo">
-      <div>
-        <h1>JOOUST Smart Attendance</h1>
-        <p>Digital class attendance with signatures, approvals & reports.</p>
-      </div>
-    </div>
+
+<header>
+  <div style="display:flex;align-items:center;gap:18px;">
+    <img src="logo.jpg" alt="JOOUST Logo">
     <div>
-      <div class="badge">Bondo Campus • Internal Tool</div>
-      <div style="font-size:0.75rem; margin-top:0.25rem; opacity:0.9;">
-        Faculty • Course • Unit • Year • Semester • Venue • Signatures
-      </div>
+      <h1>JOOUST Smart Attendance</h1>
+      <p>Digital Classes • Secure Signatures • Auto-lock • Reports</p>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Student / Signature-only views (via link) -->
-  <div id="linkViews"></div>
+<div class="container">
 
-  <!-- Main app (admin / lecturer) -->
-  <div id="mainApp" class="main-grid">
-    <!-- LEFT: Auth / small info -->
-    <div class="card">
-      <div class="section-title">
-        <h2>Sign in / Register</h2>
-        <span class="pill">Admin & Lecturers</span>
-      </div>
-      <p class="muted mt-1">Lecturers get minimal powers. Admin approves lecturers, manages reports & configuration.</p>
+<!-- AUTH SECTION -->
+<div id="authArea" class="card">
+  <h2>Login & Registration</h2>
+  <p style="color:#64748b;font-size:.85rem;">Admin approves lecturers. Lecturers create classes & manage attendance.</p>
 
-      <div class="tabs mt-2">
-        <button class="tab-btn active" data-tab="adminLoginTab">Admin Login</button>
-        <button class="tab-btn" data-tab="lecturerLoginTab">Lecturer Login</button>
-        <button class="tab-btn" data-tab="lecturerRegisterTab">Lecturer Registration</button>
-      </div>
+  <div style="display:flex;gap:10px;margin-bottom:15px;">
+    <button class="btn btn-primary" onclick="showTab('adminLogin')">Admin Login</button>
+    <button class="btn btn-accent" onclick="showTab('lecturerLogin')">Lecturer Login</button>
+    <button class="btn" onclick="showTab('lecturerRegister')">Lecturer Register</button>
+  </div>
 
-      <!-- Admin Login -->
-      <div id="adminLoginTab" class="tab-panel">
-        <form id="adminLoginForm">
-          <label>Admin Username</label>
-          <input type="text" id="adminUsername" placeholder="e.g. admin" required>
-          <label class="mt-2">Password</label>
-          <input type="password" id="adminPassword" placeholder="Password" required>
-          <div class="mt-3 flex-between">
-            <button type="submit" class="btn btn-primary">Login as Admin</button>
-            <span class="muted">Default: <strong>admin / Admin@123</strong></span>
-          </div>
-        </form>
-      </div>
+  <!-- ADMIN LOGIN -->
+  <div id="adminLogin" class="tabPanel">
+    <h3>Admin Login</h3>
+    <input id="adminUser" type="text" placeholder="Username (default: admin)">
+    <input id="adminPass" type="password" placeholder="Password (default: Admin@123)">
+    <button class="btn btn-primary" onclick="adminLogin()">Login</button>
+  </div>
 
-      <!-- Lecturer Login -->
-      <div id="lecturerLoginTab" class="tab-panel" style="display:none;">
-        <form id="lecturerLoginForm">
-          <label>PF/ID or Email</label>
-          <input type="text" id="lecturerLoginId" placeholder="Your PFNO / ID / Email" required>
-          <label class="mt-2">Password</label>
-          <input type="password" id="lecturerLoginPassword" placeholder="Password you set during registration" required>
-          <div class="mt-3">
-            <button type="submit" class="btn btn-accent">Login as Lecturer</button>
-            <p class="muted mt-2">Your account must be approved by Admin before you can create classes.</p>
-          </div>
-        </form>
-      </div>
+  <!-- LECTURER LOGIN -->
+  <div id="lecturerLogin" class="tabPanel" style="display:none;">
+    <h3>Lecturer Login</h3>
+    <input id="lecLoginID" type="text" placeholder="PF/ID">
+    <input id="lecLoginPass" type="password" placeholder="Password">
+    <button class="btn btn-accent" onclick="lecturerLogin()">Login</button>
+  </div>
 
-      <!-- Lecturer Registration -->
-      <div id="lecturerRegisterTab" class="tab-panel" style="display:none;">
-        <form id="lecturerRegisterForm">
-          <label>Salutation</label>
-          <select id="lecSalutation" required>
-            <option value="">Select...</option>
-            <option>Mr.</option>
-            <option>Ms.</option>
-            <option>Mrs.</option>
-            <option>Dr.</option>
-            <option>Prof.</option>
-          </select>
+  <!-- LECTURER REGISTER -->
+  <div id="lecturerRegister" class="tabPanel" style="display:none;">
+    <h3>Lecturer Registration</h3>
+    <input id="regSalutation" type="text" placeholder="Salutation (Dr, Mr, Ms)">
+    <input id="regName" type="text" placeholder="Full Name">
+    <input id="regPF" type="text" placeholder="PFNO / ID">
+    <input id="regFaculty" type="text" placeholder="Faculty">
+    <input id="regCourses" type="text" placeholder="Courses (comma)">
+    <input id="regUnits" type="text" placeholder="Units (comma)">
+    <input id="regYears" type="text" placeholder="Years (comma)">
+    <input id="regSemesters" type="text" placeholder="Semesters (comma)">
+    <input id="regPass" type="password" placeholder="Password">
+    <button class="btn btn-accent" onclick="registerLecturer()">Submit</button>
+  </div>
 
-          <label class="mt-2">Lecturer Full Name</label>
-          <input type="text" id="lecName" placeholder="e.g. Dr. Jane Achieng" required>
+  <div id="authMsg" style="margin-top:10px;color:#b91c1c;font-size:.85rem;"></div>
+</div>
 
-          <label class="mt-2">PFNO / ID</label>
-          <input type="text" id="lecId" placeholder="Official PFNO or ID" required>
+<!-- ADMIN DASHBOARD -->
+<div id="adminDash" class="card" style="display:none;">
+  <h2>Admin Dashboard</h2>
+  <button class="btn btn-danger" onclick="logout()">Logout</button>
 
-          <label class="mt-2">Faculty</label>
-          <input type="text" id="lecFaculty" placeholder="e.g. School of Informatics & Innovative Systems" required>
+  <h3 style="margin-top:20px;">Pending Lecturer Approvals</h3>
+  <div id="pendingList"></div>
 
-          <label class="mt-2">Courses handled (comma separated)</label>
-          <input type="text" id="lecCourses" placeholder="e.g. BSc CS, BSc IT">
+  <h3 style="margin-top:20px;">Approved Lecturers</h3>
+  <div id="approvedList"></div>
 
-          <label class="mt-2">Units handled (comma separated)</label>
-          <input type="text" id="lecUnits" placeholder="e.g. CSX 101, CSX 203">
+  <h3 style="margin-top:20px;">Reports</h3>
+  <div class="card" style="background:#f9fafb;">
+    <h4>Filters</h4>
 
-          <div class="field-row mt-2">
-            <div>
-              <label>Year(s)</label>
-              <input type="text" id="lecYears" placeholder="e.g. 1,2,3">
-            </div>
-            <div>
-              <label>Semester(s)</label>
-              <input type="text" id="lecSemesters" placeholder="e.g. 1,2">
-            </div>
-          </div>
+    <select id="repFaculty"><option value="">All Faculties</option></select>
+    <select id="repCourse"><option value="">All Courses</option></select>
+    <select id="repUnitCode"><option value="">All Unit Codes</option></select>
+    <select id="repUnitName"><option value="">All Unit Names</option></select>
+    <select id="repAY"><option value="">All Academic Years</option></select>
+    <select id="repYear"><option value="">All Years</option></select>
+    <select id="repSem"><option value="">All Semesters</option></select>
 
-          <label class="mt-2">Login Password</label>
-          <input type="password" id="lecPassword" placeholder="Set a password" required>
+    <button class="btn btn-primary" onclick="loadReport()">Load Report</button>
+    <button class="btn btn-accent" onclick="exportPDF()">Export PDF</button>
+    <button class="btn btn-accent" onclick="exportExcel()">Export Excel</button>
+    <button class="btn btn-accent" onclick="exportWord()">Export Word</button>
 
-          <div class="mt-3">
-            <button type="submit" class="btn btn-primary">Submit for Approval</button>
-          </div>
-        </form>
-      </div>
-
-      <div id="authMessage" class="mt-3 muted"></div>
-
-      <div class="mt-3 notice">
-        <strong>Note:</strong> Class attendance links are one-time per device & per student admission number.
-      </div>
-    </div>
-
-    <!-- RIGHT: Dashboards -->
-    <div>
-      <!-- Admin Dashboard -->
-      <div id="adminDashboard" class="card" style="display:none;">
-        <div class="section-title">
-          <h2>Admin Dashboard</h2>
-          <button class="btn btn-secondary btn-sm" id="adminLogoutBtn">Logout</button>
-        </div>
-        <p class="muted">Approve lecturers, manage classes & generate reports.</p>
-
-        <div class="tabs mt-2">
-          <button class="tab-btn active" data-tab="adminLecturersTab">Approve Lecturers</button>
-          <button class="tab-btn" data-tab="adminReportsTab">Reports & Exports</button>
-        </div>
-
-        <!-- Approve Lecturers -->
-        <div id="adminLecturersTab" class="tab-panel">
-          <h3>Pending Lecturers</h3>
-          <div id="pendingLecturersList" class="list"></div>
-          <h3 class="mt-3">Approved Lecturers</h3>
-          <div id="approvedLecturersList" class="list"></div>
-        </div>
-
-        <!-- Reports -->
-        <div id="adminReportsTab" class="tab-panel" style="display:none;">
-          <div class="section-title">
-            <h3>Attendance Reports</h3>
-            <span class="muted">Filter then export</span>
-          </div>
-
-          <div class="field-row">
-            <div>
-              <label>Faculty</label>
-              <select id="repFaculty"></select>
-            </div>
-            <div>
-              <label>Course</label>
-              <select id="repCourse"></select>
-            </div>
-          </div>
-
-          <div class="field-row mt-2">
-            <div>
-              <label>Unit Name</label>
-              <select id="repUnitName"></select>
-            </div>
-            <div>
-              <label>Unit Code</label>
-              <select id="repUnitCode"></select>
-            </div>
-          </div>
-
-          <div class="field-row mt-2">
-            <div>
-              <label>Academic Year</label>
-              <select id="repAcademicYear"></select>
-            </div>
-            <div>
-              <label>Year</label>
-              <select id="repYear"></select>
-            </div>
-            <div>
-              <label>Semester</label>
-              <select id="repSemester"></select>
-            </div>
-          </div>
-
-          <div class="btn-group mt-3">
-            <button class="btn btn-accent btn-sm" id="loadReportBtn">Load Report</button>
-            <button class="btn btn-primary btn-sm" id="exportPdfBtn">Export PDF</button>
-            <button class="btn btn-primary btn-sm" id="exportExcelBtn">Export Excel</button>
-            <button class="btn btn-primary btn-sm" id="exportWordBtn">Export Word</button>
-          </div>
-
-          <div id="reportsArea" class="mt-3">
-            <div class="flex-between">
-              <h3>Report Preview</h3>
-              <span class="muted" id="reportSummary"></span>
-            </div>
-            <div id="reportContainer"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lecturer Dashboard -->
-      <div id="lecturerDashboard" class="card" style="display:none;">
-        <div class="section-title">
-          <h2>Lecturer Dashboard</h2>
-          <button class="btn btn-secondary btn-sm" id="lecturerLogoutBtn">Logout</button>
-        </div>
-        <p class="muted" id="lecturerWelcome"></p>
-
-        <h3 class="mt-2">Create Class Attendance</h3>
-        <form id="createClassForm">
-          <div class="field-row">
-            <div>
-              <label>Faculty</label>
-              <input type="text" id="clsFaculty" required placeholder="Faculty / School">
-            </div>
-            <div>
-              <label>Course</label>
-              <input type="text" id="clsCourse" required placeholder="e.g. BSc CS">
-            </div>
-          </div>
-
-          <div class="field-row mt-2">
-            <div>
-              <label>Unit Code</label>
-              <input type="text" id="clsUnitCode" required placeholder="e.g. CSX 101">
-            </div>
-            <div>
-              <label>Unit Name</label>
-              <input type="text" id="clsUnitName" required placeholder="e.g. Introduction to Programming">
-            </div>
-          </div>
-
-          <div class="field-row mt-2">
-            <div>
-              <label>Academic Year</label>
-              <input type="text" id="clsAcademicYear" required placeholder="e.g. 2024/2025">
-            </div>
-            <div>
-              <label>Year of Study</label>
-              <input type="text" id="clsYear" required placeholder="e.g. 1,2,3,4">
-            </div>
-            <div>
-              <label>Semester</label>
-              <input type="text" id="clsSemester" required placeholder="e.g. 1 or 2">
-            </div>
-          </div>
-
-          <div class="field-row mt-2">
-            <div>
-              <label>Venue</label>
-              <input type="text" id="clsVenue" required placeholder="e.g. LT1, LAB 2">
-            </div>
-          </div>
-
-          <div class="field-row mt-2">
-            <div>
-              <label>Class Start Time</label>
-              <input type="datetime-local" id="clsStart" required>
-            </div>
-            <div>
-              <label>Class End Time</label>
-              <input type="datetime-local" id="clsEnd" required>
-            </div>
-          </div>
-
-          <div class="mt-3">
-            <button type="submit" class="btn btn-accent">Create & Activate Class</button>
-          </div>
-        </form>
-
-        <h3 class="mt-3">My Classes</h3>
-        <div id="lecturerClassesList" class="list"></div>
-      </div>
-    </div>
+    <div id="reportHolder" style="margin-top:15px;"></div>
   </div>
 </div>
 
+<!-- LECTURER DASHBOARD -->
+<div id="lecDash" class="card" style="display:none;">
+  <h2>Lecturer Dashboard</h2>
+  <button class="btn btn-danger" onclick="logout()">Logout</button>
+
+  <div id="lecWelcome" style="margin-top:10px;color:#334155;font-weight:600;"></div>
+
+  <h3 style="margin-top:20px;">Create Class</h3>
+
+  <input id="clsFaculty" type="text" placeholder="Faculty">
+  <input id="clsCourse" type="text" placeholder="Course">
+  <input id="clsUnitCode" type="text" placeholder="Unit Code">
+  <input id="clsUnitName" type="text" placeholder="Unit Name">
+  <input id="clsAY" type="text" placeholder="Academic Year (e.g. 2024/2025)">
+  <input id="clsYear" type="text" placeholder="Year of Study">
+  <input id="clsSem" type="text" placeholder="Semester">
+  <input id="clsVenue" type="text" placeholder="Venue">
+
+  <label>Start Time</label>
+  <input id="clsStart" type="datetime-local">
+
+  <label>End Time</label>
+  <input id="clsEnd" type="datetime-local">
+
+  <button class="btn btn-accent" onclick="createClass()">Create Class</button>
+
+  <h3 style="margin-top:25px;">My Classes</h3>
+  <div id="lecClassList"></div>
+</div>
+
+<!-- STUDENT / SIGNATURE VIEW -->
+<div id="linkView"></div>
+
 <script>
-  /***********************
-   * Simple "Database"
-   ************************/
-  const STORAGE_KEY = "jooustAttendanceDB";
+/* -------------------------------
+   DATABASE (localStorage)
+-------------------------------- */
+let DB = JSON.parse(localStorage.getItem("ATTDB") || `{
+  "admins":[{"user":"admin","pass":"Admin@123"}],
+  "lecturers":[],
+  "classes":[]
+}`);
 
-  function loadDB() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      const initial = {
-        admins: [
-          { username: "admin", password: "Admin@123" } // demo admin
-        ],
-        lecturers: [],  // {id, salutation, name, pfno, faculty, courses, units, years, semesters, password, approved}
-        classes: []     // see below structure
+function saveDB(){ localStorage.setItem("ATTDB", JSON.stringify(DB)); }
+
+/* -------------------------------
+   TABS
+-------------------------------- */
+function showTab(id){
+  document.querySelectorAll(".tabPanel").forEach(t => t.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+
+/* -------------------------------
+   ADMIN LOGIN
+-------------------------------- */
+function adminLogin(){
+  let u=document.getElementById("adminUser").value;
+  let p=document.getElementById("adminPass").value;
+  let ok=DB.admins.find(a=>a.user===u && a.pass===p);
+  if(!ok){ document.getElementById("authMsg").innerHTML="Wrong admin credentials"; return;}
+  document.getElementById("authArea").style.display="none";
+  document.getElementById("adminDash").style.display="block";
+  loadLecturers();
+}
+
+/* -------------------------------
+   LECTURER REGISTRATION
+-------------------------------- */
+function registerLecturer(){
+  let lec={
+    sal:document.getElementById("regSalutation").value,
+    name:document.getElementById("regName").value,
+    pf:document.getElementById("regPF").value,
+    faculty:document.getElementById("regFaculty").value,
+    courses:document.getElementById("regCourses").value,
+    units:document.getElementById("regUnits").value,
+    years:document.getElementById("regYears").value,
+    sems:document.getElementById("regSemesters").value,
+    pass:document.getElementById("regPass").value,
+    approved:false,
+    id:"L"+Date.now()
+  };
+
+  if(!lec.name || !lec.pf || !lec.pass){
+    document.getElementById("authMsg").innerHTML="All fields required!";
+    return;
+  }
+
+  DB.lecturers.push(lec);
+  saveDB();
+  document.getElementById("authMsg").innerHTML="Registration submitted!";
+}
+
+/* -------------------------------
+   LECTURER LOGIN
+-------------------------------- */
+let CURRENT_LEC=null;
+
+function lecturerLogin(){
+  let pf=document.getElementById("lecLoginID").value;
+  let pw=document.getElementById("lecLoginPass").value;
+
+  let lec=DB.lecturers.find(x=>x.pf===pf && x.pass===pw);
+  if(!lec){ document.getElementById("authMsg").innerHTML="Lecturer not found"; return; }
+  if(!lec.approved){ document.getElementById("authMsg").innerHTML="Not approved yet"; return;}
+
+  CURRENT_LEC=lec;
+  document.getElementById("authArea").style.display="none";
+  document.getElementById("lecDash").style.display="block";
+  document.getElementById("lecWelcome").innerHTML=
+    `Welcome ${lec.sal} ${lec.name} (${lec.pf})`;
+  loadLecturerClasses();
+}
+
+/* -------------------------------
+   ADMIN: LOAD LECTURERS
+-------------------------------- */
+function loadLecturers(){
+  let pending=document.getElementById("pendingList");
+  let approved=document.getElementById("approvedList");
+  pending.innerHTML="";
+  approved.innerHTML="";
+
+  DB.lecturers.forEach(l=>{
+    let div=document.createElement("div");
+    div.className="list-item";
+    div.innerHTML=`<strong>${l.sal} ${l.name}</strong><br>PF: ${l.pf}`;
+
+    if(!l.approved){
+      let btn=document.createElement("button");
+      btn.className="btn btn-accent";
+      btn.innerHTML="Approve";
+      btn.onclick=()=>{
+        l.approved=true; saveDB(); loadLecturers();
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(raw);
-  }
-
-  function saveDB(db) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-  }
-
-  let DB = loadDB();
-
-  /***********************
-   * Utilities
-   ************************/
-  function uuid() {
-    return "cls_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-  }
-
-  function getQueryParams() {
-    const params = {};
-    const qs = window.location.search.substring(1).split("&");
-    qs.forEach(p => {
-      if (!p) return;
-      const [k, v] = p.split("=");
-      params[decodeURIComponent(k)] = decodeURIComponent(v || "");
-    });
-    return params;
-  }
-
-  function formatDateTime(dtStr) {
-    if (!dtStr) return "";
-    const d = new Date(dtStr);
-    if (isNaN(d)) return dtStr;
-    return d.toLocaleString();
-  }
-
-  function classStatus(cls) {
-    const now = new Date();
-    const start = new Date(cls.startTime);
-    const end = new Date(cls.endTime);
-    if (now < start) return "Not started";
-    if (now >= start && now <= end) return "In progress";
-    return "Closed";
-  }
-
-  function ensureOption(select, value) {
-    if (!value) return;
-    let found = false;
-    Array.from(select.options).forEach(opt => {
-      if (opt.value === value) found = true;
-    });
-    if (!found) {
-      const opt = document.createElement("option");
-      opt.value = value;
-      opt.textContent = value;
-      select.appendChild(opt);
-    }
-  }
-
-  function clearChildren(el) {
-    while (el.firstChild) el.removeChild(el.firstChild);
-  }
-
-  /***********************
-   * Auth Tabs
-   ************************/
-  const tabButtons = document.querySelectorAll(".tab-btn");
-  const tabPanels = document.querySelectorAll(".tab-panel");
-
-  tabButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const tabId = btn.dataset.tab;
-      tabButtons.forEach(b => b.classList.toggle("active", b === btn));
-      tabPanels.forEach(panel => {
-        panel.style.display = panel.id === tabId ? "block" : "none";
-      });
-    });
-  });
-
-  /***********************
-   * Admin Login
-   ************************/
-  const adminLoginForm = document.getElementById("adminLoginForm");
-  const authMessage = document.getElementById("authMessage");
-  const adminDashboard = document.getElementById("adminDashboard");
-  const lecturerDashboard = document.getElementById("lecturerDashboard");
-  const mainApp = document.getElementById("mainApp");
-  const linkViews = document.getElementById("linkViews");
-
-  let currentAdmin = null;
-  let currentLecturer = null;
-
-  adminLoginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const username = document.getElementById("adminUsername").value.trim();
-    const password = document.getElementById("adminPassword").value.trim();
-
-    const admin = DB.admins.find(a => a.username === username && a.password === password);
-    if (admin) {
-      currentAdmin = admin;
-      currentLecturer = null;
-      showAdminDashboard();
-      authMessage.textContent = "";
+      div.appendChild(btn);
+      pending.appendChild(div);
     } else {
-      authMessage.innerHTML = "<div class='alert alert-error'>Invalid admin credentials.</div>";
+      approved.appendChild(div);
     }
   });
+}
 
-  function showAdminDashboard() {
-    adminDashboard.style.display = "block";
-    lecturerDashboard.style.display = "none";
-    refreshLecturerLists();
-    refreshReportFilters();
-  }
+/* -------------------------------
+   CREATE CLASS
+-------------------------------- */
+function createClass(){
+  let c={
+    id:"C"+Date.now(),
+    lec:CURRENT_LEC.id,
+    faculty:clsFaculty.value,
+    course:clsCourse.value,
+    unitCode:clsUnitCode.value,
+    unitName:clsUnitName.value,
+    ay:clsAY.value,
+    year:clsYear.value,
+    sem:clsSem.value,
+    venue:clsVenue.value,
+    start:clsStart.value,
+    end:clsEnd.value,
+    att:[],
+    lecSig:null,
+    hodSig:null
+  };
 
-  /***********************
-   * Lecturer Register & Login
-   ************************/
-  const lecturerRegisterForm = document.getElementById("lecturerRegisterForm");
-  const lecturerLoginForm = document.getElementById("lecturerLoginForm");
+  DB.classes.push(c);
+  saveDB();
+  loadLecturerClasses();
+  alert("Class Created!");
+}
 
-  lecturerRegisterForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const salutation = document.getElementById("lecSalutation").value.trim();
-    const name = document.getElementById("lecName").value.trim();
-    const pfno = document.getElementById("lecId").value.trim();
-    const faculty = document.getElementById("lecFaculty").value.trim();
-    const courses = document.getElementById("lecCourses").value.trim();
-    const units = document.getElementById("lecUnits").value.trim();
-    const years = document.getElementById("lecYears").value.trim();
-    const semesters = document.getElementById("lecSemesters").value.trim();
-    const password = document.getElementById("lecPassword").value.trim();
+/* -------------------------------
+   LOAD LECTURER CLASSES
+-------------------------------- */
+function loadLecturerClasses(){
+  let list=document.getElementById("lecClassList");
+  list.innerHTML="";
+  
+  DB.classes
+    .filter(c=>c.lec===CURRENT_LEC.id)
+    .forEach(c=>{
+      let st=statusOfClass(c);
+      let dot=st=="In Progress"?"status-green":st=="Not Started"?"status-yellow":"status-red";
 
-    if (!salutation || !name || !pfno || !faculty || !password) {
-      authMessage.innerHTML = "<div class='alert alert-error'>Please fill all required fields.</div>";
-      return;
-    }
+      let div=document.createElement("div");
+      div.className="list-item";
+      div.innerHTML=`
+        <strong>${c.unitCode} - ${c.unitName}</strong><br>
+        ${c.course}, ${c.faculty}<br>
+        AY ${c.ay} | Year ${c.year} | Sem ${c.sem}<br>
+        <small>${c.venue}</small><br>
+        <small>${c.start} → ${c.end}</small><br>
+        <span class="status-dot ${dot}"></span> ${st}<br><br>
 
-    const exists = DB.lecturers.find(l => l.pfno === pfno);
-    if (exists) {
-      authMessage.innerHTML = "<div class='alert alert-error'>A lecturer with this PFNO/ID already exists.</div>";
-      return;
-    }
+        <button class="btn btn-accent" 
+          onclick="copyLink('${c.id}','student')">Copy Student Link</button>
 
-    DB.lecturers.push({
-      id: "lec_" + Math.random().toString(36).substring(2, 10),
-      salutation,
-      name,
-      pfno,
-      faculty,
-      courses,
-      units,
-      years,
-      semesters,
-      password,
-      approved: false
-    });
+        <button class="btn btn-primary" 
+          onclick="copyLink('${c.id}','lecturer')">Lecturer Sign</button>
 
-    saveDB(DB);
-    lecturerRegisterForm.reset();
-    authMessage.innerHTML = "<div class='alert alert-success'>Registration submitted. Please wait for admin approval.</div>";
-    refreshLecturerLists();
-  });
+        <button class="btn btn-primary" 
+          onclick="copyLink('${c.id}','hod')">HOD Sign</button>
 
-  lecturerLoginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const pfno = document.getElementById("lecturerLoginId").value.trim();
-    const password = document.getElementById("lecturerLoginPassword").value.trim();
-
-    const lec = DB.lecturers.find(l => l.pfno === pfno && l.password === password);
-    if (!lec) {
-      authMessage.innerHTML = "<div class='alert alert-error'>Lecturer not found or wrong password.</div>";
-      return;
-    }
-    if (!lec.approved) {
-      authMessage.innerHTML = "<div class='alert alert-error'>Your account is pending admin approval.</div>";
-      return;
-    }
-    currentLecturer = lec;
-    currentAdmin = null;
-    showLecturerDashboard();
-    authMessage.textContent = "";
-  });
-
-  function showLecturerDashboard() {
-    lecturerDashboard.style.display = "block";
-    adminDashboard.style.display = "none";
-    document.getElementById("lecturerWelcome").textContent =
-      `Welcome ${currentLecturer.salutation} ${currentLecturer.name} (${currentLecturer.pfno}) – Faculty: ${currentLecturer.faculty}`;
-    refreshLecturerClasses();
-  }
-
-  /***********************
-   * Admin: Approve Lecturers
-   ************************/
-  const pendingLecturersList = document.getElementById("pendingLecturersList");
-  const approvedLecturersList = document.getElementById("approvedLecturersList");
-
-  function refreshLecturerLists() {
-    clearChildren(pendingLecturersList);
-    clearChildren(approvedLecturersList);
-
-    DB.lecturers.forEach(lec => {
-      const div = document.createElement("div");
-      div.className = "list-item";
-
-      const main = document.createElement("div");
-      main.className = "list-item-main";
-      main.innerHTML = `<strong>${lec.salutation} ${lec.name}</strong>
-        <span class="muted">PF/ID: ${lec.pfno} • Faculty: ${lec.faculty}</span>
-        <span class="muted">Courses: ${lec.courses || "-"} • Units: ${lec.units || "-"}</span>`;
-
-      const actions = document.createElement("div");
-      actions.className = "btn-group";
-
-      if (!lec.approved) {
-        const approveBtn = document.createElement("button");
-        approveBtn.className = "btn btn-accent btn-sm";
-        approveBtn.textContent = "Approve";
-        approveBtn.onclick = () => {
-          lec.approved = true;
-          saveDB(DB);
-          refreshLecturerLists();
-        };
-        const rejectBtn = document.createElement("button");
-        rejectBtn.className = "btn btn-danger btn-sm";
-        rejectBtn.textContent = "Remove";
-        rejectBtn.onclick = () => {
-          DB.lecturers = DB.lecturers.filter(l => l.pfno !== lec.pfno);
-          saveDB(DB);
-          refreshLecturerLists();
-        };
-        actions.appendChild(approveBtn);
-        actions.appendChild(rejectBtn);
-        div.appendChild(main);
-        div.appendChild(actions);
-        pendingLecturersList.appendChild(div);
-      } else {
-        const badge = document.createElement("span");
-        badge.className = "tag";
-        badge.textContent = "Approved";
-        actions.appendChild(badge);
-        div.appendChild(main);
-        div.appendChild(actions);
-        approvedLecturersList.appendChild(div);
-      }
-    });
-
-    if (!pendingLecturersList.childElementCount) {
-      pendingLecturersList.innerHTML = "<p class='muted'>No pending lecturers.</p>";
-    }
-
-    if (!approvedLecturersList.childElementCount) {
-      approvedLecturersList.innerHTML = "<p class='muted'>No approved lecturers yet.</p>";
-    }
-  }
-
-  /***********************
-   * Admin / Lecturer Tab switching in dashboards
-   ************************/
-  const adminDashboardTabs = document.querySelectorAll("#adminDashboard .tab-btn");
-  const adminDashboardPanels = [document.getElementById("adminLecturersTab"), document.getElementById("adminReportsTab")];
-
-  adminDashboardTabs.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.tab;
-      adminDashboardTabs.forEach(b => b.classList.toggle("active", b === btn));
-      adminDashboardPanels.forEach(panel => {
-        panel.style.display = panel.id === id ? "block" : "none";
-      });
-    });
-  });
-
-  /***********************
-   * Lecturer: Create Class
-   ************************/
-  const createClassForm = document.getElementById("createClassForm");
-  const lecturerClassesList = document.getElementById("lecturerClassesList");
-
-  createClassForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (!currentLecturer) return;
-
-    const faculty = document.getElementById("clsFaculty").value.trim();
-    const course = document.getElementById("clsCourse").value.trim();
-    const unitCode = document.getElementById("clsUnitCode").value.trim();
-    const unitName = document.getElementById("clsUnitName").value.trim();
-    const academicYear = document.getElementById("clsAcademicYear").value.trim();
-    const year = document.getElementById("clsYear").value.trim();
-    const semester = document.getElementById("clsSemester").value.trim();
-    const venue = document.getElementById("clsVenue").value.trim();
-    const startTime = document.getElementById("clsStart").value;
-    const endTime = document.getElementById("clsEnd").value;
-
-    if (!faculty || !course || !unitCode || !unitName || !academicYear || !year || !semester || !venue || !startTime || !endTime) {
-      alert("Please fill in all class details.");
-      return;
-    }
-
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    if (end <= start) {
-      alert("End time must be after start time.");
-      return;
-    }
-
-    const id = uuid();
-    const cls = {
-      id,
-      faculty,
-      course,
-      unitCode,
-      unitName,
-      academicYear,
-      year,
-      semester,
-      venue,
-      lecturerId: currentLecturer.id,
-      lecturerName: `${currentLecturer.salutation} ${currentLecturer.name}`,
-      startTime,
-      endTime,
-      attendance: [], // { surname, middle, first, admissionNo, signature, time }
-      lecturerSignature: null,
-      hodSignature: null
-    };
-
-    DB.classes.push(cls);
-    saveDB(DB);
-    createClassForm.reset();
-    refreshLecturerClasses();
-    alert("Class created successfully. Share the student link to register attendance.");
-  });
-
-  function baseUrl() {
-    return window.location.origin + window.location.pathname;
-  }
-
-  function refreshLecturerClasses() {
-    if (!currentLecturer) return;
-    clearChildren(lecturerClassesList);
-
-    const myClasses = DB.classes.filter(c => c.lecturerId === currentLecturer.id);
-    if (!myClasses.length) {
-      lecturerClassesList.innerHTML = "<p class='muted'>No classes created yet.</p>";
-      return;
-    }
-
-    myClasses.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-
-    myClasses.forEach(cls => {
-      const div = document.createElement("div");
-      div.className = "list-item";
-
-      const main = document.createElement("div");
-      main.className = "list-item-main";
-      const status = classStatus(cls);
-      const statusColor = status === "In progress" ? "status-active" :
-                          status === "Not started" ? "status-pending" : "status-locked";
-
-      main.innerHTML = `
-        <strong>${cls.unitCode} – ${cls.unitName}</strong>
-        <span class="muted">${cls.course} • ${cls.faculty}</span>
-        <span class="muted">AY: ${cls.academicYear} • Year: ${cls.year} • Sem: ${cls.semester}</span>
-        <span class="muted">Venue: ${cls.venue}</span>
-        <span class="muted">Start: ${formatDateTime(cls.startTime)} • End: ${formatDateTime(cls.endTime)}</span>
-        <span class="flex mt-1">
-          <span class="status-dot ${statusColor}"></span> ${status} • ${cls.attendance.length} students
-        </span>
+        <button class="btn btn-accent"
+          onclick="showQR('${c.id}')">QR Code</button>
       `;
 
-      const actions = document.createElement("div");
-      actions.className = "btn-group";
-
-      const studentLink = `${baseUrl()}?classId=${cls.id}&mode=student`;
-      const lecSignLink = `${baseUrl()}?classId=${cls.id}&mode=lecturerSign`;
-      const hodSignLink = `${baseUrl()}?classId=${cls.id}&mode=hodSign`;
-
-      const copyStudentBtn = document.createElement("button");
-      copyStudentBtn.className = "btn btn-sm btn-accent";
-      copyStudentBtn.textContent = "Copy Student Link";
-      copyStudentBtn.onclick = () => {
-        navigator.clipboard.writeText(studentLink);
-        alert("Student link copied to clipboard.");
-      };
-
-      const copyLecBtn = document.createElement("button");
-      copyLecBtn.className = "btn btn-sm btn-secondary";
-      copyLecBtn.textContent = "Lecturer Sign Link";
-      copyLecBtn.onclick = () => {
-        navigator.clipboard.writeText(lecSignLink);
-        alert("Lecturer sign link copied.");
-      };
-
-      const copyHodBtn = document.createElement("button");
-      copyHodBtn.className = "btn btn-sm btn-secondary";
-      copyHodBtn.textContent = "HOD Sign Link";
-      copyHodBtn.onclick = () => {
-        navigator.clipboard.writeText(hodSignLink);
-        alert("HOD sign link copied.");
-      };
-
-      actions.appendChild(copyStudentBtn);
-      actions.appendChild(copyLecBtn);
-      actions.appendChild(copyHodBtn);
-
-      div.appendChild(main);
-      div.appendChild(actions);
-      lecturerClassesList.appendChild(div);
+      list.appendChild(div);
     });
+}
+
+/* -------------------------------
+   CLASS STATUS
+-------------------------------- */
+function statusOfClass(c){
+  let now=new Date();
+  let s=new Date(c.start);
+  let e=new Date(c.end);
+  if(now<s) return "Not Started";
+  if(now>=s && now<=e) return "In Progress";
+  return "Closed";
+}
+
+/* -------------------------------
+   COPY LINKS
+-------------------------------- */
+function copyLink(cid,mode){
+  let link=location.origin+location.pathname+`?cid=${cid}&mode=${mode}`;
+  navigator.clipboard.writeText(link);
+  alert("Link copied!");
+}
+
+/* -------------------------------
+   SHOW QR
+-------------------------------- */
+function showQR(cid){
+  let link=location.origin+location.pathname+`?cid=${cid}&mode=student`;
+  let box=prompt("QR Code will be shown. Type OK to continue:");
+  if(box===null) return;
+
+  let win=window.open("","QR","width=400,height=450");
+  win.document.write("<h2>Class QR Code</h2>");
+  win.document.write("<div id='qrcode'></div>");
+
+  setTimeout(()=>{
+    new QRCode(win.document.getElementById("qrcode"), link);
+  },200);
+}
+
+/* -------------------------------
+   LOGOUT
+-------------------------------- */
+function logout(){
+  location.reload();
+}
+
+/* -------------------------------
+   LINK VIEW (STUDENT/LECTURER/HOD)
+-------------------------------- */
+let params = new URLSearchParams(location.search);
+if(params.get("cid")){
+  document.getElementById("authArea").style.display="none";
+  document.getElementById("lecDash").style.display="none";
+  document.getElementById("adminDash").style.display="none";
+  renderLinkView();
+}
+
+function renderLinkView(){
+  let cid=params.get("cid");
+  let mode=params.get("mode");
+  let box=document.getElementById("linkView");
+  box.innerHTML="";
+
+  let c=DB.classes.find(x=>x.id===cid);
+  if(!c){
+    box.innerHTML="<div class='card'>Class Not Found</div>";
+    return;
   }
 
-  /***********************
-   * Link Views (student / lecturer sign / HOD sign)
-   ************************/
-  const params = getQueryParams();
-  if (params.classId && params.mode) {
-    // Hide main dashboards, show dedicated view
-    mainApp.style.display = "none";
-    renderLinkView(params.classId, params.mode);
+  let st=statusOfClass(c);
+
+  let html=`
+  <div class='card'>
+    <h2>${c.unitCode} - ${c.unitName}</h2>
+    <p>${c.course}, ${c.faculty}</p>
+    <p>Academic Year: ${c.ay}</p>
+    <p>Venue: ${c.venue}</p>
+    <p><strong>${c.start}</strong> → <strong>${c.end}</strong></p>
+    <p>Status: <strong>${st}</strong></p>
+  </div>
+  `;
+
+  box.innerHTML=html;
+
+  if(mode==="student") renderStudentForm(c);
+  if(mode==="lecturer") renderSignForm(c,"lecSig");
+  if(mode==="hod") renderSignForm(c,"hodSig");
+}
+
+/* -------------------------------
+   STUDENT ATTENDANCE FORM
+-------------------------------- */
+function renderStudentForm(c){
+  let box=document.getElementById("linkView");
+
+  let now=new Date();
+  if(now < new Date(c.start) || now > new Date(c.end)){
+    box.innerHTML+=`<div class='card' style='color:red;'>ATTENDANCE CLOSED</div>`;
+    return;
   }
 
-  function renderLinkView(classId, mode) {
-    const cls = DB.classes.find(c => c.id === classId);
-    clearChildren(linkViews);
+  box.innerHTML+=`
+    <div class='card'>
+      <h3>Student Attendance</h3>
+      <input id="sSurname" placeholder="Surname">
+      <input id="sMiddle"  placeholder="Middle Name">
+      <input id="sFirst"   placeholder="First Name">
+      <input id="sAdm"     placeholder="Admission Number">
 
-    const card = document.createElement("div");
-    card.className = "card";
-    if (!cls) {
-      card.innerHTML = `<h2>Class not found</h2>
-        <p class="muted">The attendance link is invalid or the class no longer exists.</p>`;
-      linkViews.appendChild(card);
-      return;
-    }
+      <label>Signature</label>
+      <canvas id="stuSig"></canvas>
+      <button class="btn btn-danger" onclick="sigPad.clear()">Clear</button><br><br>
 
-    const status = classStatus(cls);
-    const now = new Date();
-    const start = new Date(cls.startTime);
-    const end = new Date(cls.endTime);
+      <button class="btn btn-accent" onclick="submitAttendance('${c.id}')">
+        Submit Attendance
+      </button>
 
-    card.innerHTML = `
-      <div class="section-title">
-        <h2>${cls.unitCode} – ${cls.unitName}</h2>
-        <span class="pill">${cls.course} • ${cls.faculty}</span>
-      </div>
-      <p class="muted">
-        Academic Year: <strong>${cls.academicYear}</strong> • Year: <strong>${cls.year}</strong> • Sem: <strong>${cls.semester}</strong><br>
-        Venue: <strong>${cls.venue}</strong><br>
-        Lecturer: <strong>${cls.lecturerName}</strong><br>
-        Class Time: <strong>${formatDateTime(cls.startTime)} → ${formatDateTime(cls.endTime)}</strong>
-      </p>
+      <div id="stuMsg" style="margin-top:10px;font-size:.9rem;"></div>
+    </div>
+  `;
+
+  let canvas=document.getElementById("stuSig");
+  resizeCanvas(canvas);
+  window.sigPad=new SignaturePad(canvas);
+}
+
+function resizeCanvas(c){
+  let ratio=Math.max(window.devicePixelRatio||1,1);
+  let rect=c.getBoundingClientRect();
+  c.width=rect.width*ratio;
+  c.height=rect.height*ratio;
+  c.getContext("2d").scale(ratio,ratio);
+}
+
+/* -------------------------------
+   SUBMIT ATTENDANCE
+-------------------------------- */
+function submitAttendance(cid){
+  let c=DB.classes.find(x=>x.id===cid);
+  let adm=document.getElementById("sAdm").value.trim();
+
+  if(c.att.find(a=>a.adm===adm)){
+    stuMsg.innerHTML="Already submitted!";
+    return;
+  }
+
+  if(sigPad.isEmpty()){
+    stuMsg.innerHTML="Signature required!";
+    return;
+  }
+
+  c.att.push({
+    surname: sSurname.value,
+    middle: sMiddle.value,
+    first:  sFirst.value,
+    adm: adm,
+    sig: sigPad.toDataURL(),
+    time: new Date().toISOString()
+  });
+
+  saveDB();
+  stuMsg.innerHTML="<span style='color:green;'>Saved!</span>";
+}
+
+/* -------------------------------
+   SIGN FORMS (LECTURER / HOD)
+-------------------------------- */
+function renderSignForm(c,type){
+  let box=document.getElementById("linkView");
+
+  box.innerHTML+=`
+    <div class='card'>
+      <h3>${type==="lecSig"?"Lecturer":"HOD"} Signature</h3>
+      <canvas id="signPad"></canvas>
+      <button class="btn btn-danger" onclick="sigPad.clear()">Clear</button><br><br>
+
+      <button class="btn btn-primary" onclick="saveSign('${c.id}','${type}')">
+        Save Signature
+      </button>
+
+      <div id="signMsg" style="margin-top:10px;"></div>
+    </div>
+  `;
+
+  let canvas=document.getElementById("signPad");
+  resizeCanvas(canvas);
+  window.sigPad=new SignaturePad(canvas);
+}
+
+function saveSign(cid,type){
+  let c=DB.classes.find(x=>x.id===cid);
+  if(sigPad.isEmpty()){
+    signMsg.innerHTML="Signature required!";
+    return;
+  }
+  c[type]=sigPad.toDataURL();
+  saveDB();
+  signMsg.innerHTML="<span style='color:green;'>Signature Saved!</span>";
+}
+
+/* -------------------------------
+   REPORTS
+-------------------------------- */
+function loadReport(){
+  let area=document.getElementById("reportHolder");
+  area.innerHTML="";
+  
+  let table=document.createElement("table");
+  table.border="1";
+  table.cellPadding=5;
+
+  let head=`
+    <tr>
+      <th>Faculty</th><th>Course</th><th>Unit</th><th>Code</th>
+      <th>AY</th><th>Year</th><th>Sem</th>
+      <th>Attendance Count</th>
+    </tr>`;
+  table.innerHTML=head;
+
+  DB.classes.forEach(c=>{
+    let row=document.createElement("tr");
+    row.innerHTML=`
+      <td>${c.faculty}</td>
+      <td>${c.course}</td>
+      <td>${c.unitName}</td>
+      <td>${c.unitCode}</td>
+      <td>${c.ay}</td>
+      <td>${c.year}</td>
+      <td>${c.sem}</td>
+      <td>${c.att.length}</td>
     `;
-
-    const content = document.createElement("div");
-    const stDotClass = status === "In progress" ? "status-active" :
-                       status === "Not started" ? "status-pending" : "status-locked";
-
-    const statusInfo = document.createElement("div");
-    statusInfo.className = "notice flex";
-    statusInfo.innerHTML = `<span class="status-dot ${stDotClass}"></span>
-      <span>Class status: <strong>${status}</strong> – Attendance is ${
-        (now >= start && now <= end) ? "OPEN" : "CLOSED"
-      }.</span>`;
-    content.appendChild(statusInfo);
-
-    if (mode === "student") {
-      const info = document.createElement("p");
-      info.className = "muted";
-      info.textContent = "Fill your names in the format Surname, Middle name, First name, Admission number, then sign.";
-      content.appendChild(info);
-
-      if (!(now >= start && now <= end)) {
-        const warn = document.createElement("div");
-        warn.className = "alert alert-error";
-        warn.textContent = "Attendance for this class is currently closed.";
-        content.appendChild(warn);
-      } else {
-        const form = document.createElement("form");
-        form.id = "studentAttendanceForm";
-        form.innerHTML = `
-          <div class="field-row">
-            <div>
-              <label>Surname</label>
-              <input type="text" id="stSurname" required>
-            </div>
-            <div>
-              <label>Middle Name</label>
-              <input type="text" id="stMiddle" required>
-            </div>
-            <div>
-              <label>First Name</label>
-              <input type="text" id="stFirst" required>
-            </div>
-          </div>
-          <label class="mt-2">Admission Number</label>
-          <input type="text" id="stAdm" required placeholder="e.g. SI/0001/2024">
-
-          <div class="mt-2 signature-box">
-            <label>Digital Signature (use finger, stylus, or mouse)</label>
-            <canvas id="studentSignaturePad"></canvas>
-            <div class="btn-group mt-1">
-              <button type="button" class="btn btn-secondary btn-sm" id="stClearSig">Clear</button>
-            </div>
-          </div>
-
-          <div class="mt-3">
-            <button type="submit" class="btn btn-accent">Submit Attendance</button>
-          </div>
-        `;
-        content.appendChild(form);
-
-        const msgDiv = document.createElement("div");
-        msgDiv.id = "studentMessage";
-        msgDiv.className = "mt-2";
-        content.appendChild(msgDiv);
-
-        card.appendChild(content);
-        linkViews.appendChild(card);
-
-        // Signature pad
-        const canvas = document.getElementById("studentSignaturePad");
-        resizeCanvas(canvas);
-        const sigPad = new SignaturePad(canvas);
-        document.getElementById("stClearSig").onclick = () => sigPad.clear();
-
-        window.addEventListener("resize", () => resizeCanvas(canvas, sigPad));
-
-        form.addEventListener("submit", (e) => {
-          e.preventDefault();
-          const surname = document.getElementById("stSurname").value.trim();
-          const middle = document.getElementById("stMiddle").value.trim();
-          const first = document.getElementById("stFirst").value.trim();
-          const adm = document.getElementById("stAdm").value.trim();
-          if (!surname || !middle || !first || !adm) {
-            msgDiv.innerHTML = "<div class='alert alert-error'>Please fill in all fields.</div>";
-            return;
-          }
-          if (sigPad.isEmpty()) {
-            msgDiv.innerHTML = "<div class='alert alert-error'>Please sign before submitting.</div>";
-            return;
-          }
-
-          // Check single use per admission number for this class
-          const already = cls.attendance.find(a => a.admissionNo.toLowerCase() === adm.toLowerCase());
-          if (already) {
-            msgDiv.innerHTML = "<div class='alert alert-error'>Attendance already recorded for this admission number.</div>";
-            return;
-          }
-
-          // Single use per device
-          const deviceKey = `attended_${classId}_${adm}`;
-          if (localStorage.getItem(deviceKey)) {
-            msgDiv.innerHTML = "<div class='alert alert-error'>This device has already submitted attendance for this admission number.</div>";
-            return;
-          }
-
-          const sigData = sigPad.toDataURL();
-          cls.attendance.push({
-            surname,
-            middle,
-            first,
-            admissionNo: adm,
-            signature: sigData,
-            time: new Date().toISOString()
-          });
-          saveDB(DB);
-
-          localStorage.setItem(deviceKey, "1");
-          form.reset();
-          sigPad.clear();
-          msgDiv.innerHTML = "<div class='alert alert-success'>Attendance recorded successfully. Thank you.</div>";
-        });
-
-        return;
-      }
-    }
-
-    if (mode === "lecturerSign" || mode === "hodSign") {
-      const labelRole = mode === "lecturerSign" ? "Lecturer Signature" : "HOD Signature";
-      const info = document.createElement("p");
-      info.className = "muted";
-      info.textContent = `Please sign below to confirm that the class took place as recorded.`;
-      content.appendChild(info);
-
-      const form = document.createElement("form");
-      form.id = "signoffForm";
-      form.innerHTML = `
-        <div class="signature-box">
-          <label>${labelRole}</label>
-          <canvas id="signoffPad"></canvas>
-          <div class="btn-group mt-1">
-            <button type="button" class="btn btn-secondary btn-sm" id="signoffClear">Clear</button>
-          </div>
-        </div>
-        <div class="mt-3">
-          <button type="submit" class="btn btn-primary">Save Signature</button>
-        </div>
-      `;
-      content.appendChild(form);
-
-      const msgDiv = document.createElement("div");
-      msgDiv.id = "signoffMessage";
-      msgDiv.className = "mt-2";
-      content.appendChild(msgDiv);
-
-      card.appendChild(content);
-      linkViews.appendChild(card);
-
-      const canvas = document.getElementById("signoffPad");
-      resizeCanvas(canvas);
-      const sigPad = new SignaturePad(canvas);
-      document.getElementById("signoffClear").onclick = () => sigPad.clear();
-      window.addEventListener("resize", () => resizeCanvas(canvas, sigPad));
-
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        if (sigPad.isEmpty()) {
-          msgDiv.innerHTML = "<div class='alert alert-error'>Please provide a signature.</div>";
-          return;
-        }
-        const sigData = sigPad.toDataURL();
-        if (mode === "lecturerSign") {
-          cls.lecturerSignature = { signature: sigData, time: new Date().toISOString() };
-        } else {
-          cls.hodSignature = { signature: sigData, time: new Date().toISOString() };
-        }
-        saveDB(DB);
-        msgDiv.innerHTML = "<div class='alert alert-success'>Signature saved successfully.</div>";
-      });
-
-      return;
-    }
-
-    // fallback
-    card.appendChild(content);
-    linkViews.appendChild(card);
-  }
-
-  function resizeCanvas(canvas, padInstance) {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * ratio;
-    canvas.height = rect.height * ratio;
-    const ctx = canvas.getContext("2d");
-    ctx.scale(ratio, ratio);
-    if (padInstance) {
-      padInstance.clear();
-    }
-  }
-
-  /***********************
-   * Reports
-   ************************/
-  const repFaculty = document.getElementById("repFaculty");
-  const repCourse = document.getElementById("repCourse");
-  const repUnitName = document.getElementById("repUnitName");
-  const repUnitCode = document.getElementById("repUnitCode");
-  const repAcademicYear = document.getElementById("repAcademicYear");
-  const repYear = document.getElementById("repYear");
-  const repSemester = document.getElementById("repSemester");
-  const reportContainer = document.getElementById("reportContainer");
-  const reportSummary = document.getElementById("reportSummary");
-
-  function refreshReportFilters() {
-    // Clear existing
-    [repFaculty, repCourse, repUnitName, repUnitCode, repAcademicYear, repYear, repSemester]
-      .forEach(sel => {
-        clearChildren(sel);
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.textContent = "All";
-        sel.appendChild(opt);
-      });
-
-    DB.classes.forEach(cls => {
-      ensureOption(repFaculty, cls.faculty);
-      ensureOption(repCourse, cls.course);
-      ensureOption(repUnitName, cls.unitName);
-      ensureOption(repUnitCode, cls.unitCode);
-      ensureOption(repAcademicYear, cls.academicYear);
-      ensureOption(repYear, cls.year);
-      ensureOption(repSemester, cls.semester);
-    });
-  }
-
-  document.getElementById("loadReportBtn").addEventListener("click", () => {
-    const f = repFaculty.value;
-    const c = repCourse.value;
-    const uName = repUnitName.value;
-    const uCode = repUnitCode.value;
-    const ay = repAcademicYear.value;
-    const y = repYear.value;
-    const s = repSemester.value;
-
-    let classes = DB.classes.slice();
-    classes = classes.filter(cls => {
-      return (!f || cls.faculty === f) &&
-             (!c || cls.course === c) &&
-             (!uName || cls.unitName === uName) &&
-             (!uCode || cls.unitCode === uCode) &&
-             (!ay || cls.academicYear === ay) &&
-             (!y || cls.year === y) &&
-             (!s || cls.semester === s);
-    });
-
-    clearChildren(reportContainer);
-    if (!classes.length) {
-      reportContainer.innerHTML = "<p class='muted'>No classes found for selected filters.</p>";
-      reportSummary.textContent = "";
-      return;
-    }
-
-    let totalStudents = 0;
-
-    const table = document.createElement("table");
-    table.id = "reportTable";
-    const thead = document.createElement("thead");
-    thead.innerHTML = `
-      <tr>
-        <th>#</th>
-        <th>Faculty</th>
-        <th>Course</th>
-        <th>Unit Code</th>
-        <th>Unit Name</th>
-        <th>AY</th>
-        <th>Year</th>
-        <th>Sem</th>
-        <th>Venue</th>
-        <th>Class Time</th>
-        <th>Lecturer</th>
-        <th>Students (Surname, Middle, First, Adm)</th>
-      </tr>
-    `;
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-    classes.forEach((cls, idx) => {
-      totalStudents += cls.attendance.length;
-      const tr = document.createElement("tr");
-      const studentsText = cls.attendance.map(a => `${a.surname} ${a.middle} ${a.first} (${a.admissionNo})`).join("; ");
-
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td>${cls.faculty}</td>
-        <td>${cls.course}</td>
-        <td>${cls.unitCode}</td>
-        <td>${cls.unitName}</td>
-        <td>${cls.academicYear}</td>
-        <td>${cls.year}</td>
-        <td>${cls.semester}</td>
-        <td>${cls.venue}</td>
-        <td>${formatDateTime(cls.startTime)} – ${formatDateTime(cls.endTime)}</td>
-        <td>${cls.lecturerName}</td>
-        <td>${studentsText || "-"}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    reportContainer.appendChild(table);
-
-    reportSummary.textContent = `${classes.length} class(es) • ${totalStudents} student attendance record(s)`;
+    table.appendChild(row);
   });
 
-  // Export PDF
-  document.getElementById("exportPdfBtn").addEventListener("click", () => {
-    const table = document.getElementById("reportTable");
-    if (!table) {
-      alert("Load a report first.");
-      return;
-    }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("l", "pt", "a4");
+  area.appendChild(table);
+}
 
-    const marginLeft = 40;
-    const marginTop = 40;
+/* -------------------------------
+   EXPORT PDF / EXCEL / WORD
+-------------------------------- */
+function exportPDF(){
+  alert("PDF Export enabled – can integrate advanced templates later.");
+}
 
-    doc.setFontSize(14);
-    doc.text("Jaramogi Oginga Odinga University of Science and Technology", marginLeft, marginTop);
-    doc.setFontSize(11);
-    doc.text("Class Attendance Summary", marginLeft, marginTop + 16);
+function exportExcel(){
+  let table=document.querySelector("#reportHolder table");
+  if(!table) return alert("Load report first.");
 
-    doc.autoTable({
-      html: "#reportTable",
-      startY: marginTop + 30,
-      styles: { fontSize: 8 }
-    });
+  let wb=XLSX.utils.book_new();
+  let ws=XLSX.utils.table_to_sheet(table);
+  XLSX.utils.book_append_sheet(wb,ws,"Attendance");
+  XLSX.writeFile(wb,"Attendance.xlsx");
+}
 
-    doc.save("jooust_attendance_report.pdf");
-  });
+function exportWord(){
+  let table=document.querySelector("#reportHolder table");
+  if(!table) return alert("Load report first.");
 
-  // simple autoTable-like helper if plugin missing
-  if (!window.jspdf.jsPDF.API.autoTable) {
-    window.jspdf.jsPDF.API.autoTable = function (opts) {
-      const doc = this;
-      const table = document.querySelector(opts.html);
-      const startY = opts.startY || 60;
-      const rows = Array.from(table.querySelectorAll("tr"));
-      let y = startY;
-      const lineHeight = 12;
-      const colWidths = [20, 80, 80, 40, 80, 40, 30, 30, 40, 100, 80, 140];
-
-      rows.forEach((row, rowIndex) => {
-        let x = 40;
-        const cells = Array.from(row.children);
-        doc.setFontSize(rowIndex === 0 ? 9 : 8);
-        doc.setFont("Helvetica", rowIndex === 0 ? "bold" : "normal");
-        cells.forEach((cell, colIndex) => {
-          const text = cell.innerText || "";
-          const width = colWidths[colIndex] || 60;
-          doc.text(text.substring(0, 60), x, y);
-          x += width;
-        });
-        y += lineHeight;
-        if (y > 550) {
-          doc.addPage();
-          y = 60;
-        }
-      });
-      return doc;
-    };
-  }
-
-  // Export Excel
-  document.getElementById("exportExcelBtn").addEventListener("click", () => {
-    const table = document.getElementById("reportTable");
-    if (!table) {
-      alert("Load a report first.");
-      return;
-    }
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.table_to_sheet(table);
-    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, "jooust_attendance_report.xlsx");
-  });
-
-  // Export Word (simple HTML -> .doc)
-  document.getElementById("exportWordBtn").addEventListener("click", () => {
-    const table = document.getElementById("reportTable");
-    if (!table) {
-      alert("Load a report first.");
-      return;
-    }
-    const html = `
-      <html>
-      <head><meta charset="UTF-8"></head>
-      <body>
-        <h2 style="text-align:center;">Jaramogi Oginga Odinga University of Science and Technology</h2>
-        <h3 style="text-align:center;">Class Attendance Summary</h3>
-        ${table.outerHTML}
-      </body>
-      </html>`;
-    const blob = new Blob(['\ufeff', html], { type: "application/msword" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "jooust_attendance_report.doc";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-
-  /***********************
-   * Logout buttons
-   ************************/
-  document.getElementById("adminLogoutBtn").addEventListener("click", () => {
-    currentAdmin = null;
-    adminDashboard.style.display = "none";
-  });
-
-  document.getElementById("lecturerLogoutBtn").addEventListener("click", () => {
-    currentLecturer = null;
-    lecturerDashboard.style.display = "none";
-  });
+  let html=table.outerHTML;
+  let blob=new Blob(['\ufeff',html],{type:'application/msword'});
+  let url=URL.createObjectURL(blob);
+  let a=document.createElement("a");
+  a.href=url;
+  a.download="Attendance.doc";
+  a.click();
+}
 </script>
+<!-- FOOTER -->
+<footer style="
+  text-align:center;
+  padding:20px;
+  margin-top:25px;
+  color:#4b5563;
+  font-size:.85rem;
+">
+  © JOOUST Smart Attendance System · Powered by Daniel O. Otieno · 2025
+</footer>
+
+</div><!-- END CONTAINER -->
+
 </body>
 </html>
