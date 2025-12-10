@@ -3,1484 +3,733 @@
 <head>
   <meta charset="UTF-8" />
   <title>JOOUST Smart Attendance System</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- JS Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.2.0/dist/signature_pad.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Signature Pad -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
   <style>
     :root {
-      --primary:#003366;      /* JOOUST dark blue */
-      --primary-light:#0b5394;
-      --accent:#43a047;       /* JOOUST green-ish */
-      --accent-soft:#e8f5e9;
-      --bg:#f4f6fb;
-      --card-bg:#ffffff;
-      --text:#1f2933;
-      --border:#d0d7e2;
-      --danger:#c62828;
-      --muted:#6b7280;
-      --shadow:0 10px 25px rgba(15, 23, 42, 0.12);
-      --radius-xl:18px;
+      /* JOOUST-ish palette */
+      --jooust-green: #067c3b;
+      --jooust-blue:  #004b8d;
+      --jooust-gold:  #f1c40f;
+      --jooust-light: #f4f7fb;
+      --jooust-dark:  #102133;
     }
 
     * {
-      box-sizing:border-box;
-      font-family:"Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
     }
 
     body {
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
+      font-family: "Poppins", sans-serif;
+      background: radial-gradient(circle at top, #e7f3ff 0, #f9fbff 40%, #f4f7fb 100%);
+      color: var(--jooust-dark);
+      min-height: 100vh;
     }
 
-    header {
-      background:linear-gradient(120deg, var(--primary) 0%, var(--primary-light) 50%, var(--accent) 100%);
-      color:#fff;
-      padding:16px 4vw 12px;
-      box-shadow:var(--shadow);
-      position:sticky;
-      top:0;
-      z-index:50;
+    .navbar {
+      background: linear-gradient(90deg, var(--jooust-blue), var(--jooust-green));
     }
 
-    .header-inner {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
+    .navbar-brand,
+    .nav-link,
+    .navbar-brand:hover,
+    .nav-link:hover {
+      color: #fff !important;
     }
 
-    .brand {
-      display:flex;
-      align-items:center;
-      gap:12px;
+    .brand-logo {
+      height: 48px;
+      width: auto;
+      border-radius: 10px;
+      background: #ffffffdd;
+      padding: 3px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.08);
     }
 
-    .brand img {
-      height:56px;
-      width:auto;
-      border-radius:12px;
-      background:#fff;
-      padding:4px;
-      box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    .hero {
+      padding: 2rem 1rem 0.5rem;
     }
 
-    .brand-text h1 {
-      margin:0;
-      font-size:1.25rem;
-      font-weight:700;
-      letter-spacing:0.03em;
-    }
-
-    .brand-text span {
-      font-size:0.78rem;
-      opacity:0.9;
-    }
-
-    nav {
-      margin-top:10px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    nav button {
-      border:none;
-      border-radius:999px;
-      padding:8px 14px;
-      font-size:0.82rem;
-      cursor:pointer;
-      background:rgba(255,255,255,0.12);
-      color:#fff;
-      backdrop-filter:blur(4px);
-      transition:background 0.2s, transform 0.1s, box-shadow 0.2s;
-    }
-
-    nav button.active {
-      background:#fff;
-      color:var(--primary);
-      box-shadow:0 4px 10px rgba(15, 23, 42, 0.25);
-      transform:translateY(-1px);
-    }
-
-    nav button:hover {
-      background:rgba(255,255,255,0.25);
-    }
-
-    main {
-      padding:20px 4vw 40px;
-      max-width:1200px;
-      margin:0 auto;
-    }
-
-    .section {
-      display:none;
-      animation:fadeIn 0.25s ease-out;
-    }
-
-    .section.active {
-      display:block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity:0; transform:translateY(4px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-
-    .card {
-      background:var(--card-bg);
-      border-radius:var(--radius-xl);
-      box-shadow:var(--shadow);
-      padding:18px 18px 20px;
-      margin-bottom:20px;
-      border:1px solid rgba(15, 23, 42, 0.04);
-    }
-
-    .card-header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:12px;
-      gap:8px;
-    }
-
-    .card-title {
-      font-size:1rem;
-      font-weight:600;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .badge {
-      display:inline-flex;
-      align-items:center;
-      padding:2px 8px;
-      border-radius:999px;
-      font-size:0.7rem;
-      background:var(--accent-soft);
-      color:var(--accent);
-      font-weight:500;
-    }
-
-    .card-subtitle {
-      font-size:0.8rem;
-      color:var(--muted);
-    }
-
-    label {
-      font-size:0.8rem;
-      font-weight:500;
-      margin-bottom:4px;
-      display:block;
-      color:var(--muted);
-    }
-
-    input[type="text"],
-    input[type="number"],
-    input[type="date"],
-    input[type="time"],
-    select,
-    textarea {
-      width:100%;
-      padding:8px 10px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      font-size:0.85rem;
-      outline:none;
-      transition:border 0.15s, box-shadow 0.15s;
-      background:#f9fafb;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color:var(--primary-light);
-      box-shadow:0 0 0 1px rgba(11,83,148,0.2);
-      background:#fff;
-    }
-
-    textarea {
-      resize:vertical;
-      min-height:80px;
-    }
-
-    .grid {
-      display:grid;
-      gap:12px;
-    }
-
-    @media (min-width:700px) {
-      .grid-2 { grid-template-columns:repeat(2, minmax(0,1fr)); }
-      .grid-3 { grid-template-columns:repeat(3, minmax(0,1fr)); }
-    }
-
-    .btn {
-      border:none;
-      border-radius:999px;
-      padding:8px 16px;
-      font-size:0.82rem;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      font-weight:500;
-      background:var(--primary);
-      color:#fff;
-      box-shadow:0 4px 12px rgba(15, 23, 42, 0.25);
-      transition:background 0.15s, transform 0.1s, box-shadow 0.15s;
-    }
-
-    .btn:hover {
-      background:var(--primary-light);
-      transform:translateY(-1px);
-      box-shadow:0 6px 16px rgba(15, 23, 42, 0.30);
-    }
-
-    .btn-outline {
-      background:#fff;
-      color:var(--primary);
-      border:1px solid var(--primary-light);
-      box-shadow:none;
-    }
-
-    .btn-outline:hover {
-      background:var(--primary-light);
-      color:#fff;
-    }
-
-    .btn-soft {
-      background:var(--accent-soft);
-      color:var(--accent);
-      box-shadow:none;
-      border:1px solid rgba(67,160,71,0.25);
-    }
-
-    .btn-soft:hover {
-      background:var(--accent);
-      color:#fff;
-    }
-
-    .btn-danger {
-      background:var(--danger);
-    }
-
-    .btn-sm {
-      padding:6px 10px;
-      font-size:0.75rem;
-    }
-
-    .helper-text {
-      font-size:0.75rem;
-      color:var(--muted);
-      margin-top:3px;
+    .hero-title {
+      font-weight: 700;
+      color: var(--jooust-blue);
     }
 
     .pill {
-      display:inline-flex;
-      align-items:center;
-      padding:2px 8px;
-      border-radius:999px;
-      font-size:0.7rem;
-      background:#eef2ff;
-      color:#4f46e5;
-      font-weight:500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(6,124,59,0.08);
+      color: var(--jooust-green);
+      font-size: 0.8rem;
+      font-weight: 500;
     }
 
-    table {
-      width:100%;
-      border-collapse:collapse;
-      font-size:0.8rem;
+    .card {
+      border-radius: 1rem;
+      border: none;
+      box-shadow: 0 10px 30px rgba(15,37,63,0.06);
+      margin-bottom: 1.5rem;
     }
 
-    th, td {
-      padding:6px 8px;
-      border-bottom:1px solid #e5e7eb;
-      text-align:left;
-      vertical-align:top;
+    .card-header {
+      border-radius: 1rem 1rem 0 0 !important;
+      border-bottom: none;
+      background: linear-gradient(90deg, var(--jooust-blue), var(--jooust-green));
+      color: white;
+      font-weight: 600;
     }
 
-    th {
-      background:#f3f4ff;
-      font-weight:600;
+    .btn-jooust {
+      background: linear-gradient(90deg, var(--jooust-green), var(--jooust-blue));
+      border: none;
+      color: #fff;
+      font-weight: 500;
     }
 
-    tr:nth-child(even) td {
-      background:#f9fafb;
+    .btn-jooust:hover {
+      opacity: 0.92;
+      color: #fff;
     }
 
-    .tag {
-      padding:2px 8px;
-      border-radius:12px;
-      font-size:0.7rem;
-      background:#e0f2fe;
-      color:#0369a1;
-      display:inline-flex;
-      align-items:center;
-      gap:4px;
+    .btn-outline-jooust {
+      border-color: var(--jooust-blue);
+      color: var(--jooust-blue);
     }
 
-    .status-dot {
-      width:6px;
-      height:6px;
-      border-radius:999px;
-      background:#22c55e;
+    .btn-outline-jooust:hover {
+      background: var(--jooust-blue);
+      color: #fff;
     }
 
-    .chip-row {
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:6px;
+    .tab-content {
+      margin-top: 1rem;
     }
 
-    .chip {
-      padding:3px 9px;
-      border-radius:999px;
-      background:#f9fafb;
-      border:1px solid #e5e7eb;
-      font-size:0.72rem;
-      color:var(--muted);
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--jooust-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: .5rem;
     }
 
-    .signature-wrapper {
-      border-radius:12px;
-      border:1px dashed #cbd5e1;
-      background:#f9fafb;
-      padding:8px;
-      margin-top:4px;
+    .badge-role {
+      font-size: 0.75rem;
+      border-radius: 999px;
+      padding: 0.25rem 0.6rem;
+      background: rgba(241,196,15,0.18);
+      color: var(--jooust-dark);
     }
 
-    .signature-wrapper canvas {
-      width:100%;
-      height:160px;
-      background:#fff;
-      border-radius:10px;
-      border:1px solid #e5e7eb;
-      box-shadow:inset 0 0 0 1px rgba(148,163,184,0.25);
+    .signature-box {
+      border: 1px dashed #bbb;
+      border-radius: 8px;
+      background: #fff;
+      position: relative;
+      padding: .5rem;
     }
 
-    .signature-actions {
-      margin-top:6px;
-      display:flex;
-      justify-content:flex-end;
-      gap:6px;
+    canvas.signature-canvas {
+      width: 100%;
+      height: 150px;
+      background: #fff;
+      border-radius: 6px;
     }
 
-    .pill-info {
-      font-size:0.76rem;
-      color:var(--muted);
+    .signature-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.25rem;
     }
 
-    .highlight {
-      color:var(--accent);
-      font-weight:600;
+    .table thead {
+      background: var(--jooust-blue);
+      color: #fff;
+      font-size: 0.85rem;
     }
 
-    .table-scroller {
-      max-height:360px;
-      overflow:auto;
-      border-radius:12px;
-      border:1px solid #e5e7eb;
-      background:#fff;
-    }
-
-    .section-hint {
-      font-size:0.8rem;
-      color:var(--muted);
-      margin-bottom:10px;
-    }
-
-    .stat-row {
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:10px;
-    }
-
-    .stat-chip {
-      background:#f9fafb;
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:0.78rem;
-      border:1px solid #e5e7eb;
-    }
-
-    .label-inline {
-      font-size:0.78rem;
-      color:var(--muted);
-      margin-right:8px;
-    }
-
-    .flex-between {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .mt-8 { margin-top:8px; }
-    .mt-10 { margin-top:10px; }
-    .mt-12 { margin-top:12px; }
-    .mt-16 { margin-top:16px; }
-
-    .empty-msg {
-      font-size:0.8rem;
-      color:var(--muted);
-      padding:8px 0;
-    }
-
-    .badge-live {
-      padding:3px 9px;
-      border-radius:999px;
-      background:#fee2e2;
-      color:#b91c1c;
-      font-size:0.7rem;
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-      font-weight:500;
-    }
-
-    .dot-pulse {
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:#dc2626;
-      box-shadow:0 0 0 0 rgba(220,38,38,0.8);
-      animation:pulse 1.4s infinite;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow:0 0 0 0 rgba(220,38,38,0.8); }
-      70% { box-shadow:0 0 0 8px rgba(220,38,38,0); }
-      100% { box-shadow:0 0 0 0 rgba(220,38,38,0); }
+    .filter-pill {
+      padding: 0.2rem 0.6rem;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      background: rgba(0,75,141,0.06);
+      color: var(--jooust-blue);
+      margin-right: 0.3rem;
+      margin-bottom: 0.3rem;
     }
 
     footer {
-      text-align:center;
-      font-size:0.75rem;
-      color:var(--muted);
-      padding:14px 4vw 22px;
+      padding: 1.5rem 0 0.8rem;
+      font-size: 0.8rem;
+      color: #6c757d;
+      text-align: center;
+    }
+
+    @media print {
+      nav, .hero, #auth-section, #reports-section, footer {
+        display: none !important;
+      }
+      body {
+        background: #fff;
+      }
+      .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
     }
   </style>
 </head>
 <body>
-
-<header>
-  <div class="header-inner">
-    <div class="brand">
-      <img src="logo.jpg" alt="JOOUST Logo" id="jooustLogo">
-      <div class="brand-text">
-        <h1>JOOUST Smart Attendance System</h1>
-        <span>Digital class attendance · Signatures · JOOUST-branded reports</span>
-      </div>
+  <!-- Top Nav -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <img src="logo.jpg" alt="JOOUST Logo" class="brand-logo">
+        <div class="d-flex flex-column">
+          <span class="fw-semibold">JOOUST Smart Attendance</span>
+          <small class="text-light-50" style="font-size: 0.7rem;">Faculty · Course · Unit · Year · Semester</small>
+        </div>
+      </a>
     </div>
-  </div>
-  <nav>
-    <button class="active" data-section="adminSection">Admin Setup</button>
-    <button data-section="lecturerSection">Lecturer Console</button>
-    <button data-section="studentSection">Student Attendance Form</button>
-    <button data-section="reportsSection">Reports & Exports</button>
   </nav>
-</header>
 
-<main>
-  <!-- ADMIN SECTION -->
-  <section id="adminSection" class="section active">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Faculty / Course / Class Setup</div>
-          <div class="card-subtitle">
-            Upload structure once, then lecturers can pick from dropdowns.
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="row align-items-center g-3">
+        <div class="col-md-8">
+          <div class="pill mb-2">
+            📝 Digital Class Attendance · With Signatures & Reports
           </div>
-        </div>
-        <span class="badge">Step 1</span>
-      </div>
-
-      <p class="section-hint">
-        Prepare a CSV file with columns: <strong>Faculty, Course, Unit</strong>.  
-        Example: <span class="pill">School of Computing, BSc IT, Network Security</span>
-      </p>
-
-      <div class="grid grid-2">
-        <div>
-          <label for="structureFile">Upload structure (CSV)</label>
-          <input type="file" id="structureFile" accept=".csv" />
-          <div class="helper-text">
-            After upload, the Faculty → Course → Unit dropdowns will be available everywhere.
-          </div>
-        </div>
-        <div>
-          <label>Current structures</label>
-          <div id="structureSummary" class="helper-text">
-            No structure uploaded yet.
+          <h1 class="hero-title mb-2">Attendance Register for JOOUST Classes</h1>
+          <p class="mb-3">
+            Lecturers create and sign classes, students sign digitally once,
+            and HODs approve. Admins manage users and generate Faculty/Course/Unit reports in
+            PDF, Word &amp; Excel with official JOOUST branding.
+          </p>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="filter-pill">Secure single-use links</span>
+            <span class="filter-pill">Digital signatures</span>
+            <span class="filter-pill">Faculty &amp; Course filters</span>
+            <span class="filter-pill">Export to PDF / Word / Excel</span>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Register Lecturers</div>
-          <div class="card-subtitle">Lecturers can later start and end classes.</div>
-        </div>
-        <span class="badge">Step 2</span>
-      </div>
-
-      <div class="grid grid-3">
-        <div>
-          <label for="lecturerName">Lecturer full name</label>
-          <input type="text" id="lecturerName" placeholder="Dr. Jane A. Doe" />
-        </div>
-        <div>
-          <label for="lecturerStaffId">Staff / Payroll / PF number</label>
-          <input type="text" id="lecturerStaffId" placeholder="PF1234" />
-        </div>
-        <div style="display:flex; align-items:flex-end;">
-          <button class="btn btn-soft" id="addLecturerBtn">Add Lecturer</button>
-        </div>
-      </div>
-
-      <div class="mt-12">
-        <div class="card-subtitle">Registered lecturers</div>
-        <div id="lecturerList" class="helper-text mt-8">
-          None yet. Add at least one lecturer.
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Student sharing link</div>
-      </div>
-      <p class="section-hint">
-        Share this link with students for attendance:
-        <br/>
-        <span class="pill-info">
-          <span class="highlight" id="studentLinkDisplay"></span>
-        </span>
-      </p>
     </div>
   </section>
 
-  <!-- LECTURER SECTION -->
-  <section id="lecturerSection" class="section">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">
-            Create & Control Class Session
-          </div>
-          <div class="card-subtitle">
-            Select class details, then start/end the session. Students sign from the link.
-          </div>
-        </div>
-        <span class="badge">Lecturer Console</span>
-      </div>
-
-      <div class="grid grid-3">
-        <div>
-          <label for="lecturerSelect">Lecturer</label>
-          <select id="lecturerSelect">
-            <option value="">Select lecturer…</option>
-          </select>
-        </div>
-        <div>
-          <label for="lecturerDate">Class Date</label>
-          <input type="date" id="lecturerDate">
-        </div>
-        <div>
-          <label for="lecturerStartTime">Planned start time</label>
-          <input type="time" id="lecturerStartTime">
-        </div>
-      </div>
-
-      <div class="grid grid-3 mt-12">
-        <div>
-          <label for="facultySelect">Faculty / School</label>
-          <select id="facultySelect">
-            <option value="">Select…</option>
-          </select>
-        </div>
-        <div>
-          <label for="courseSelect">Course</label>
-          <select id="courseSelect">
-            <option value="">Select…</option>
-          </select>
-        </div>
-        <div>
-          <label for="unitSelect">Unit / Class</label>
-          <select id="unitSelect">
-            <option value="">Select…</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid grid-2 mt-12">
-        <div>
-          <label for="venueInput">Venue / Lecture Room</label>
-          <input type="text" id="venueInput" placeholder="Lab 3, Main Campus">
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <div class="chip-row">
-            <button class="btn" id="startClassBtn">Start Class</button>
-            <button class="btn btn-outline" id="endClassBtn">End Class & Sign</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-10">
-        <span class="label-inline">Current Session Status:</span>
-        <span id="currentClassStatus" class="pill">No active class</span>
-      </div>
-    </div>
-
-    <div class="card" id="lecturerSignatureCard" style="display:none;">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Lecturer Sign-off</div>
-          <div class="card-subtitle">Sign to confirm that this class took place.</div>
-        </div>
-        <span class="badge">Signature</span>
-      </div>
-      <div class="signature-wrapper">
-        <canvas id="lecturerSignatureCanvas"></canvas>
-        <div class="signature-actions">
-          <button class="btn-sm btn-outline" id="clearLecturerSignature">Clear</button>
-          <button class="btn-sm btn-soft" id="saveLecturerSignature">Save Signature</button>
-        </div>
-      </div>
-      <p class="helper-text mt-8">
-        Once saved, the signature is locked with this class record and appears on reports.
-      </p>
-    </div>
-  </section>
-
-  <!-- STUDENT SECTION -->
-  <section id="studentSection" class="section">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Student Attendance Form</div>
-          <div class="card-subtitle">
-            Fill this form only when the lecturer has started the class.
-          </div>
-        </div>
-        <span class="badge">For Students</span>
-      </div>
-
-      <div id="studentClassInfo" class="chip-row">
-        <span class="chip">Waiting for an active class…</span>
-      </div>
-
-      <div class="grid grid-2 mt-12">
-        <div>
-          <label for="surnameInput">Sir Name (Surname)</label>
-          <input type="text" id="surnameInput" placeholder="Odhiambo">
-        </div>
-        <div>
-          <label for="middleNameInput">Middle Name</label>
-          <input type="text" id="middleNameInput" placeholder="Ochieng">
-        </div>
-      </div>
-
-      <div class="grid grid-2 mt-12">
-        <div>
-          <label for="firstNameInput">First Name</label>
-          <input type="text" id="firstNameInput" placeholder="Daniel">
-        </div>
-        <div>
-          <label for="admissionInput">Admission / Registration Number</label>
-          <input type="text" id="admissionInput" placeholder="JOOUST/SCIT/0001/2025">
-        </div>
-      </div>
-
-      <div class="mt-12">
-        <label>Student digital signature</label>
-        <div class="signature-wrapper">
-          <canvas id="studentSignatureCanvas"></canvas>
-          <div class="signature-actions">
-            <button class="btn-sm btn-outline" id="clearStudentSignature">Clear</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-16">
-        <button class="btn" id="submitAttendanceBtn">Submit Attendance</button>
-      </div>
-      <p class="helper-text mt-8">
-        Your attendance (with time and signature) will be captured against the active class.
-      </p>
-    </div>
-  </section>
-
-  <!-- REPORTS SECTION -->
-  <section id="reportsSection" class="section">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Attendance Reports</div>
-          <div class="card-subtitle">
-            Generate weekly, monthly or per-class summaries. Export as Excel or PDF (with JOOUST logo).
-          </div>
-        </div>
-        <span class="badge">Management</span>
-      </div>
-
-      <div class="grid grid-3">
-        <div>
-          <label for="reportClassSelect">Class / Unit</label>
-          <select id="reportClassSelect">
-            <option value="">Select a class session…</option>
-          </select>
-        </div>
-        <div>
-          <label for="reportTypeSelect">Report type</label>
-          <select id="reportTypeSelect">
-            <option value="class">Selected Class Summary</option>
-            <option value="weekly">Last 7 Days (All)</option>
-            <option value="monthly">Last 30 Days (All)</option>
-          </select>
-        </div>
-        <div style="display:flex; align-items:flex-end;">
-          <button class="btn-soft btn" id="generateReportBtn">Generate Report</button>
-        </div>
-      </div>
-
-      <div class="flex-between mt-12">
-        <div class="chip-row">
-          <span class="chip">JOOUST logo embedded in PDF</span>
-          <span class="chip">Excel (XLSX) for analysis</span>
-        </div>
-        <div class="chip-row">
-          <button class="btn-sm btn-outline" id="exportExcelBtn">Export Excel</button>
-          <button class="btn-sm btn-outline" id="exportPdfBtn">Export PDF</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div id="reportPreview">
-        <div class="flex-between">
-          <div>
-            <div class="card-title">Report Preview</div>
-            <div class="card-subtitle">
-              Select a report above to see details here.
+  <main class="pb-4">
+    <div class="container">
+      <!-- Auth Section -->
+      <section id="auth-section" class="mb-3">
+        <div class="row g-3">
+          <!-- Admin Login -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Admin Login</span>
+                <span class="badge-role">System Administrator</span>
+              </div>
+              <div class="card-body">
+                <p class="small text-muted">
+                  Admin can approve lecturer accounts, upload Faculty/Course/Unit structure,
+                  view all attendance, and generate reports.
+                </p>
+                <form id="adminLoginForm">
+                  <div class="mb-2">
+                    <label class="form-label">Username / Email</label>
+                    <input type="text" class="form-control" required>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" required>
+                  </div>
+                  <button type="submit" class="btn btn-jooust w-100">Login as Admin</button>
+                </form>
+              </div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <img src="logo.jpg" alt="JOOUST Logo" style="height:40px; border-radius:10px; background:#fff; padding:4px; box-shadow:0 4px 10px rgba(15,23,42,.2);">
+
+          <!-- Lecturer Login & Registration -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Lecturer Access</span>
+                <span class="badge-role">Limited Powers</span>
+              </div>
+              <div class="card-body">
+                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="lec-login-tab" data-bs-toggle="pill"
+                            data-bs-target="#lec-login" type="button" role="tab">
+                      Login
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="lec-register-tab" data-bs-toggle="pill"
+                            data-bs-target="#lec-register" type="button" role="tab">
+                      Register
+                    </button>
+                  </li>
+                </ul>
+                <div class="tab-content" id="pills-tabContent">
+                  <!-- Lecturer Login -->
+                  <div class="tab-pane fade show active" id="lec-login" role="tabpanel">
+                    <p class="small text-muted">
+                      Lecturers can create classes, start/end attendance, view only their own records,
+                      and generate reports for their units.
+                    </p>
+                    <form id="lecturerLoginForm">
+                      <div class="mb-2">
+                        <label class="form-label">PF/ID or Email</label>
+                        <input type="text" class="form-control" required>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" required>
+                      </div>
+                      <button type="submit" class="btn btn-jooust w-100">Login as Lecturer</button>
+                    </form>
+                  </div>
+
+                  <!-- Lecturer Registration -->
+                  <div class="tab-pane fade" id="lec-register" role="tabpanel">
+                    <p class="small text-muted">
+                      New lecturers register here. Admin must approve before first login.
+                    </p>
+                    <form id="lecturerRegisterForm">
+                      <div class="row g-2">
+                        <div class="col-md-3">
+                          <label class="form-label">Salutation</label>
+                          <select class="form-select" required>
+                            <option value="">Select</option>
+                            <option>Dr.</option>
+                            <option>Prof.</option>
+                            <option>Mr.</option>
+                            <option>Ms.</option>
+                            <option>Mrs.</option>
+                          </select>
+                        </div>
+                        <div class="col-md-9">
+                          <label class="form-label">Full Name</label>
+                          <input type="text" class="form-control" placeholder="Surname First Middle" required>
+                        </div>
+                      </div>
+                      <div class="row g-2 mt-1">
+                        <div class="col-md-6">
+                          <label class="form-label">PF No / ID</label>
+                          <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Email</label>
+                          <input type="email" class="form-control" required>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 mt-1">
+                        <div class="col-md-6">
+                          <label class="form-label">Faculty</label>
+                          <input type="text" class="form-control" placeholder="e.g. FCE" required>
+                          <!-- In production: turn into dropdown from uploaded structure -->
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Course(s)</label>
+                          <input type="text" class="form-control" placeholder="e.g. BSc CSF" required>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 mt-1">
+                        <div class="col-md-6">
+                          <label class="form-label">Unit(s)</label>
+                          <input type="text" class="form-control" placeholder="e.g. CCS 3210" required>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label">Year</label>
+                          <input type="number" min="1" max="6" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label">Semester</label>
+                          <select class="form-select" required>
+                            <option value="">Select</option>
+                            <option>Semester 1</option>
+                            <option>Semester 2</option>
+                            <option>Trimester</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 mt-1">
+                        <div class="col-md-6">
+                          <label class="form-label">Set Password</label>
+                          <input type="password" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Confirm Password</label>
+                          <input type="password" class="form-control" required>
+                        </div>
+                      </div>
+
+                      <button type="submit" class="btn btn-outline-jooust w-100 mt-2">
+                        Submit for Admin Approval
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div id="reportSummary" class="stat-row mt-10"></div>
+      <!-- Attendance Section (Lecturer view) -->
+      <section id="attendance-section">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Class Attendance Sheet</span>
+            <span class="badge bg-warning text-dark">Lecturer Fills First · Then Share Student Link</span>
+          </div>
+          <div class="card-body">
+            <!-- CLASS METADATA -->
+            <div class="section-title">Class Details (Filled by Lecturer)</div>
+            <p class="small text-muted mb-2">
+              These details will appear at the top of the attendance report and exports.
+            </p>
+            <form id="classDetailsForm" class="row g-2 mb-3">
+              <div class="col-md-3">
+                <label class="form-label">Faculty</label>
+                <select class="form-select" required>
+                  <option value="">Select Faculty</option>
+                  <option>Faculty of Science</option>
+                  <option>Faculty of Education</option>
+                  <option>Faculty of Health Sciences</option>
+                  <!-- In production: auto-filled from uploaded structure -->
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Course</label>
+                <select class="form-select" required>
+                  <option value="">Select Course</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Unit</label>
+                <select class="form-select" required>
+                  <option value="">Select Unit</option>
+                </select>
+              </div>
+              <div class="col-md-1">
+                <label class="form-label">Year</label>
+                <input type="number" class="form-control" min="1" max="6" required>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Semester</label>
+                <select class="form-select" required>
+                  <option value="">Select</option>
+                  <option>Semester 1</option>
+                  <option>Semester 2</option>
+                  <option>Trimester</option>
+                </select>
+              </div>
 
-        <div class="mt-10 table-scroller" id="reportTableWrapper" style="display:none;">
-          <table id="reportTable">
-            <thead></thead>
-            <tbody></tbody>
-          </table>
+              <div class="col-md-4">
+                <label class="form-label">Lecturer Name</label>
+                <input type="text" class="form-control" placeholder="Surname First Middle" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Venue</label>
+                <input type="text" class="form-control" placeholder="e.g. LT1, Online" required>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Class Date</label>
+                <input type="date" class="form-control" required>
+              </div>
+              <div class="col-md-1">
+                <label class="form-label">Start</label>
+                <input type="time" class="form-control" required>
+              </div>
+              <div class="col-md-1">
+                <label class="form-label">End</label>
+                <input type="time" class="form-control" required>
+              </div>
+            </form>
+
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button class="btn btn-jooust btn-sm">
+                Start Class &amp; Generate Student Link
+              </button>
+              <button class="btn btn-outline-jooust btn-sm">
+                End Class
+              </button>
+              <span class="small text-muted">
+                <strong>Note:</strong> Student link should be single-use per device &amp; per user.<br>
+                Implement this rule in the backend when saving tokens.
+              </span>
+            </div>
+
+            <!-- STUDENT ATTENDANCE FORM -->
+            <div class="section-title">Student Attendance (Single Use Link)</div>
+            <p class="small text-muted mb-2">
+              When a student opens their unique link, they only see this simple form:
+              Surname, Middle Name, First Name, Admission Number and a digital signature area.
+            </p>
+
+            <form id="studentForm" class="row g-2 mb-3">
+              <div class="col-md-3">
+                <label class="form-label">Surname</label>
+                <input type="text" class="form-control" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Middle Name</label>
+                <input type="text" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-control" required>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Admission Number</label>
+                <input type="text" class="form-control" required>
+              </div>
+
+              <div class="col-12">
+                <div class="signature-box">
+                  <canvas id="studentSignature" class="signature-canvas"></canvas>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <span class="signature-label">Student digital signature (sign using mouse or finger)</span>
+                    <button type="button" class="btn btn-sm btn-outline-jooust" id="clearStudentSig">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 text-end">
+                <button type="submit" class="btn btn-jooust">
+                  Submit Attendance (One-time)
+                </button>
+              </div>
+            </form>
+
+            <!-- ATTENDANCE LIST (for lecturer / admin view) -->
+            <div class="section-title">Attendance List</div>
+            <p class="small text-muted mb-2">
+              After saving, students will appear in this list. Use filters to generate reports.
+            </p>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Surname</th>
+                    <th>Middle Name</th>
+                    <th>First Name</th>
+                    <th>Admission No.</th>
+                    <th>Signature</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceBody">
+                  <!-- Filled from backend or JS -->
+                  <tr class="text-muted">
+                    <td colspan="7" class="text-center small">
+                      Attendance records will appear here.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- SIGNATURES: Lecturer & HOD -->
+            <div class="row g-3 mt-3">
+              <div class="col-md-6">
+                <div class="section-title">Lecturer Confirmation</div>
+                <div class="signature-box">
+                  <canvas id="lecturerSignature" class="signature-canvas"></canvas>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <span class="signature-label">
+                      Lecturer: sign to confirm class was conducted.
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-jooust" id="clearLecturerSig">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="section-title">HOD Approval</div>
+                <div class="signature-box">
+                  <canvas id="hodSignature" class="signature-canvas"></canvas>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <span class="signature-label">
+                      HOD: sign to approve that this class took place.
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-jooust" id="clearHodSig">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div> <!-- card-body -->
+        </div> <!-- card -->
+      </section>
+
+      <!-- REPORTS SECTION -->
+      <section id="reports-section" class="mt-3">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Reports &amp; Exports</span>
+            <span class="badge bg-light text-dark">
+              Monthly · Weekly · Class summaries · Faculty / Course / Unit / Year / Semester
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="section-title">Search &amp; Filter Records</div>
+            <p class="small text-muted mb-3">
+              Use the filters below to quickly locate a specific record or generate a report.
+            </p>
+
+            <form id="reportFilterForm" class="row g-2 mb-3">
+              <div class="col-md-3">
+                <label class="form-label">Faculty</label>
+                <select class="form-select">
+                  <option value="">All Faculties</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Course</label>
+                <select class="form-select">
+                  <option value="">All Courses</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Unit</label>
+                <select class="form-select">
+                  <option value="">All Units</option>
+                </select>
+              </div>
+              <div class="col-md-1">
+                <label class="form-label">Year</label>
+                <select class="form-select">
+                  <option value="">All</option>
+                  <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Semester</label>
+                <select class="form-select">
+                  <option value="">All</option>
+                  <option>Semester 1</option>
+                  <option>Semester 2</option>
+                  <option>Trimester</option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">From Date</label>
+                <input type="date" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">To Date</label>
+                <input type="date" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Report Type</label>
+                <select class="form-select">
+                  <option>Class Summary</option>
+                  <option>Weekly Summary</option>
+                  <option>Monthly Summary</option>
+                  <option>Per Lecturer</option>
+                </select>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-jooust w-100">
+                  Filter Records
+                </button>
+              </div>
+            </form>
+
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <button class="btn btn-sm btn-jooust">Download PDF (with JOOUST Logo)</button>
+              <button class="btn btn-sm btn-outline-jooust">Download Word</button>
+              <button class="btn btn-sm btn-outline-jooust">Download Excel</button>
+              <span class="small text-muted">
+                In the backend, use the filters to query records and generate
+                branded PDF/Word/Excel files (logo in header, class details at top,
+                signatures at bottom).
+              </span>
+            </div>
+          </div>
         </div>
-
-        <div id="reportEmptyState" class="empty-msg">
-          No report generated yet.
-        </div>
-      </div>
+      </section>
     </div>
+  </main>
 
-    <div class="card" id="hodSignatureCard" style="display:none;">
-      <div class="card-header">
-        <div>
-          <div class="card-title">HOD Approval Signature</div>
-          <div class="card-subtitle">
-            Head of Department signs to approve that selected class took place.
-          </div>
-        </div>
-        <span class="badge">HOD</span>
-      </div>
-      <div class="signature-wrapper">
-        <canvas id="hodSignatureCanvas"></canvas>
-        <div class="signature-actions">
-          <button class="btn-sm btn-outline" id="clearHodSignature">Clear</button>
-          <button class="btn-sm btn-soft" id="saveHodSignature">Save HOD Signature</button>
-        </div>
-      </div>
-      <p class="helper-text mt-8">
-        This signature is stored with the specific class and will appear on exported reports.
+  <footer class="mt-3">
+    <div class="container">
+      <p class="mb-0">
+        © <span id="year"></span> Jaramogi Oginga Odinga University of Science &amp; Technology (JOOUST).
+        Smart Attendance System.
       </p>
     </div>
-  </section>
-</main>
+  </footer>
 
-<footer>
-  JOOUST · Smart Attendance & Reporting · Built for Faculties, Courses & Units
-</footer>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script>
-  // ------------------ DATA STORAGE ------------------
-  const STORAGE_KEY = "jooustAttendanceApp";
+  <!-- Minimal JS: Signature pads & small helpers -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
 
-  let appData = {
-    structure: [],     // [{faculty, course, unit}]
-    lecturers: [],     // [{id, name, staffId}]
-    classes: []        // [{id, lecturerId, date, startTime, actualStart, faculty, course, unit, venue, endTime, lecturerSignature, hodSignature, attendees:[] }]
-  };
+    function initSignaturePad(canvasId, clearBtnId) {
+      const canvas = document.getElementById(canvasId);
+      const clearBtn = document.getElementById(clearBtnId);
 
-  let activeClassId = null;
-
-  function loadData() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) appData = JSON.parse(raw);
-    } catch (e) {
-      console.error("Error loading data", e);
-    }
-  }
-
-  function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-    refreshUI();
-  }
-
-  function generateId(prefix) {
-    return prefix + "_" + Math.random().toString(36).slice(2, 10);
-  }
-
-  // ------------------ NAVIGATION ------------------
-  const sectionButtons = document.querySelectorAll("nav button");
-  const sections = document.querySelectorAll(".section");
-
-  sectionButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      sectionButtons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      const target = btn.getAttribute("data-section");
-      sections.forEach(sec => {
-        sec.classList.toggle("active", sec.id === target);
-      });
-    });
-  });
-
-  // ------------------ ADMIN: STRUCTURE UPLOAD ------------------
-  const structureFileInput = document.getElementById("structureFile");
-  const structureSummary = document.getElementById("structureSummary");
-
-  structureFileInput.addEventListener("change", () => {
-    const file = structureFileInput.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target.result;
-      const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-      const parsed = [];
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (i === 0 && line.toLowerCase().includes("faculty")) {
-          // header row
-          continue;
-        }
-        const parts = line.split(",").map(p => p.trim()).filter(p => p !== "");
-        if (parts.length >= 3) {
-          parsed.push({
-            faculty: parts[0],
-            course: parts[1],
-            unit: parts[2]
-          });
-        }
+      // Resize canvas to container width
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = 150;
       }
-      if (parsed.length === 0) {
-        alert("No valid rows found. Make sure CSV has Faculty, Course, Unit.");
-        return;
-      }
-      appData.structure = parsed;
-      saveData();
-      alert("Structure uploaded successfully. Dropdowns updated.");
-    };
-    reader.readAsText(file);
-  });
+      resize();
+      window.addEventListener("resize", resize);
 
-  function updateStructureSummary() {
-    if (!appData.structure || appData.structure.length === 0) {
-      structureSummary.textContent = "No structure uploaded yet.";
-      return;
-    }
-    const faculties = new Set(appData.structure.map(s => s.faculty));
-    const courses = new Set(appData.structure.map(s => s.course));
-    const units = new Set(appData.structure.map(s => s.unit));
-    structureSummary.innerHTML = `
-      <span class="pill">Faculties: ${faculties.size}</span>
-      &nbsp; <span class="pill">Courses: ${courses.size}</span>
-      &nbsp; <span class="pill">Units: ${units.size}</span>
-    `;
-  }
+      const pad = new SignaturePad(canvas, {backgroundColor: "white"});
 
-  function buildStructureMaps() {
-    const map = {};
-    for (const row of appData.structure) {
-      if (!map[row.faculty]) map[row.faculty] = {};
-      if (!map[row.faculty][row.course]) map[row.faculty][row.course] = new Set();
-      map[row.faculty][row.course].add(row.unit);
-    }
-    return map;
-  }
-
-  // ------------------ ADMIN: LECTURERS ------------------
-  const lecturerNameInput = document.getElementById("lecturerName");
-  const lecturerStaffIdInput = document.getElementById("lecturerStaffId");
-  const addLecturerBtn = document.getElementById("addLecturerBtn");
-  const lecturerListDiv = document.getElementById("lecturerList");
-  const lecturerSelect = document.getElementById("lecturerSelect");
-
-  addLecturerBtn.addEventListener("click", () => {
-    const name = lecturerNameInput.value.trim();
-    const staffId = lecturerStaffIdInput.value.trim();
-    if (!name || !staffId) {
-      alert("Please enter both lecturer name and staff number.");
-      return;
-    }
-    appData.lecturers.push({
-      id: generateId("lec"),
-      name,
-      staffId
-    });
-    lecturerNameInput.value = "";
-    lecturerStaffIdInput.value = "";
-    saveData();
-  });
-
-  function updateLecturerList() {
-    if (!appData.lecturers || appData.lecturers.length === 0) {
-      lecturerListDiv.textContent = "No lecturers registered yet.";
-      return;
-    }
-    const items = appData.lecturers.map(l =>
-      `<span class="chip">${l.name} · ${l.staffId}</span>`
-    ).join(" ");
-    lecturerListDiv.innerHTML = items;
-  }
-
-  function updateLecturerSelect() {
-    lecturerSelect.innerHTML = `<option value="">Select lecturer…</option>`;
-    for (const l of appData.lecturers) {
-      const opt = document.createElement("option");
-      opt.value = l.id;
-      opt.textContent = `${l.name} (${l.staffId})`;
-      lecturerSelect.appendChild(opt);
-    }
-  }
-
-  // ------------------ LECTURER CLASS CONTROLS ------------------
-  const lecturerDateInput = document.getElementById("lecturerDate");
-  const lecturerStartTimeInput = document.getElementById("lecturerStartTime");
-  const facultySelect = document.getElementById("facultySelect");
-  const courseSelect = document.getElementById("courseSelect");
-  const unitSelect = document.getElementById("unitSelect");
-  const venueInput = document.getElementById("venueInput");
-  const startClassBtn = document.getElementById("startClassBtn");
-  const endClassBtn = document.getElementById("endClassBtn");
-  const currentClassStatus = document.getElementById("currentClassStatus");
-
-  function updateFacultyDropdowns() {
-    const structureMap = buildStructureMaps();
-    facultySelect.innerHTML = `<option value="">Select…</option>`;
-    const faculties = Object.keys(structureMap).sort();
-    faculties.forEach(f => {
-      const opt = document.createElement("option");
-      opt.value = f;
-      opt.textContent = f;
-      facultySelect.appendChild(opt);
-    });
-  }
-
-  facultySelect.addEventListener("change", () => {
-    const structureMap = buildStructureMaps();
-    const faculty = facultySelect.value;
-    courseSelect.innerHTML = `<option value="">Select…</option>`;
-    unitSelect.innerHTML = `<option value="">Select…</option>`;
-    if (!faculty || !structureMap[faculty]) return;
-    const courses = Object.keys(structureMap[faculty]).sort();
-    courses.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      courseSelect.appendChild(opt);
-    });
-  });
-
-  courseSelect.addEventListener("change", () => {
-    const structureMap = buildStructureMaps();
-    const faculty = facultySelect.value;
-    const course = courseSelect.value;
-    unitSelect.innerHTML = `<option value="">Select…</option>`;
-    if (!faculty || !course || !structureMap[faculty] || !structureMap[faculty][course]) return;
-    const units = Array.from(structureMap[faculty][course]).sort();
-    units.forEach(u => {
-      const opt = document.createElement("option");
-      opt.value = u;
-      opt.textContent = u;
-      unitSelect.appendChild(opt);
-    });
-  });
-
-  startClassBtn.addEventListener("click", () => {
-    const lecturerId = lecturerSelect.value;
-    const date = lecturerDateInput.value;
-    const plannedTime = lecturerStartTimeInput.value;
-    const faculty = facultySelect.value;
-    const course = courseSelect.value;
-    const unit = unitSelect.value;
-    const venue = venueInput.value.trim();
-
-    if (!lecturerId || !date || !faculty || !course || !unit || !venue) {
-      alert("Please fill lecturer, date, faculty, course, unit and venue.");
-      return;
-    }
-
-    if (activeClassId) {
-      if (!confirm("Another class is active. End it before starting a new one?")) {
-        return;
-      }
-      // leave the old one, but we still allow new one
-    }
-
-    const newClass = {
-      id: generateId("class"),
-      lecturerId,
-      date,
-      startTime: plannedTime || null,
-      actualStart: new Date().toISOString(),
-      faculty,
-      course,
-      unit,
-      venue,
-      endTime: null,
-      lecturerSignature: null,
-      hodSignature: null,
-      attendees: []
-    };
-
-    appData.classes.push(newClass);
-    activeClassId = newClass.id;
-    saveData();
-    alert("Class started. Share the student link for attendance.");
-  });
-
-  endClassBtn.addEventListener("click", () => {
-    if (!activeClassId) {
-      alert("No active class to end.");
-      return;
-    }
-    const klass = appData.classes.find(c => c.id === activeClassId);
-    if (!klass) {
-      alert("Active class not found.");
-      return;
-    }
-    klass.endTime = new Date().toISOString();
-    saveData();
-    document.getElementById("lecturerSignatureCard").style.display = "block";
-    alert("Class ended. Please sign to confirm.");
-  });
-
-  function updateCurrentClassStatus() {
-    if (!appData.classes || appData.classes.length === 0) {
-      currentClassStatus.textContent = "No class sessions created yet.";
-      currentClassStatus.className = "pill";
-      return;
-    }
-    const current = appData.classes.find(c => c.id === activeClassId && !c.endTime);
-    if (current) {
-      currentClassStatus.innerHTML = `
-        <span class="status-dot"></span>
-        &nbsp; Active: ${current.faculty} · ${current.course} · ${current.unit} @ ${current.venue}
-      `;
-      currentClassStatus.className = "tag";
-    } else {
-      currentClassStatus.textContent = "No active class";
-      currentClassStatus.className = "pill";
-      activeClassId = null;
-    }
-  }
-
-  // ------------------ SIGNATURES ------------------
-  let studentSigPad, lecturerSigPad, hodSigPad;
-
-  function setupSignaturePads() {
-    const studentCanvas = document.getElementById("studentSignatureCanvas");
-    const lecturerCanvas = document.getElementById("lecturerSignatureCanvas");
-    const hodCanvas = document.getElementById("hodSignatureCanvas");
-
-    function resizeCanvas(canvas) {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1);
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * ratio;
-      canvas.height = rect.height * ratio;
-      const ctx = canvas.getContext("2d");
-      ctx.scale(ratio, ratio);
-    }
-
-    [studentCanvas, lecturerCanvas, hodCanvas].forEach(c => resizeCanvas(c));
-
-    studentSigPad = new window.SignaturePad(studentCanvas, { backgroundColor:"#ffffff" });
-    lecturerSigPad = new window.SignaturePad(lecturerCanvas, { backgroundColor:"#ffffff" });
-    hodSigPad = new window.SignaturePad(hodCanvas, { backgroundColor:"#ffffff" });
-
-    window.addEventListener("resize", () => {
-      [studentCanvas, lecturerCanvas, hodCanvas].forEach(c => resizeCanvas(c));
-    });
-
-    document.getElementById("clearStudentSignature").onclick = () => studentSigPad.clear();
-    document.getElementById("clearLecturerSignature").onclick = () => lecturerSigPad.clear();
-    document.getElementById("clearHodSignature").onclick = () => hodSigPad.clear();
-
-    document.getElementById("saveLecturerSignature").onclick = () => {
-      if (!activeClassId) {
-        alert("No active class to attach lecturer signature.");
-        return;
-      }
-      if (lecturerSigPad.isEmpty()) {
-        alert("Please sign before saving.");
-        return;
-      }
-      const klass = appData.classes.find(c => c.id === activeClassId);
-      if (!klass) {
-        alert("Class not found.");
-        return;
-      }
-      klass.lecturerSignature = lecturerSigPad.toDataURL("image/png");
-      saveData();
-      document.getElementById("lecturerSignatureCard").style.display = "none";
-      alert("Lecturer signature saved.");
-    };
-
-    document.getElementById("saveHodSignature").onclick = () => {
-      const classId = document.getElementById("reportClassSelect").value;
-      if (!classId) {
-        alert("Select a class from the report dropdown first.");
-        return;
-      }
-      if (hodSigPad.isEmpty()) {
-        alert("Please sign before saving.");
-        return;
-      }
-      const klass = appData.classes.find(c => c.id === classId);
-      if (!klass) {
-        alert("Class not found.");
-        return;
-      }
-      klass.hodSignature = hodSigPad.toDataURL("image/png");
-      saveData();
-      alert("HOD signature saved.");
-    };
-  }
-
-  // ------------------ STUDENT ATTENDANCE ------------------
-  const studentClassInfo = document.getElementById("studentClassInfo");
-  const surnameInput = document.getElementById("surnameInput");
-  const middleNameInput = document.getElementById("middleNameInput");
-  const firstNameInput = document.getElementById("firstNameInput");
-  const admissionInput = document.getElementById("admissionInput");
-  const submitAttendanceBtn = document.getElementById("submitAttendanceBtn");
-
-  function updateStudentClassInfo() {
-    const current = appData.classes.find(c => c.id === activeClassId && !c.endTime);
-    if (!current) {
-      studentClassInfo.innerHTML = `<span class="chip">No active class right now. Please wait for your lecturer to start.</span>`;
-      return;
-    }
-    const lec = appData.lecturers.find(l => l.id === current.lecturerId);
-    const lecName = lec ? lec.name : "Unknown";
-    studentClassInfo.innerHTML = `
-      <span class="chip">
-        <span class="dot-pulse"></span>&nbsp; Active Class
-      </span>
-      <span class="chip">${current.faculty}</span>
-      <span class="chip">${current.course}</span>
-      <span class="chip">${current.unit}</span>
-      <span class="chip">Venue: ${current.venue}</span>
-      <span class="chip">Lecturer: ${lecName}</span>
-    `;
-  }
-
-  submitAttendanceBtn.addEventListener("click", () => {
-    const current = appData.classes.find(c => c.id === activeClassId && !c.endTime);
-    if (!current) {
-      alert("No active class. Attendance cannot be recorded.");
-      return;
-    }
-    const surname = surnameInput.value.trim();
-    const middle = middleNameInput.value.trim();
-    const first = firstNameInput.value.trim();
-    const admission = admissionInput.value.trim();
-
-    if (!surname || !first || !admission) {
-      alert("Please fill Surname, First Name and Admission number.");
-      return;
-    }
-    if (studentSigPad.isEmpty()) {
-      alert("Please add your digital signature.");
-      return;
-    }
-
-    current.attendees.push({
-      surname,
-      middle,
-      first,
-      admission,
-      signature: studentSigPad.toDataURL("image/png"),
-      time: new Date().toISOString()
-    });
-
-    saveData();
-
-    surnameInput.value = "";
-    middleNameInput.value = "";
-    firstNameInput.value = "";
-    admissionInput.value = "";
-    studentSigPad.clear();
-
-    alert("Attendance submitted. Thank you.");
-  });
-
-  // ------------------ REPORTS ------------------
-  const reportClassSelect = document.getElementById("reportClassSelect");
-  const reportTypeSelect = document.getElementById("reportTypeSelect");
-  const generateReportBtn = document.getElementById("generateReportBtn");
-  const reportSummaryDiv = document.getElementById("reportSummary");
-  const reportTableWrapper = document.getElementById("reportTableWrapper");
-  const reportTableHead = document.getElementById("reportTable").querySelector("thead");
-  const reportTableBody = document.getElementById("reportTable").querySelector("tbody");
-  const reportEmptyState = document.getElementById("reportEmptyState");
-  const hodSignatureCard = document.getElementById("hodSignatureCard");
-
-  function updateReportClassSelect() {
-    reportClassSelect.innerHTML = `<option value="">Select a class session…</option>`;
-    const sorted = [...appData.classes].sort((a, b) => new Date(b.actualStart || b.date) - new Date(a.actualStart || a.date));
-    for (const klass of sorted) {
-      const lec = appData.lecturers.find(l => l.id === klass.lecturerId);
-      const label = `${klass.date || (klass.actualStart || '').slice(0,10)} · ${klass.unit} (${klass.course}) – ${lec ? lec.name : "Lecturer"}`;
-      const opt = document.createElement("option");
-      opt.value = klass.id;
-      opt.textContent = label;
-      reportClassSelect.appendChild(opt);
-    }
-  }
-
-  function generateReport() {
-    const type = reportTypeSelect.value;
-    let rows = [];
-    let summary = {};
-
-    if (type === "class") {
-      const classId = reportClassSelect.value;
-      if (!classId) {
-        alert("Please select a class.");
-        return;
-      }
-      const klass = appData.classes.find(c => c.id === classId);
-      if (!klass) {
-        alert("Class not found.");
-        return;
-      }
-
-      rows = klass.attendees.map(a => ({
-        ClassDate: klass.date || (klass.actualStart || "").slice(0,10),
-        Faculty: klass.faculty,
-        Course: klass.course,
-        Unit: klass.unit,
-        Venue: klass.venue,
-        Lecturer: (appData.lecturers.find(l => l.id === klass.lecturerId) || {}).name || "",
-        Surname: a.surname,
-        MiddleName: a.middle,
-        FirstName: a.first,
-        Admission: a.admission,
-        TimeStamp: a.time
-      }));
-
-      summary = {
-        scope: "Class",
-        title: `${klass.faculty} · ${klass.course} · ${klass.unit}`,
-        totalClasses: 1,
-        totalStudents: klass.attendees.length,
-        lecturerSigned: !!klass.lecturerSignature,
-        hodSigned: !!klass.hodSignature
-      };
-
-      // Show HOD signature card for class reports
-      hodSignatureCard.style.display = "block";
-      if (klass.hodSignature && hodSigPad) {
-        hodSigPad.clear(); // we don't re-draw; kept in data for exports
-      }
-    } else {
-      const now = new Date();
-      const days = type === "weekly" ? 7 : 30;
-      const from = new Date(now.getTime() - days * 86400000);
-
-      const filteredClasses = appData.classes.filter(c => {
-        const d = new Date(c.date || c.actualStart || now);
-        return d >= from && d <= now;
+      clearBtn.addEventListener("click", function () {
+        pad.clear();
       });
 
-      for (const klass of filteredClasses) {
-        for (const a of klass.attendees) {
-          rows.push({
-            ClassDate: klass.date || (klass.actualStart || "").slice(0,10),
-            Faculty: klass.faculty,
-            Course: klass.course,
-            Unit: klass.unit,
-            Venue: klass.venue,
-            Lecturer: (appData.lecturers.find(l => l.id === klass.lecturerId) || {}).name || "",
-            Surname: a.surname,
-            MiddleName: a.middle,
-            FirstName: a.first,
-            Admission: a.admission,
-            TimeStamp: a.time
-          });
-        }
-      }
-
-      const studentSet = new Set(rows.map(r => r.Admission));
-      summary = {
-        scope: type === "weekly" ? "Last 7 days (all classes)" : "Last 30 days (all classes)",
-        title: "University-wide summary",
-        totalClasses: filteredClasses.length,
-        totalStudents: studentSet.size,
-        lecturerSigned: null,
-        hodSigned: null
-      };
-
-      hodSignatureCard.style.display = "none";
+      return pad;
     }
 
-    renderReport(summary, rows);
-    currentReportRows = rows; // for export
-  }
+    const studentPad = initSignaturePad("studentSignature", "clearStudentSig");
+    const lecturerPad = initSignaturePad("lecturerSignature", "clearLecturerSig");
+    const hodPad      = initSignaturePad("hodSignature", "clearHodSig");
 
-  let currentReportRows = [];
-
-  function renderReport(summary, rows) {
-    reportSummaryDiv.innerHTML = "";
-    if (!rows || rows.length === 0) {
-      reportTableWrapper.style.display = "none";
-      reportEmptyState.textContent = "No data found for selected period or class.";
-      reportEmptyState.style.display = "block";
-    } else {
-      reportEmptyState.style.display = "none";
-      reportTableWrapper.style.display = "block";
-    }
-
-    if (summary && summary.scope) {
-      const chipsHtml = `
-        <div class="stat-chip"><strong>Scope:</strong> ${summary.scope}</div>
-        <div class="stat-chip"><strong>Title:</strong> ${summary.title}</div>
-        <div class="stat-chip"><strong>Classes:</strong> ${summary.totalClasses}</div>
-        <div class="stat-chip"><strong>Unique Students:</strong> ${summary.totalStudents}</div>
-        ${
-          summary.lecturerSigned === null ? "" :
-          `<div class="stat-chip"><strong>Lecturer Signed:</strong> ${summary.lecturerSigned ? "Yes" : "No"}</div>`
-        }
-        ${
-          summary.hodSigned === null ? "" :
-          `<div class="stat-chip"><strong>HOD Signed:</strong> ${summary.hodSigned ? "Yes" : "No"}</div>`
-        }
-      `;
-      reportSummaryDiv.innerHTML = chipsHtml;
-    }
-
-    if (!rows || rows.length === 0) {
-      reportTableHead.innerHTML = "";
-      reportTableBody.innerHTML = "";
-      return;
-    }
-
-    // Build table from keys of first row
-    const cols = Object.keys(rows[0]);
-    reportTableHead.innerHTML = "<tr>" + cols.map(c => `<th>${c}</th>`).join("") + "</tr>";
-    reportTableBody.innerHTML = rows.map(r =>
-      "<tr>" + cols.map(c => `<td>${r[c] || ""}</td>`).join("") + "</tr>"
-    ).join("");
-  }
-
-  generateReportBtn.addEventListener("click", generateReport);
-
-  // ------------------ EXPORTS ------------------
-  const exportExcelBtn = document.getElementById("exportExcelBtn");
-  const exportPdfBtn = document.getElementById("exportPdfBtn");
-
-  exportExcelBtn.addEventListener("click", () => {
-    if (!currentReportRows || currentReportRows.length === 0) {
-      alert("Generate a report first.");
-      return;
-    }
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(currentReportRows);
-    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, "jooust-attendance-report.xlsx");
-  });
-
-  exportPdfBtn.addEventListener("click", async () => {
-    if (!currentReportRows || currentReportRows.length === 0) {
-      alert("Generate a report first.");
-      return;
-    }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("p", "pt", "a4");
-    const reportElement = document.getElementById("reportPreview");
-
-    await doc.html(reportElement, {
-      callback: function (doc) {
-        doc.save("jooust-attendance-report.pdf");
-      },
-      margin: [20, 20, 20, 20],
-      autoPaging: "text",
-      x: 20,
-      y: 20,
-      html2canvas: { scale: 0.7 }
-    });
-  });
-
-  // ------------------ STUDENT LINK DISPLAY ------------------
-  const studentLinkDisplay = document.getElementById("studentLinkDisplay");
-  function updateStudentLink() {
-    const url = window.location.href.split("#")[0] + "#student-form";
-    studentLinkDisplay.textContent = url;
-  }
-
-  // On load, show student form if hash matches
-  window.addEventListener("load", () => {
-    if (window.location.hash === "#student-form") {
-      sections.forEach(sec => sec.classList.remove("active"));
-      sectionButtons.forEach(b => b.classList.remove("active"));
-      document.getElementById("studentSection").classList.add("active");
-      document.querySelector('nav button[data-section="studentSection"]').classList.add("active");
-    }
-  });
-
-  // ------------------ INITIAL LOAD ------------------
-  function refreshUI() {
-    updateStructureSummary();
-    updateLecturerList();
-    updateLecturerSelect();
-    updateFacultyDropdowns();
-    updateCurrentClassStatus();
-    updateStudentClassInfo();
-    updateReportClassSelect();
-  }
-
-  loadData();
-  setupSignaturePads();
-  refreshUI();
-  updateStudentLink();
-</script>
+    // TODO: When you build the backend, you will:
+    //  - Post form data + pad.toDataURL() images to the server.
+    //  - Enforce single-use token links for students.
+    //  - Use filters to query DB and generate PDF/Word/Excel.
+  </script>
 </body>
 </html>
