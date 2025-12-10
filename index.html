@@ -17,6 +17,26 @@
       --text-main: #1f2933;
       --text-muted: #6b7280;
       --danger: #e11d48;
+      --header-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      --card-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      --input-bg: #f9fafb;
+      --border-color: #d1d5db;
+      --table-header-bg: #eff6ff;
+      --table-header-text: #1d4ed8;
+    }
+
+    /* Dark mode overrides */
+    body[data-theme="dark"] {
+      --bg-soft: #020617;
+      --card-bg: #020617;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --header-shadow: 0 4px 16px rgba(15, 23, 42, 0.9);
+      --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.9);
+      --input-bg: #020617;
+      --border-color: #374151;
+      --table-header-bg: #0f172a;
+      --table-header-text: #bfdbfe;
     }
 
     * {
@@ -27,8 +47,9 @@
 
     body {
       margin: 0;
-      background: var(--bg-soft);
+      background: radial-gradient(circle at top, #e5f0ff 0, var(--bg-soft) 50%);
       color: var(--text-main);
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     header {
@@ -42,7 +63,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      gap: 1rem;
+      box-shadow: var(--header-shadow);
       position: sticky;
       top: 0;
       z-index: 50;
@@ -75,6 +97,13 @@
       opacity: 0.9;
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
     main {
       max-width: 1200px;
       margin: 1.25rem auto 2.5rem;
@@ -83,10 +112,19 @@
 
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 1.5rem;
       margin-bottom: 1rem;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      backdrop-filter: blur(4px);
+      transition: transform 0.15s ease, box-shadow 0.15s ease,
+        background 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
     }
 
     h2 {
@@ -127,11 +165,13 @@
       width: 100%;
       padding: 0.55rem 0.65rem;
       border-radius: 8px;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border-color);
       font-size: 0.9rem;
       outline: none;
-      transition: border 0.15s ease, box-shadow 0.15s ease;
-      background: #f9fafb;
+      transition: border 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease, color 0.15s ease;
+      background: var(--input-bg);
+      color: var(--text-main);
     }
 
     input:focus,
@@ -140,6 +180,12 @@
       border-color: var(--jooust-blue);
       box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.15);
       background: white;
+    }
+
+    body[data-theme="dark"] input:focus,
+    body[data-theme="dark"] select:focus,
+    body[data-theme="dark"] textarea:focus {
+      background: #020617;
     }
 
     .row {
@@ -161,7 +207,7 @@
       font-size: 0.9rem;
       font-weight: 600;
       transition: transform 0.1s ease, box-shadow 0.1s ease,
-        background 0.15s ease;
+        background 0.15s ease, opacity 0.15s ease;
       white-space: nowrap;
     }
 
@@ -180,6 +226,11 @@
       color: #111827;
     }
 
+    body[data-theme="dark"] .btn-secondary {
+      background: #1f2937;
+      color: #e5e7eb;
+    }
+
     .btn-success {
       background: linear-gradient(
         135deg,
@@ -193,6 +244,13 @@
     .btn-danger {
       background: var(--danger);
       color: #f9fafb;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #e5e7eb;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      padding-inline: 0.8rem;
     }
 
     .btn:active {
@@ -239,9 +297,13 @@
       padding: 0.4rem 0.9rem;
       border-radius: 999px;
       font-size: 0.88rem;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border-color);
       background: #f3f4f6;
       cursor: pointer;
+    }
+
+    body[data-theme="dark"] .tab {
+      background: #020617;
     }
 
     .tab.active {
@@ -260,19 +322,23 @@
 
     th,
     td {
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border-color);
       padding: 0.45rem 0.4rem;
       text-align: left;
     }
 
     th {
-      background: #eff6ff;
-      color: #1d4ed8;
+      background: var(--table-header-bg);
+      color: var(--table-header-text);
       font-weight: 600;
     }
 
     tr:nth-child(even) td {
-      background: #f9fafb;
+      background: rgba(249, 250, 251, 0.8);
+    }
+
+    body[data-theme="dark"] tr:nth-child(even) td {
+      background: #020617;
     }
 
     .badge {
@@ -369,6 +435,41 @@
       margin-bottom: 0;
     }
 
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .stat-card {
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #eff6ff, #e0f2fe);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      font-size: 0.8rem;
+    }
+
+    body[data-theme="dark"] .stat-card {
+      background: linear-gradient(135deg, #020617, #0b1120);
+      border-color: #1d4ed8;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .stat-small {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
     @media (max-width: 640px) {
       header {
         flex-direction: column;
@@ -378,6 +479,11 @@
 
       header img {
         height: 44px;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
       }
     }
   </style>
@@ -400,7 +506,13 @@
         <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
       </h1>
     </div>
-    <div id="userSummary" class="muted"></div>
+    <div class="header-right">
+      <div id="userSummary" class="muted"></div>
+      <div class="btn-group" style="margin-top:0;">
+        <button class="btn btn-ghost" id="toggleThemeBtn">🌙 Dark</button>
+        <button class="btn btn-ghost hidden" id="logoutBtn">Logout</button>
+      </div>
+    </div>
   </header>
 
   <main>
@@ -561,8 +673,17 @@
     <!-- ADMIN DASHBOARD -->
     <section id="adminDashboard" class="hidden">
       <div class="card">
-        <h2>Admin Dashboard</h2>
-        <div class="tabs">
+        <div class="pill-header">
+          <div>
+            <h2>Admin Dashboard</h2>
+            <p class="muted mb-0">Approve lecturers, monitor classes and generate institution-wide reports.</p>
+          </div>
+          <div class="btn-group" style="margin-top:0;">
+            <button class="btn btn-danger" id="resetSystemBtn">Reset System Data</button>
+          </div>
+        </div>
+        <div id="adminStats" class="stats-row"></div>
+        <div class="tabs" style="margin-top:1rem;">
           <button class="tab active" data-admin-tab="lecturersTab">Lecturers</button>
           <button class="tab" data-admin-tab="facultyTab">Faculty / Course / Unit Upload</button>
           <button class="tab" data-admin-tab="classesTab">Classes</button>
@@ -641,10 +762,15 @@
     <!-- LECTURER DASHBOARD -->
     <section id="lecturerDashboard" class="hidden">
       <section class="card">
-        <h2>Lecturer Dashboard</h2>
-        <p class="muted">
-          Create classes, share attendance links with students, and manage your reports.
-        </p>
+        <div class="pill-header">
+          <div>
+            <h2>Lecturer Dashboard</h2>
+            <p class="muted mb-0">
+              Create classes, share attendance links with students, and manage your reports.
+            </p>
+          </div>
+        </div>
+        <div id="lecturerStats" class="stats-row"></div>
       </section>
 
       <section class="card">
@@ -712,6 +838,7 @@
   <script>
     // ========================== DATA STORAGE ==========================
     const STORAGE_KEY = "jooust_attendance_data_v1";
+    const THEME_KEY = "jooust_attendance_theme";
 
     function loadData() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -805,6 +932,36 @@
       return urlParams.get(name);
     }
 
+    // ========================== THEME ==========================
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      const btn = $("toggleThemeBtn");
+      if (btn) {
+        if (theme === "dark") {
+          btn.textContent = "☀️ Light";
+        } else {
+          btn.textContent = "🌙 Dark";
+        }
+      }
+      localStorage.setItem(THEME_KEY, theme);
+    }
+
+    function initTheme() {
+      const stored = localStorage.getItem(THEME_KEY);
+      if (stored === "dark" || stored === "light") {
+        applyTheme(stored);
+      } else {
+        applyTheme("light");
+      }
+      const btn = $("toggleThemeBtn");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          const current = document.body.getAttribute("data-theme") || "light";
+          applyTheme(current === "light" ? "dark" : "light");
+        });
+      }
+    }
+
     // ========================== LOGO TO DATA URL ==========================
     function loadLogoAsDataUrl() {
       const img = new Image();
@@ -826,17 +983,33 @@
     // ========================== LOGIN & REGISTRATION ==========================
     function updateUserSummary() {
       const el = $("userSummary");
+      const logoutBtn = $("logoutBtn");
       if (!currentUser) {
         el.textContent = "";
+        if (logoutBtn) logoutBtn.classList.add("hidden");
         return;
       }
       if (currentUser.role === "admin") {
         el.textContent = "Logged in as Admin: " + currentUser.username;
       } else if (currentUser.role === "lecturer") {
-        const lec = DATA.lecLecturerById?.(currentUser.id) || DATA.lecturers.find((l) => l.id === currentUser.id);
+        const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
         const name = lec ? lec.salutation + " " + lec.fullName : currentUser.username;
         el.textContent = "Logged in as Lecturer: " + name;
       }
+      if (logoutBtn) logoutBtn.classList.remove("hidden");
+    }
+
+    function logout() {
+      currentUser = null;
+      updateUserSummary();
+      showSection("loginSection");
+    }
+
+    const logoutBtn = $("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        logout();
+      });
     }
 
     $("loginBtn").addEventListener("click", () => {
@@ -866,6 +1039,7 @@
         renderAdminLecturers();
         renderFacultySummary();
         renderAdminClasses();
+        renderAdminStats();
       } else {
         const lec = DATA.lecturers.find(
           (l) => l.username === username && l.password === password
@@ -888,6 +1062,7 @@
         updateUserSummary();
         preloadLecturerFieldsFromTeaching(lec);
         renderLecturerClasses();
+        renderLecturerStats();
       }
     });
 
@@ -1032,6 +1207,7 @@
             lec.approved = !lec.approved;
             saveData(DATA);
             renderAdminLecturers();
+            renderAdminStats();
           });
         });
     }
@@ -1161,6 +1337,8 @@
       DATA.classes.push(cls);
       saveData(DATA);
       renderLecturerClasses();
+      renderLecturerStats();
+      renderAdminStats();
 
       const link =
         window.location.origin +
@@ -1256,12 +1434,18 @@
             cls.status = "closed";
             saveData(DATA);
             renderLecturerClasses();
+            renderLecturerStats();
+            renderAdminClasses();
+            renderAdminStats();
           } else if (action === "reopen-class") {
             const cls = DATA.classes.find((c) => c.id === id);
             if (!cls) return;
             cls.status = "open";
             saveData(DATA);
             renderLecturerClasses();
+            renderLecturerStats();
+            renderAdminClasses();
+            renderAdminStats();
           } else if (action === "view-details") {
             openClassDetailDialog(id, "lecturer");
           }
@@ -1328,6 +1512,72 @@
       );
     }
 
+    // ========================== DASHBOARD STATS ==========================
+    function renderAdminStats() {
+      const el = $("adminStats");
+      if (!el) return;
+      DATA = loadData();
+      const totalLecturers = DATA.lecturers.length;
+      const pending = DATA.lecturers.filter((l) => !l.approved).length;
+      const totalClasses = DATA.classes.length;
+      const openClasses = DATA.classes.filter((c) => c.status === "open").length;
+      const totalAttendance = DATA.attendance.length;
+
+      el.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Lecturers</div>
+          <div class="stat-value">${totalLecturers}</div>
+          <div class="stat-small">${pending} pending approval</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Classes</div>
+          <div class="stat-value">${totalClasses}</div>
+          <div class="stat-small">${openClasses} currently open</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Attendance Records</div>
+          <div class="stat-value">${totalAttendance}</div>
+          <div class="stat-small">All sessions combined</div>
+        </div>
+      `;
+    }
+
+    function renderLecturerStats() {
+      const el = $("lecturerStats");
+      if (!el || !currentUser || currentUser.role !== "lecturer") return;
+      DATA = loadData();
+      const myClasses = DATA.classes.filter((c) => c.lecturerId === currentUser.id);
+      const myOpen = myClasses.filter((c) => c.status === "open").length;
+      const myAttendance = DATA.attendance.filter((a) =>
+        myClasses.some((c) => c.id === a.classId)
+      ).length;
+
+      el.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">My Classes</div>
+          <div class="stat-value">${myClasses.length}</div>
+          <div class="stat-small">${myOpen} open now</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Attendance</div>
+          <div class="stat-value">${myAttendance}</div>
+          <div class="stat-small">Across all my sessions</div>
+        </div>
+      `;
+    }
+
+    // ========================== RESET SYSTEM DATA (ADMIN) ==========================
+    $("resetSystemBtn").addEventListener("click", () => {
+      if (!confirm("This will delete ALL lecturers, classes and attendance, and reset to default admin. Continue?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      DATA = loadData();
+      renderAdminLecturers();
+      renderFacultySummary();
+      renderAdminClasses();
+      renderAdminStats();
+      alert("System data reset. Default admin restored (admin / admin123).");
+    });
+
     // ========================== CLASS DETAIL DIALOG (INLINE) ==========================
     function openClassDetailDialog(classId, callerRole) {
       DATA = loadData();
@@ -1336,7 +1586,7 @@
         alert("Class not found.");
         return;
       }
-      const att = DATA.attendance.filter((a) => a.classId === cls.id);
+      const att = DATA.attendance.filter((a) => a.classId === classId);
 
       const container = document.createElement("div");
       container.style.position = "fixed";
@@ -1539,8 +1789,6 @@
       const classId = getQueryParam("classId");
       if (mode !== "student" || !classId) return;
 
-      // hide main header login features; show only student section
-      $("mainHeader"); // header still useful
       showSection("studentSection");
 
       DATA = loadData();
@@ -1993,6 +2241,7 @@
 
     // ========================== INIT ==========================
     window.addEventListener("load", () => {
+      initTheme();
       loadLogoAsDataUrl();
       setupStudentView();
     });
