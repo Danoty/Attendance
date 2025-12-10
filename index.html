@@ -75,6 +75,13 @@
       opacity: 0.9;
     }
 
+    header .right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+    }
+
     main {
       max-width: 1200px;
       margin: 1.25rem auto 2.5rem;
@@ -163,6 +170,11 @@
       transition: transform 0.1s ease, box-shadow 0.1s ease,
         background 0.15s ease;
       white-space: nowrap;
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
     }
 
     .btn-primary {
@@ -379,6 +391,11 @@
       header img {
         height: 44px;
       }
+
+      header .right {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
   </style>
 
@@ -400,7 +417,11 @@
         <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
       </h1>
     </div>
-    <div id="userSummary" class="muted"></div>
+    <div class="right">
+      <span id="userSummary" class="muted"></span>
+      <button id="changePasswordBtn" class="btn btn-secondary btn-sm hidden">Change Password</button>
+      <button id="logoutBtn" class="btn btn-secondary btn-sm hidden">Logout</button>
+    </div>
   </header>
 
   <main>
@@ -441,7 +462,7 @@
     <section id="lecturerRegistrationSection" class="card hidden">
       <h2>Lecturer Registration</h2>
       <div class="alert alert-info">
-        Your account will be pending until approved by the Admin. The Admin can later link you to the correct Faculty / Course / Unit.
+        Your account will be pending until approved by the Admin.
       </div>
       <div class="row">
         <div>
@@ -600,6 +621,7 @@
             <button class="btn btn-primary" id="exportPdfBtn">Download PDF</button>
             <button class="btn btn-secondary" id="exportWordBtn">Download Word</button>
             <button class="btn btn-secondary" id="exportExcelBtn">Download Excel</button>
+            <button class="btn btn-secondary" id="exportRawCsvBtn">Download Raw Attendance CSV</button>
           </div>
           <div id="reportMeta" class="muted" style="margin-top:0.5rem;"></div>
           <table id="reportTable"></table>
@@ -670,6 +692,7 @@
             <button class="btn btn-primary" id="exportPdfBtnL">Download PDF</button>
             <button class="btn btn-secondary" id="exportWordBtnL">Download Word</button>
             <button class="btn btn-secondary" id="exportExcelBtnL">Download Excel</button>
+            <button class="btn btn-secondary" id="exportRawCsvBtnL">Download Raw Attendance CSV</button>
           </div>
           <div id="reportMetaL" class="muted" style="margin-top:0.5rem;"></div>
           <table id="reportTableL"></table>
@@ -792,20 +815,27 @@
       };
     }
 
-    // ========================== LOGIN & REGISTRATION ==========================
+    // ========================== LOGIN, LOGOUT & REGISTRATION ==========================
     function updateUserSummary() {
       const el = $("userSummary");
+      const logoutBtn = $("logoutBtn");
+      const changeBtn = $("changePasswordBtn");
       if (!currentUser) {
         el.textContent = "";
+        logoutBtn.classList.add("hidden");
+        changeBtn.classList.add("hidden");
         return;
       }
+      DATA = loadData();
       if (currentUser.role === "admin") {
         el.textContent = "Logged in as Admin: " + currentUser.username;
       } else if (currentUser.role === "lecturer") {
-        const lec = DATA.lecLecturerById?.(currentUser.id) || DATA.lecturers.find((l) => l.id === currentUser.id);
+        const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
         const name = lec ? lec.salutation + " " + lec.fullName : currentUser.username;
         el.textContent = "Logged in as Lecturer: " + name;
       }
+      logoutBtn.classList.remove("hidden");
+      changeBtn.classList.remove("hidden");
     }
 
     $("loginBtn").addEventListener("click", () => {
@@ -855,7 +885,6 @@
         clearAlert(msgEl);
         showSection("lecturerDashboard");
         updateUserSummary();
-        preloadLecturerFieldsFromTeaching(lec);
         renderLecturerClasses();
       }
     });
@@ -900,8 +929,7 @@
         pf,
         username,
         password,
-        approved: false,
-        assignments: [], // kept for future use, but not captured at registration UI
+        approved: false
       };
 
       DATA.lecturers.push(lecturer);
@@ -911,11 +939,108 @@
         "Registration submitted. Wait for admin approval.",
         "success"
       );
-      $("regFullName").value = "";
-      $("regPF").value = "";
-      $("regUsername").value = "";
-      $("regPassword").value = "";
+      $("regFullName").value =
+        $("regPF").value =
+        $("regUsername").value =
+        $("regPassword").value =
+          "";
     });
+
+    $("logoutBtn").addEventListener("click", () => {
+      currentUser = null;
+      updateUserSummary();
+      showSection("loginSection");
+    });
+
+    // ========================== CHANGE PASSWORD DIALOG ==========================
+    function openChangePasswordDialog() {
+      if (!currentUser) return;
+
+      const container = document.createElement("div");
+      container.style.position = "fixed";
+      container.style.inset = "0";
+      container.style.background = "rgba(15,23,42,0.6)";
+      container.style.display = "flex";
+      container.style.alignItems = "center";
+      container.style.justifyContent = "center";
+      container.style.zIndex = "9999";
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.maxWidth = "420px";
+      card.style.width = "95%";
+
+      card.innerHTML = `
+        <h2>Change Password</h2>
+        <p class="muted">Update your account password.</p>
+        <div class="row">
+          <div>
+            <label for="cpCurrent">Current Password</label>
+            <input id="cpCurrent" type="password" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="cpNew">New Password</label>
+            <input id="cpNew" type="password" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="cpConfirm">Confirm New Password</label>
+            <input id="cpConfirm" type="password" />
+          </div>
+        </div>
+        <div id="cpMessage" class="alert hidden"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="cpSave">Save</button>
+          <button class="btn btn-secondary" id="cpCancel">Cancel</button>
+        </div>
+      `;
+
+      container.appendChild(card);
+      document.body.appendChild(container);
+
+      const msgEl = card.querySelector("#cpMessage");
+
+      card.querySelector("#cpCancel").onclick = () => container.remove();
+
+      card.querySelector("#cpSave").onclick = () => {
+        const current = card.querySelector("#cpCurrent").value;
+        const np = card.querySelector("#cpNew").value;
+        const cp = card.querySelector("#cpConfirm").value;
+
+        if (!current || !np || !cp) {
+          setAlert(msgEl, "Fill all fields.", "danger");
+          return;
+        }
+        if (np !== cp) {
+          setAlert(msgEl, "New passwords do not match.", "danger");
+          return;
+        }
+
+        DATA = loadData();
+        let account = null;
+
+        if (currentUser.role === "admin") {
+          account = DATA.admins.find((a) => a.username === currentUser.username);
+        } else if (currentUser.role === "lecturer") {
+          account = DATA.lecturers.find((l) => l.id === currentUser.id);
+        }
+
+        if (!account || account.password !== current) {
+          setAlert(msgEl, "Current password is incorrect.", "danger");
+          return;
+        }
+
+        account.password = np;
+        saveData(DATA);
+        alert("Password changed successfully.");
+        container.remove();
+      };
+    }
+
+    $("changePasswordBtn").addEventListener("click", openChangePasswordDialog);
 
     // ========================== ADMIN: LECTURERS ==========================
     function renderAdminLecturers() {
@@ -1036,16 +1161,6 @@
     }
 
     // ========================== CLASS CREATION (LECTURER) ==========================
-    function preloadLecturerFieldsFromTeaching(lec) {
-      if (!lec.assignments || !lec.assignments.length) return;
-      const a = lec.assignments[0];
-      $("lcFaculty").value = a.faculty;
-      $("lcCourse").value = a.course;
-      $("lcUnit").value = a.unit;
-      $("lcYear").value = a.year;
-      $("lcSemester").value = a.semester;
-    }
-
     $("createClassBtn").addEventListener("click", () => {
       const f = $("lcFaculty").value.trim();
       const c = $("lcCourse").value.trim();
@@ -1070,6 +1185,7 @@
         return;
       }
 
+      DATA = loadData();
       const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
       if (!lec) {
         setAlert(msgEl, "Lecturer not found.", "danger");
@@ -1475,7 +1591,6 @@
       const classId = getQueryParam("classId");
       if (mode !== "student" || !classId) return;
 
-      // show only student section
       showSection("studentSection");
 
       DATA = loadData();
@@ -1660,6 +1775,61 @@
       return rows;
     }
 
+    // build raw attendance rows (per student, with signature)
+    function buildRawAttendanceRows({
+      faculty,
+      course,
+      unit,
+      year,
+      semester,
+      lecturerOnlyId = null,
+    }) {
+      DATA = loadData();
+      const rows = [];
+
+      const filteredClasses = DATA.classes.filter((cls) => {
+        if (lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return false;
+        if (faculty && !cls.faculty.toLowerCase().includes(faculty.toLowerCase()))
+          return false;
+        if (course && !cls.course.toLowerCase().includes(course.toLowerCase()))
+          return false;
+        if (unit && !cls.unit.toLowerCase().includes(unit.toLowerCase()))
+          return false;
+        if (year && !cls.year.toLowerCase().includes(year.toLowerCase()))
+          return false;
+        if (
+          semester &&
+          !cls.semester.toLowerCase().includes(semester.toLowerCase())
+        )
+          return false;
+        return true;
+      });
+
+      filteredClasses.forEach((cls) => {
+        const att = DATA.attendance.filter((a) => a.classId === cls.id);
+        att.forEach((a) => {
+          rows.push({
+            faculty: cls.faculty,
+            course: cls.course,
+            unit: cls.unit,
+            year: cls.year,
+            semester: cls.semester,
+            venue: cls.venue,
+            dateTime: formatDateTime(cls.dateTime),
+            lecturer: cls.lecturerName || "",
+            admission: a.admission,
+            surname: a.surname,
+            middle: a.middle,
+            first: a.first,
+            submittedAt: formatDateTime(a.createdAt),
+            signature: a.signature,
+          });
+        });
+      });
+
+      return rows;
+    }
+
     function renderReportTable(rows, tableEl) {
       if (!rows.length) {
         tableEl.innerHTML = "<tbody><tr><td>No records found.</td></tr></tbody>";
@@ -1826,7 +1996,7 @@
           </table>
         </body>
         </html>
-      ";
+      `;
 
       const blob = new Blob(["\ufeff", html], {
         type: "application/msword",
@@ -1886,6 +2056,65 @@
       XLSX.writeFile(wb, "jooust-attendance-report.xlsx");
     }
 
+    function exportRawAttendanceCsv(rows, filename) {
+      if (!rows.length) {
+        alert("No attendance records found for these filters.");
+        return;
+      }
+
+      const headers = [
+        "Faculty",
+        "Course",
+        "Unit",
+        "Year",
+        "Semester",
+        "Venue",
+        "DateTime",
+        "Lecturer",
+        "Admission",
+        "Surname",
+        "MiddleName",
+        "FirstName",
+        "SubmittedAt",
+        "SignatureDataURL"
+      ];
+
+      function esc(value) {
+        if (value == null) value = "";
+        const str = String(value).replace(/"/g, '""');
+        return `"${str}"`;
+      }
+
+      let csv = headers.join(",") + "\n";
+      rows.forEach((r) => {
+        const line = [
+          esc(r.faculty),
+          esc(r.course),
+          esc(r.unit),
+          esc(r.year),
+          esc(r.semester),
+          esc(r.venue),
+          esc(r.dateTime),
+          esc(r.lecturer),
+          esc(r.admission),
+          esc(r.surname),
+          esc(r.middle),
+          esc(r.first),
+          esc(r.submittedAt),
+          esc(r.signature),
+        ].join(",");
+        csv += line + "\n";
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
     $("exportPdfBtn").addEventListener("click", () => {
       const rows = JSON.parse($("reportTable").dataset.rows || "[]");
       exportToPdf(rows, "Attendance Report (All Faculties)");
@@ -1910,6 +2139,31 @@
     $("exportExcelBtnL").addEventListener("click", () => {
       const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
       exportToExcel(rows);
+    });
+
+    // new raw CSV buttons
+    $("exportRawCsvBtn").addEventListener("click", () => {
+      const rows = buildRawAttendanceRows({
+        faculty: $("repFaculty").value.trim(),
+        course: $("repCourse").value.trim(),
+        unit: $("repUnit").value.trim(),
+        year: $("repYear").value.trim(),
+        semester: $("repSemester").value.trim(),
+      });
+      exportRawAttendanceCsv(rows, "jooust-attendance-raw.csv");
+    });
+
+    $("exportRawCsvBtnL").addEventListener("click", () => {
+      if (!currentUser || currentUser.role !== "lecturer") return;
+      const rows = buildRawAttendanceRows({
+        faculty: $("repFacultyL").value.trim(),
+        course: $("repCourseL").value.trim(),
+        unit: $("repUnitL").value.trim(),
+        year: $("repYearL").value.trim(),
+        semester: $("repSemesterL").value.trim(),
+        lecturerOnlyId: currentUser.id,
+      });
+      exportRawAttendanceCsv(rows, "jooust-attendance-raw-my-classes.csv");
     });
 
     // ========================== ADMIN TABS ==========================
