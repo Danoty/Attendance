@@ -2,1579 +2,1108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>JOOUST Attendance Manager</title>
+  <title>JOOUST | Smart Class Attendance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
 
   <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-Nu7Y0qF2G1AR5pXKqXniCXu2eziJg8wqN0l6c3d3mB5q2dTccqJQyUl9U0Xy2u9Gy6RbnpfqhZ0J6R4p6r5Yg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+  />
 
-  <!-- XLSX for Excel export -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <!-- jsPDF & AutoTable for PDF export -->
+  <!-- JS Libraries for Excel & PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     :root {
-      --jooust-blue: #004b8d;
-      --jooust-blue-dark: #003364;
-      --jooust-gold: #f9a825;
-      --jooust-light: #e3f2fd;
+      --jooust-blue: #003c71;   /* primary */
+      --jooust-blue-soft: #e1ecf8;
+      --jooust-green: #108b3a;  /* accent */
+      --jooust-gold: #f2a900;   /* accent */
       --bg-soft: #f5f7fb;
-      --card-bg: #ffffff;
-      --text-main: #1f2933;
-      --border-soft: #e0e7ff;
-      --danger: #e11d48;
-      --success: #16a34a;
-    }
-
-    * {
-      box-sizing: border-box;
     }
 
     body {
-      margin: 0;
-      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #f3f4ff, #fdfdfd);
-      color: var(--text-main);
-    }
-
-    /* Header */
-    header {
-      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
-      color: #fff;
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .header-logo {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid rgba(255, 255, 255, 0.75);
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .header-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .header-title {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .header-title h1 {
-      margin: 0;
-      font-size: 1.3rem;
-      letter-spacing: 0.04em;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .header-title span {
-      font-size: 0.8rem;
-      opacity: 0.85;
-    }
-
-    .header-right {
-      font-size: 0.85rem;
-      text-align: right;
-      opacity: 0.9;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(249, 168, 37, 0.12);
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(249, 168, 37, 0.5);
-      color: #fff;
-      font-size: 0.75rem;
-      margin-bottom: 4px;
-    }
-
-    /* Layout */
-    .layout {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: calc(100vh - 80px);
-    }
-
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      aside {
-        position: sticky;
-        top: 70px;
-        z-index: 40;
-      }
-    }
-
-    aside {
-      background: #ffffff;
-      border-right: 1px solid var(--border-soft);
-      padding: 14px 10px 18px;
-    }
-
-    main {
-      padding: 16px;
-    }
-
-    /* Sidebar */
-    .nav-section-title {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #6b7280;
-      margin: 4px 14px 10px;
-    }
-
-    .side-nav {
-      list-style: none;
-      padding: 0;
-      margin: 0 6px;
-      display: grid;
-      gap: 6px;
-    }
-
-    .side-nav button {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 10px;
-      padding: 9px 11px;
-      border-radius: 10px;
-      border: none;
-      background: transparent;
-      color: #374151;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: 0.25s ease;
-    }
-
-    .side-nav button i {
-      width: 18px;
-      text-align: center;
-      font-size: 0.9rem;
-      color: var(--jooust-blue);
-    }
-
-    .side-nav button.active {
-      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-    }
-
-    .side-nav button.active i {
-      color: #fef3c7;
-    }
-
-    .side-nav button:hover:not(.active) {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       background: var(--bg-soft);
+      min-height: 100vh;
     }
 
-    .side-footer {
-      margin-top: 16px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, rgba(0, 75, 141, 0.05), rgba(249, 168, 37, 0.08));
-      font-size: 0.75rem;
-      color: #4b5563;
+    .navbar {
+      background: linear-gradient(90deg, var(--jooust-blue), #001a33);
     }
 
-    .side-footer strong {
+    .navbar-brand,
+    .navbar-nav .nav-link,
+    .navbar-text {
+      color: #fff !important;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-size: 1.0rem;
+    }
+
+    .page-header {
+      padding: 1.4rem 1rem 0.2rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
       color: var(--jooust-blue);
-    }
-
-    /* Cards & content */
-    .content-header {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: baseline;
-      margin-bottom: 10px;
+      align-items: center;
+      gap: .4rem;
     }
 
-    .content-header h2 {
-      margin: 0;
-      font-size: 1.1rem;
-      color: var(--jooust-blue-dark);
-    }
-
-    .content-header span {
-      font-size: 0.8rem;
-      color: #6b7280;
-    }
-
-    .card-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    @media (min-width: 900px) {
-      .card-grid.two {
-        grid-template-columns: 1.2fr 1fr;
-      }
+    .page-header h1 span.badge {
+      background: var(--jooust-green);
     }
 
     .card {
-      background: var(--card-bg);
-      border-radius: 14px;
-      padding: 14px 14px 16px;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-      border: 1px solid rgba(226, 232, 240, 0.9);
+      border: none;
+      border-radius: 0.8rem;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
     }
 
     .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
+      border-radius: 0.8rem 0.8rem 0 0 !important;
+      background: linear-gradient(90deg, var(--jooust-blue), var(--jooust-green));
+      color: #fff;
     }
 
-    .card-header h3 {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #111827;
+    .card-header i {
+      margin-right: .4rem;
     }
 
-    .card-header small {
-      font-size: 0.75rem;
-      color: #6b7280;
+    .section-title {
+      font-weight: 600;
+      color: var(--jooust-blue);
+    }
+
+    .badge-pill {
+      border-radius: 999px;
+    }
+
+    .pill-info {
+      background: var(--jooust-blue-soft);
+      color: var(--jooust-blue);
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .btn-jooust {
+      background: var(--jooust-blue);
+      border-color: var(--jooust-blue);
+      color: #fff;
+    }
+
+    .btn-jooust:hover {
+      background: #002a4a;
+      border-color: #002a4a;
+      color: #fff;
+    }
+
+    .btn-outline-jooust {
+      border-color: var(--jooust-blue);
+      color: var(--jooust-blue);
+    }
+
+    .btn-outline-jooust:hover {
+      background: var(--jooust-blue);
+      color: #fff;
+    }
+
+    .share-link-box {
+      background: #fdfdfd;
+      border-radius: 0.6rem;
+      border: 1px dashed var(--jooust-blue);
+      padding: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .share-link-box code {
+      word-break: break-all;
+    }
+
+    .table thead {
+      background: var(--jooust-blue-soft);
+      color: var(--jooust-blue);
+      font-size: 0.85rem;
+    }
+
+    .signature-box {
+      border: 1px dashed #c3c8d3;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      background: #fff;
+    }
+
+    canvas.signature-canvas {
+      border-radius: 0.4rem;
+      width: 100%;
+      background: #f9fafc;
+      border: 1px solid #d4d9e2;
+      cursor: crosshair;
+    }
+
+    .signature-label {
+      font-weight: 600;
+      color: var(--jooust-blue);
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    footer {
+      font-size: 0.8rem;
+      color: #6c757d;
     }
 
     .chip {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 2px 8px;
+      padding: 0.25rem 0.6rem;
       border-radius: 999px;
-      font-size: 0.7rem;
-      border: 1px dashed var(--border-soft);
-      color: #6b7280;
+      background: var(--jooust-blue-soft);
+      font-size: 0.75rem;
+      color: var(--jooust-blue);
+      margin-right: 0.25rem;
     }
 
     .chip i {
+      margin-right: 0.25rem;
+    }
+
+    .stat-card {
+      border-radius: 0.8rem;
+      padding: 0.75rem 0.9rem;
+      background: linear-gradient(135deg, #fff, #f0f4ff);
+      border: 1px solid #dde4f1;
+    }
+
+    .stat-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6c7a96;
+      margin-bottom: 0.15rem;
+    }
+
+    .stat-value {
+      font-weight: 700;
       color: var(--jooust-blue);
+      font-size: 1.1rem;
     }
 
-    /* Forms */
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 8px;
-      align-items: flex-end;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    label {
-      font-size: 0.78rem;
-      color: #4b5563;
-      font-weight: 500;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    select,
-    textarea {
-      padding: 7px 9px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      font-size: 0.85rem;
-      font-family: inherit;
-      outline: none;
-      transition: 0.18s ease;
-      background: #f9fafb;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: var(--jooust-blue);
-      box-shadow: 0 0 0 1px rgba(0, 75, 141, 0.12);
-      background: #ffffff;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .btn {
-      border-radius: 999px;
-      border: none;
-      padding: 7px 14px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: 0.18s ease;
-      font-family: inherit;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
-      color: #fff;
-      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.26);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 26px rgba(15, 23, 42, 0.3);
-    }
-
-    .btn-outline {
-      background: #ffffff;
-      border: 1px solid var(--border-soft);
-      color: #374151;
-    }
-
-    .btn-outline:hover {
-      background: #f3f4ff;
-    }
-
-    .btn-danger {
-      background: #fee2e2;
-      color: var(--danger);
-    }
-
-    .btn-danger:hover {
-      background: #fecaca;
-    }
-
-    .tag {
-      font-size: 0.72rem;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: #ecfdf5;
-      color: #15803d;
-      border: 1px solid #bbf7d0;
-    }
-
-    /* Tables */
-    .table-wrapper {
-      border-radius: 12px;
-      border: 1px solid var(--border-soft);
-      overflow: hidden;
-      background: #ffffff;
-      max-height: 340px;
-      overflow-y: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-
-    thead {
-      background: linear-gradient(135deg, var(--jooust-blue), #0f172a);
-      color: #ffffff;
-      position: sticky;
-      top: 0;
-      z-index: 2;
-    }
-
-    th,
-    td {
-      padding: 6px 8px;
-      border-bottom: 1px solid #e5e7eb;
-      text-align: left;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #f9fafb;
-    }
-
-    tbody tr:hover {
-      background: #eef2ff;
-    }
-
-    .text-center {
-      text-align: center;
-    }
-
-    .text-right {
-      text-align: right;
-    }
-
-    .pill-present {
-      padding: 1px 8px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-    }
-
-    .pill-absent {
-      padding: 1px 8px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      background: #fee2e2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
-    }
-
-    /* Signature pad */
-    .signature-container {
-      border-radius: 12px;
-      border: 1px dashed var(--border-soft);
-      padding: 8px;
-      background: #f9fafb;
-    }
-
-    .signature-container small {
+    .stat-extra {
       font-size: 0.75rem;
-      color: #6b7280;
-    }
-
-    canvas#signaturePad {
-      width: 100%;
-      height: 140px;
-      border-radius: 10px;
-      background: #ffffff;
-      border: 1px solid #d1d5db;
-      cursor: crosshair;
-      touch-action: none;
-    }
-
-    .alert {
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 0.75rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #ecfdf5;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-      margin-top: 6px;
-    }
-
-    .alert i {
-      color: #16a34a;
-    }
-
-    .muted {
-      font-size: 0.78rem;
-      color: #6b7280;
-    }
-
-    .stats-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-      font-size: 0.78rem;
-    }
-
-    .stat-chip {
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-      display: inline-flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .stat-chip i {
-      font-size: 0.8rem;
-    }
-
-    .hidden {
-      display: none !important;
+      color: #6c757d;
     }
   </style>
 </head>
 <body>
-  <!-- Hidden logo for PDF export -->
-  <img id="jooustLogo" src="logo.jpg" alt="JOOUST Logo" style="display:none" />
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+    <div class="container-fluid px-3 px-sm-4">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <img
+          src="logo.jpg"
+          id="jooustLogo"
+          alt="JOOUST Logo"
+          style="height:40px; width:auto; border-radius:6px; background:#fff; padding:2px;"
+        />
+        <div>
+          <div class="brand-title">JOOUST Attendance Portal</div>
+          <small class="d-none d-sm-block">Smart Class Attendance • Lecturer & HOD Sign-off</small>
+        </div>
+      </a>
+      <span class="navbar-text small ms-auto">
+        <i class="bi bi-shield-lock"></i>
+        Secure • Simple • Paperless
+      </span>
+    </div>
+  </nav>
 
-  <header>
-    <div class="header-left">
-      <div class="header-logo">
-        <!-- Visible logo -->
-        <img src="logo.jpg" alt="JOOUST Logo">
-      </div>
-      <div class="header-title">
-        <h1>JOOUST Attendance Manager</h1>
-        <span>Smart class attendance · secure records · quick reports</span>
+  <div class="container-fluid px-3 px-sm-4 pb-4">
+    <div class="page-header">
+      <h1>
+        Smart Attendance
+        <span class="badge rounded-pill">Beta</span>
+      </h1>
+      <div class="mt-1 mb-3">
+        <span class="chip"><i class="bi bi-qr-code-scan"></i>Create & share session links</span>
+        <span class="chip"><i class="bi bi-pen"></i>Lecturer & HOD e-signatures</span>
+        <span class="chip"><i class="bi bi-file-earmark-bar-graph"></i>Weekly / monthly reports</span>
       </div>
     </div>
-    <div class="header-right">
-      <div class="badge">
-        <i class="fa-solid fa-graduation-cap"></i>
-        Jaramogi Oginga Odinga University of Science &amp; Technology
-      </div>
-      <div>Attendance · Classes · Excel &amp; PDF Reports</div>
-    </div>
-  </header>
 
-  <div class="layout">
-    <!-- Sidebar -->
-    <aside>
-      <div class="nav-section-title">Navigation</div>
-      <ul class="side-nav">
-        <li>
-          <button class="nav-btn active" data-target="section-classes">
-            <i class="fa-solid fa-layer-group"></i>
-            Classes &amp; Setup
-          </button>
-        </li>
-        <li>
-          <button class="nav-btn" data-target="section-attendance">
-            <i class="fa-solid fa-clipboard-check"></i>
-            Register Attendance
-          </button>
-        </li>
-        <li>
-          <button class="nav-btn" data-target="section-reports">
-            <i class="fa-solid fa-chart-bar"></i>
-            Reports &amp; Exports
-          </button>
-        </li>
-      </ul>
-
-      <div class="side-footer">
-        <strong>Tip:</strong> Data is stored in your browser (Local Storage).
-        You can safely refresh the page. Use Excel or PDF export for official reporting.
-      </div>
-    </aside>
-
-    <!-- Main content -->
-    <main>
-      <!-- CLASSES SECTION -->
-      <section id="section-classes">
-        <div class="content-header">
-          <h2>Classes &amp; Configuration</h2>
-          <span>Define teaching groups before taking attendance.</span>
-        </div>
-
-        <div class="card-grid two">
-          <!-- Create class -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Create / Edit Classes</h3>
-                <small>Each class can have multiple attendance sessions.</small>
+    <!-- MAIN LAYOUT -->
+    <div class="row g-3">
+      <!-- ADMIN / LECTURER VIEW -->
+      <div class="col-lg-7" id="adminSection">
+        <!-- CREATE SESSION -->
+        <div class="card mb-3">
+          <div class="card-header">
+            <i class="bi bi-plus-circle"></i>Create Attendance Session
+          </div>
+          <div class="card-body">
+            <form id="sessionForm" class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" id="sessionDate" required />
               </div>
-              <div class="chip">
-                <i class="fa-solid fa-circle-info"></i> Required once per unit
+              <div class="col-md-4">
+                <label class="form-label">Class / Year</label>
+                <input type="text" class="form-control" id="className" placeholder="e.g. BIT Y2S1" required />
               </div>
-            </div>
+              <div class="col-md-4">
+                <label class="form-label">Unit Code / Name</label>
+                <input type="text" class="form-control" id="unitName" placeholder="e.g. ICS 2212" required />
+              </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="className">Class / Unit Name</label>
-                <input type="text" id="className" placeholder="e.g. CSC 201: Networking Fundamentals">
+              <div class="col-md-4">
+                <label class="form-label">Lecturer Name</label>
+                <input type="text" class="form-control" id="lecturerName" placeholder="e.g. Dr. A. Otieno" required />
               </div>
-              <div class="form-group">
-                <label for="classCode">Class Code</label>
-                <input type="text" id="classCode" placeholder="e.g. CSC201">
+              <div class="col-md-4">
+                <label class="form-label">HOD Name</label>
+                <input type="text" class="form-control" id="hodName" placeholder="e.g. Prof. B. Okello" />
               </div>
-            </div>
+              <div class="col-md-2">
+                <label class="form-label">Start Time</label>
+                <input type="time" class="form-control" id="startTime" />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">End Time</label>
+                <input type="time" class="form-control" id="endTime" />
+              </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="lecturerName">Lecturer / Facilitator</label>
-                <input type="text" id="lecturerName" placeholder="e.g. Eng. Dan Otieno">
+              <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+                <button type="submit" class="btn btn-jooust">
+                  <i class="bi bi-check2-circle"></i>
+                  Save Session
+                </button>
+                <span class="pill-info">
+                  <i class="bi bi-info-circle"></i>
+                  After saving, a student link will be generated automatically.
+                </span>
               </div>
-              <div class="form-group">
-                <label for="semester">Semester / Term (optional)</label>
-                <input type="text" id="semester" placeholder="e.g. Sept–Dec 2025">
+            </form>
+
+            <!-- SHARE LINK -->
+            <hr />
+            <div>
+              <div class="section-title mb-1">
+                <i class="bi bi-link-45deg"></i> Share link with students
               </div>
-            </div>
-
-            <div class="btn-row">
-              <button class="btn btn-primary" id="btnAddClass">
-                <i class="fa-solid fa-plus"></i> Save Class
-              </button>
-              <button class="btn btn-outline" id="btnClearClasses">
-                <i class="fa-solid fa-trash-can"></i> Clear All Classes
-              </button>
-            </div>
-
-            <div class="alert" id="classAlert" style="display:none;">
-              <i class="fa-solid fa-check-circle"></i>
-              Class saved successfully.
+              <div class="share-link-box">
+                <div class="small text-muted mb-1">
+                  Latest session link (copy & send to class WhatsApp / email):
+                </div>
+                <code id="shareLinkText">No session yet. Create one above.</code>
+                <div class="mt-2 d-flex gap-2">
+                  <button id="copyLinkBtn" disabled class="btn btn-sm btn-outline-jooust">
+                    <i class="bi bi-clipboard-check"></i> Copy Link
+                  </button>
+                  <span class="text-success small d-none" id="copyStatus">
+                    <i class="bi bi-check-circle"></i> Copied!
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <!-- List classes -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Existing Classes</h3>
-                <small>Click a row to pre-fill when taking attendance.</small>
-              </div>
-            </div>
-            <div class="table-wrapper" id="classesTableWrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Code</th>
-                    <th>Class Name</th>
-                    <th>Lecturer</th>
-                    <th>Semester</th>
-                  </tr>
-                </thead>
-                <tbody id="classesTableBody">
-                  <!-- Filled by JS -->
-                </tbody>
-              </table>
-            </div>
-            <p class="muted" style="margin-top:6px;">
-              If you click on a class here, it will auto-select it on the
-              <strong>Register Attendance</strong> tab.
-            </p>
+        <!-- SESSION & ATTENDANCE VIEW -->
+        <div class="card mb-3">
+          <div class="card-header">
+            <i class="bi bi-people"></i> Session Attendance & Sign-off
           </div>
-        </div>
-      </section>
-
-      <!-- ATTENDANCE SECTION -->
-      <section id="section-attendance" class="hidden">
-        <div class="content-header">
-          <h2>Register Attendance</h2>
-          <span>Capture presence, timestamp and lecturer signature.</span>
-        </div>
-
-        <div class="card-grid two">
-          <!-- Left: attendance form -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Attendance Session Details</h3>
-                <small>Choose class &amp; date, then add learners.</small>
+          <div class="card-body">
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Select Session</label>
+                <select class="form-select" id="sessionSelect"></select>
+              </div>
+              <div class="col-md-6 d-flex align-items-end justify-content-end gap-2">
+                <button class="btn btn-outline-secondary btn-sm" id="refreshSessionsBtn">
+                  <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+                <button class="btn btn-outline-danger btn-sm" id="clearAllBtn">
+                  <i class="bi bi-trash"></i> Clear ALL (local)
+                </button>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="attendanceClassSelect">Class</label>
-                <select id="attendanceClassSelect"></select>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-title">Registered Students</div>
+                  <div class="stat-value" id="statTotal">0</div>
+                  <div class="stat-extra" id="statMeta">No session selected</div>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="attendanceDate">Date</label>
-                <input type="date" id="attendanceDate">
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-title">This Week (All Classes)</div>
+                  <div class="stat-value" id="statWeek">0</div>
+                  <div class="stat-extra">Unique sessions captured</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <div class="stat-title">This Month (All Classes)</div>
+                  <div class="stat-value" id="statMonth">0</div>
+                  <div class="stat-extra">Unique sessions captured</div>
+                </div>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="sessionTopic">Session topic / description (optional)</label>
-                <input type="text" id="sessionTopic" placeholder="e.g. OSI model &amp; TCP/IP layers">
-              </div>
-            </div>
-
-            <div class="card-header" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-soft);">
-              <div>
-                <h3>Learners</h3>
-                <small>Mark present / absent for each learner.</small>
-              </div>
-              <button class="btn btn-outline" id="btnAddStudentRow">
-                <i class="fa-solid fa-user-plus"></i> Add Row
-              </button>
-            </div>
-
-            <div class="table-wrapper">
-              <table>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-hover align-middle mb-0" id="attendanceTable">
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Learner Name</th>
-                    <th>Reg / Adm No.</th>
-                    <th class="text-center">Present?</th>
-                    <th class="text-center">Remove</th>
+                    <th>Student Name</th>
+                    <th>Reg. No.</th>
+                    <th>Time</th>
                   </tr>
                 </thead>
-                <tbody id="studentsTableBody">
-                  <!-- dynamically added rows -->
+                <tbody>
+                  <tr>
+                    <td colspan="4" class="text-center text-muted small">
+                      No data. Ask students to open the session link and submit their details.
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
-            <div class="btn-row" style="margin-top:8px;">
-              <button class="btn btn-primary" id="btnSaveAttendance">
-                <i class="fa-solid fa-save"></i> Save Attendance
-              </button>
-              <button class="btn btn-outline" id="btnClearStudents">
-                <i class="fa-solid fa-broom"></i> Clear Learner Rows
-              </button>
-            </div>
-
-            <p class="muted" style="margin-top:6px;">
-              Hint: You can reuse the same learner list on future dates – after saving,
-              the list remains available in this browser.
-            </p>
-
-            <div class="alert" id="attendanceAlert" style="display:none;">
-              <i class="fa-solid fa-check-circle"></i>
-              Attendance saved to browser storage.
-            </div>
-          </div>
-
-          <!-- Right: Signature -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Lecturer Signature</h3>
-                <small>Captured and attached to PDF reports (when possible).</small>
+            <!-- SIGNATURES -->
+            <div class="row g-3 mt-3">
+              <div class="col-md-6">
+                <div class="signature-box">
+                  <div class="signature-label">Lecturer Signature (Confirm class took place)</div>
+                  <canvas class="signature-canvas" id="lecturerCanvas" height="150"></canvas>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <small class="text-muted">Sign using a mouse or touch.</small>
+                    <button class="btn btn-sm btn-outline-secondary" id="clearLecturerSig">
+                      Clear
+                    </button>
+                  </div>
+                </div>
               </div>
-              <span class="tag">Digital signature</span>
+              <div class="col-md-6">
+                <div class="signature-box">
+                  <div class="signature-label">HOD Signature (Approve attendance)</div>
+                  <canvas class="signature-canvas" id="hodCanvas" height="150"></canvas>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <small class="text-muted">HOD signs here to approve.</small>
+                    <button class="btn btn-sm btn-outline-secondary" id="clearHodSig">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="signature-container">
-              <small>Sign inside the box using mouse or touch. This will be stored with the attendance session.</small>
-              <canvas id="signaturePad"></canvas>
-
-              <div class="btn-row" style="margin-top:6px;">
-                <button class="btn btn-outline" id="btnClearSignature">
-                  <i class="fa-solid fa-eraser"></i> Clear Signature
+            <!-- EXPORT -->
+            <div class="mt-3 d-flex flex-wrap gap-2 justify-content-between">
+              <div class="section-title mb-0">
+                <i class="bi bi-file-earmark-arrow-down"></i> Export attendance
+              </div>
+              <div>
+                <button class="btn btn-sm btn-outline-success" id="exportExcelBtn">
+                  <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+                </button>
+                <button class="btn btn-sm btn-outline-danger" id="exportPdfBtn">
+                  <i class="bi bi-file-earmark-pdf"></i> PDF
                 </button>
               </div>
-
-              <p class="muted" style="margin-top:6px;">
-                The signature is attached only to the sessions you save after signing.
-                For multi-day summary reports, signatures may not appear.
-              </p>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- REPORTS SECTION -->
-      <section id="section-reports" class="hidden">
-        <div class="content-header">
-          <h2>Reports &amp; Exports</h2>
-          <span>Generate weekly, monthly and class summaries, then export to Excel or PDF.</span>
+      <!-- STUDENT / ATTENDEE VIEW -->
+      <div class="col-lg-5" id="studentSection">
+        <div class="card mb-3">
+          <div class="card-header">
+            <i class="bi bi-person-check"></i> Student Attendance Form
+          </div>
+          <div class="card-body">
+            <p class="small text-muted mb-2" id="studentSessionInfo">
+              Opened without a specific session link. When a lecturer shares a link, it will automatically load the
+              right class and date here.
+            </p>
+
+            <form id="studentForm" class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Your Full Name</label>
+                <input type="text" class="form-control" id="studentName" required />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Registration Number</label>
+                <input type="text" class="form-control" id="studentRegNo" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Class / Year</label>
+                <input type="text" class="form-control" id="studentClass" readonly />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Unit</label>
+                <input type="text" class="form-control" id="studentUnit" readonly />
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-jooust w-100">
+                  <i class="bi bi-hand-index-thumb"></i> Mark My Attendance
+                </button>
+              </div>
+            </form>
+
+            <div class="alert alert-success mt-3 d-none" id="studentSuccess">
+              <i class="bi bi-check-circle-fill"></i>
+              Thank you! Your attendance has been recorded for this session.
+            </div>
+          </div>
         </div>
 
+        <!-- REPORT FILTERS (CLASS SUMMARY, WEEKLY, MONTHLY) -->
         <div class="card">
           <div class="card-header">
-            <div>
-              <h3>Report Filters</h3>
-              <small>Select what you want to see and export.</small>
-            </div>
+            <i class="bi bi-bar-chart"></i> Quick Reports (Summary)
           </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="reportClassSelect">Class</label>
-              <select id="reportClassSelect">
-                <!-- filled by JS -->
-              </select>
+          <div class="card-body">
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Report Type</label>
+                <select class="form-select" id="reportType">
+                  <option value="class">Class Summary</option>
+                  <option value="weekly">Weekly Summary</option>
+                  <option value="monthly">Monthly Summary</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Filter Class (optional)</label>
+                <input type="text" class="form-control" id="reportClassFilter" placeholder="e.g. BIT Y2S1" />
+              </div>
             </div>
-            <div class="form-group">
-              <label for="reportType">Report type</label>
-              <select id="reportType">
-                <option value="detailed">Detailed list (all records)</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly (summary by learner)</option>
-                <option value="monthly">Monthly (summary by learner)</option>
-                <option value="classSummary">Class summary (overall)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="reportStart">From date</label>
-              <input type="date" id="reportStart">
-            </div>
-            <div class="form-group">
-              <label for="reportEnd">To date</label>
-              <input type="date" id="reportEnd">
-            </div>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn btn-primary" id="btnGenerateReport">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate report
+            <button class="btn btn-outline-jooust btn-sm mb-2" id="generateReportBtn">
+              <i class="bi bi-lightning-charge"></i> Generate Summary
             </button>
-            <button class="btn btn-outline" id="btnExportExcel">
-              <i class="fa-solid fa-file-excel"></i> Export to Excel
-            </button>
-            <button class="btn btn-outline" id="btnExportPDF">
-              <i class="fa-solid fa-file-pdf"></i> Export to PDF
-            </button>
-          </div>
-
-          <div class="stats-row" id="reportStats" style="display:none;">
-            <div class="stat-chip">
-              <i class="fa-solid fa-users"></i>
-              <span id="statLearners"></span>
-            </div>
-            <div class="stat-chip">
-              <i class="fa-solid fa-calendar-check"></i>
-              <span id="statSessions"></span>
-            </div>
-            <div class="stat-chip">
-              <i class="fa-solid fa-circle-check"></i>
-              <span id="statPresent"></span>
-            </div>
-            <div class="stat-chip">
-              <i class="fa-solid fa-circle-xmark"></i>
-              <span id="statAbsent"></span>
-            </div>
-          </div>
-
-          <p class="muted" style="margin-top:4px;">
-            For <strong>Weekly</strong> or <strong>Monthly</strong> reports, set
-            the appropriate <em>From</em> and <em>To</em> dates (e.g. 1st to 7th
-            of the week, or 1st to 30th of the month). The app will generate
-            class summaries within that range.
-          </p>
-        </div>
-
-        <div class="card" style="margin-top:12px;">
-          <div class="card-header">
-            <div>
-              <h3>Report Preview</h3>
-              <small>Whatever you see here is what will be exported.</small>
-            </div>
-          </div>
-          <div class="table-wrapper">
-            <table id="reportTable">
-              <thead>
-                <tr id="reportHeaderRow">
-                  <!-- filled by JS -->
-                </tr>
-              </thead>
-              <tbody id="reportTableBody">
-                <!-- filled by JS -->
-              </tbody>
-            </table>
+            <pre
+              id="reportOutput"
+              class="bg-light border rounded p-2 small mb-0"
+              style="max-height: 220px; overflow:auto;"
+            >No report yet. Click "Generate Summary".</pre>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
+
+    <footer class="mt-4 mb-2 text-center">
+      JOOUST Smart Attendance • Local-storage prototype (no server). Clear data button only affects this browser.
+    </footer>
   </div>
 
   <script>
-    // ----------------------------
-    // Data model & local storage
-    // ----------------------------
-    const STORAGE_KEY = 'jooustAttendanceData_v1';
-
-    let state = {
-      classes: [],
-      sessions: [] // {id, classId, date, topic, records: [{name, regNo, present}], signature}
-    };
-
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          state = JSON.parse(raw);
-        }
-      } catch (e) {
-        console.error('Failed to parse stored data', e);
-      }
-    }
-
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function generateId(prefix) {
-      return prefix + '_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-    }
-
-    // ----------------------------
-    // UI Helpers
-    // ----------------------------
-    const navButtons = document.querySelectorAll('.nav-btn');
-    const sections = document.querySelectorAll('main section');
-
-    navButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        navButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const targetId = btn.getAttribute('data-target');
-        sections.forEach(sec => {
-          if (sec.id === targetId) sec.classList.remove('hidden');
-          else sec.classList.add('hidden');
+    // ===== Utilities =====
+    function getQueryParams() {
+      const params = {};
+      window.location.search
+        .substring(1)
+        .split("&")
+        .forEach((pair) => {
+          if (!pair) return;
+          const [k, v] = pair.split("=");
+          params[decodeURIComponent(k)] = decodeURIComponent(v || "");
         });
-      });
-    });
-
-    // ----------------------------
-    // Classes
-    // ----------------------------
-    const classNameInput = document.getElementById('className');
-    const classCodeInput = document.getElementById('classCode');
-    const lecturerInput = document.getElementById('lecturerName');
-    const semesterInput = document.getElementById('semester');
-    const classesTableBody = document.getElementById('classesTableBody');
-    const classAlert = document.getElementById('classAlert');
-
-    document.getElementById('btnAddClass').addEventListener('click', () => {
-      const name = classNameInput.value.trim();
-      const code = classCodeInput.value.trim();
-      const lecturer = lecturerInput.value.trim();
-      const semester = semesterInput.value.trim();
-
-      if (!name || !code) {
-        alert('Please enter at least Class Name and Class Code.');
-        return;
-      }
-
-      state.classes.push({
-        id: generateId('class'),
-        name,
-        code,
-        lecturer,
-        semester
-      });
-
-      saveState();
-      refreshClassLists();
-      classNameInput.value = '';
-      classCodeInput.value = '';
-      lecturerInput.value = '';
-      semesterInput.value = '';
-
-      classAlert.style.display = 'inline-flex';
-      setTimeout(() => (classAlert.style.display = 'none'), 1800);
-    });
-
-    document.getElementById('btnClearClasses').addEventListener('click', () => {
-      if (!confirm('This will remove all classes (attendance data will remain). Continue?')) return;
-      state.classes = [];
-      saveState();
-      refreshClassLists();
-    });
-
-    function refreshClassLists() {
-      // Classes table
-      classesTableBody.innerHTML = '';
-      if (state.classes.length === 0) {
-        classesTableBody.innerHTML = '<tr><td colspan="4" class="text-center muted">No classes yet. Add your first class on the left.</td></tr>';
-      } else {
-        state.classes.forEach(cls => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${cls.code}</td>
-            <td>${cls.name}</td>
-            <td>${cls.lecturer || '-'}</td>
-            <td>${cls.semester || '-'}</td>
-          `;
-          tr.addEventListener('click', () => {
-            // Switch to attendance tab & pre-select
-            document.querySelector('[data-target="section-attendance"]').click();
-            attendanceClassSelect.value = cls.id;
-          });
-          classesTableBody.appendChild(tr);
-        });
-      }
-
-      // Attendance select
-      const classSelects = [attendanceClassSelect, reportClassSelect];
-      classSelects.forEach(sel => {
-        const currentValue = sel.value;
-        sel.innerHTML = '';
-        if (sel === reportClassSelect) {
-          const optAll = document.createElement('option');
-          optAll.value = 'all';
-          optAll.textContent = 'All classes';
-          sel.appendChild(optAll);
-        }
-        state.classes.forEach(cls => {
-          const opt = document.createElement('option');
-          opt.value = cls.id;
-          opt.textContent = `${cls.code} – ${cls.name}`;
-          sel.appendChild(opt);
-        });
-        if (Array.from(sel.options).some(o => o.value === currentValue)) {
-          sel.value = currentValue;
-        }
-      });
+      return params;
     }
 
-    // ----------------------------
-    // Attendance
-    // ----------------------------
-    const attendanceClassSelect = document.getElementById('attendanceClassSelect');
-    const attendanceDateInput = document.getElementById('attendanceDate');
-    const sessionTopicInput = document.getElementById('sessionTopic');
-    const studentsTableBody = document.getElementById('studentsTableBody');
-    const attendanceAlert = document.getElementById('attendanceAlert');
-
-    function setTodayDate(input) {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      input.value = `${yyyy}-${mm}-${dd}`;
+    function loadSessions() {
+      return JSON.parse(localStorage.getItem("attendanceSessions") || "[]");
     }
 
-    setTodayDate(attendanceDateInput);
-
-    function addStudentRow(name = '', regNo = '') {
-      const rowIndex = studentsTableBody.children.length + 1;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="text-center">${rowIndex}</td>
-        <td><input type="text" class="student-name" placeholder="Learner name" value="${name}"></td>
-        <td><input type="text" class="student-reg" placeholder="Reg / Adm number" value="${regNo}"></td>
-        <td class="text-center">
-          <input type="checkbox" class="student-present" checked>
-        </td>
-        <td class="text-center">
-          <button class="btn btn-danger btn-sm-remove" type="button">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </td>
-      `;
-      studentsTableBody.appendChild(tr);
-
-      tr.querySelector('.btn-sm-remove').addEventListener('click', () => {
-        tr.remove();
-        renumberStudentRows();
-      });
+    function saveSessions(sessions) {
+      localStorage.setItem("attendanceSessions", JSON.stringify(sessions));
     }
 
-    function renumberStudentRows() {
-      Array.from(studentsTableBody.children).forEach((tr, idx) => {
-        tr.children[0].textContent = idx + 1;
-      });
+    function loadRecords(sessionId) {
+      const all = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
+      return all[sessionId] || [];
     }
 
-    document.getElementById('btnAddStudentRow').addEventListener('click', () => {
-      addStudentRow();
-    });
+    function saveRecords(sessionId, records) {
+      const all = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
+      all[sessionId] = records;
+      localStorage.setItem("attendanceRecords", JSON.stringify(all));
+    }
 
-    document.getElementById('btnClearStudents').addEventListener('click', () => {
-      if (!confirm('Remove all learner rows?')) return;
-      studentsTableBody.innerHTML = '';
-    });
+    function generateSessionId() {
+      return "S-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
 
-    document.getElementById('btnSaveAttendance').addEventListener('click', () => {
-      const classId = attendanceClassSelect.value;
-      const date = attendanceDateInput.value;
-      const topic = sessionTopicInput.value.trim();
+    function formatTime(date) {
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
 
-      if (!classId) {
-        alert('Please select a class.');
+    function formatDate(date) {
+      return date.toISOString().substring(0, 10);
+    }
+
+    // ===== Session Form & Sharing =====
+    const sessionForm = document.getElementById("sessionForm");
+    const shareLinkText = document.getElementById("shareLinkText");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const copyStatus = document.getElementById("copyStatus");
+    const sessionSelect = document.getElementById("sessionSelect");
+    const refreshSessionsBtn = document.getElementById("refreshSessionsBtn");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const attendanceTableBody = document.querySelector("#attendanceTable tbody");
+    const statTotal = document.getElementById("statTotal");
+    const statMeta = document.getElementById("statMeta");
+    const statWeek = document.getElementById("statWeek");
+    const statMonth = document.getElementById("statMonth");
+
+    let currentSessionId = null;
+
+    sessionForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const date = document.getElementById("sessionDate").value || formatDate(new Date());
+      const cls = document.getElementById("className").value.trim();
+      const unit = document.getElementById("unitName").value.trim();
+      const lecturer = document.getElementById("lecturerName").value.trim();
+      const hod = document.getElementById("hodName").value.trim();
+      const startTime = document.getElementById("startTime").value;
+      const endTime = document.getElementById("endTime").value;
+
+      if (!cls || !unit || !lecturer) {
+        alert("Please fill in Class, Unit and Lecturer.");
         return;
       }
-      if (!date) {
-        alert('Please select a date.');
-        return;
-      }
 
-      const rows = Array.from(studentsTableBody.querySelectorAll('tr'));
-      if (rows.length === 0) {
-        alert('Add at least one learner row before saving.');
-        return;
-      }
-
-      const records = [];
-      for (const tr of rows) {
-        const name = tr.querySelector('.student-name').value.trim();
-        const regNo = tr.querySelector('.student-reg').value.trim();
-        const present = tr.querySelector('.student-present').checked;
-
-        if (!name && !regNo) continue; // ignore empty rows
-
-        records.push({ name, regNo, present });
-      }
-
-      if (records.length === 0) {
-        alert('Please fill at least one learner entry (name or reg no).');
-        return;
-      }
-
-      const session = {
-        id: generateId('session'),
-        classId,
+      const sessions = loadSessions();
+      const id = generateSessionId();
+      const sessionObj = {
+        id,
         date,
-        topic,
-        records,
-        signature: signatureDataUrl || null
+        className: cls,
+        unitName: unit,
+        lecturer,
+        hod,
+        startTime,
+        endTime,
+        createdAt: new Date().toISOString(),
       };
+      sessions.push(sessionObj);
+      saveSessions(sessions);
 
-      state.sessions.push(session);
-      saveState();
-
-      attendanceAlert.style.display = 'inline-flex';
-      setTimeout(() => (attendanceAlert.style.display = 'none'), 1800);
+      currentSessionId = id;
+      updateSessionDropdown();
+      updateShareLink();
+      alert("Session saved successfully!");
     });
 
-    // ----------------------------
-    // Signature pad
-    // ----------------------------
-    const signatureCanvas = document.getElementById('signaturePad');
-    const ctx = signatureCanvas.getContext('2d');
-    let drawing = false;
-    let signatureDataUrl = null;
-
-    function resizeSignatureCanvas() {
-      const rect = signatureCanvas.getBoundingClientRect();
-      const ratio = window.devicePixelRatio || 1;
-      signatureCanvas.width = rect.width * ratio;
-      signatureCanvas.height = rect.height * ratio;
-      ctx.scale(ratio, ratio);
-      clearSignature();
-    }
-
-    function clearSignature() {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#111827';
-      signatureDataUrl = null;
-    }
-
-    resizeSignatureCanvas();
-    window.addEventListener('resize', resizeSignatureCanvas);
-
-    function getCanvasPos(e) {
-      const rect = signatureCanvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-      };
-    }
-
-    function startDrawing(e) {
-      e.preventDefault();
-      drawing = true;
-      const pos = getCanvasPos(e);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-    }
-
-    function draw(e) {
-      if (!drawing) return;
-      e.preventDefault();
-      const pos = getCanvasPos(e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    }
-
-    function stopDrawing(e) {
-      if (!drawing) return;
-      drawing = false;
-      signatureDataUrl = signatureCanvas.toDataURL('image/png');
-    }
-
-    signatureCanvas.addEventListener('mousedown', startDrawing);
-    signatureCanvas.addEventListener('mousemove', draw);
-    signatureCanvas.addEventListener('mouseup', stopDrawing);
-    signatureCanvas.addEventListener('mouseleave', stopDrawing);
-
-    signatureCanvas.addEventListener('touchstart', startDrawing, { passive: false });
-    signatureCanvas.addEventListener('touchmove', draw, { passive: false });
-    signatureCanvas.addEventListener('touchend', stopDrawing, { passive: false });
-
-    document.getElementById('btnClearSignature').addEventListener('click', () => {
-      clearSignature();
-    });
-
-    // ----------------------------
-    // Reports
-    // ----------------------------
-    const reportClassSelect = document.getElementById('reportClassSelect');
-    const reportTypeSelect = document.getElementById('reportType');
-    const reportStartInput = document.getElementById('reportStart');
-    const reportEndInput = document.getElementById('reportEnd');
-    const reportTableBody = document.getElementById('reportTableBody');
-    const reportHeaderRow = document.getElementById('reportHeaderRow');
-
-    const reportStats = document.getElementById('reportStats');
-    const statLearners = document.getElementById('statLearners');
-    const statSessions = document.getElementById('statSessions');
-    const statPresent = document.getElementById('statPresent');
-    const statAbsent = document.getElementById('statAbsent');
-
-    document.getElementById('btnGenerateReport').addEventListener('click', () => {
-      renderReportTable();
-    });
-
-    function parseDate(str) {
-      if (!str) return null;
-      const parts = str.split('-').map(Number);
-      return new Date(parts[0], parts[1] - 1, parts[2]);
-    }
-
-    function isWithin(dateStr, startStr, endStr) {
-      const d = parseDate(dateStr);
-      if (!d) return false;
-      const start = startStr ? parseDate(startStr) : null;
-      const end = endStr ? parseDate(endStr) : null;
-      if (start && d < start) return false;
-      if (end && d > end) return false;
-      return true;
-    }
-
-    function renderReportTable() {
-      const classId = reportClassSelect.value;
-      const type = reportTypeSelect.value;
-      const start = reportStartInput.value;
-      const end = reportEndInput.value;
-
-      let sessions = state.sessions;
-      if (classId !== 'all') {
-        sessions = sessions.filter(s => s.classId === classId);
-      }
-      if (start || end) {
-        sessions = sessions.filter(s => isWithin(s.date, start, end));
-      }
-
-      reportTableBody.innerHTML = '';
-      reportHeaderRow.innerHTML = '';
-      reportStats.style.display = 'none';
-
-      if (sessions.length === 0) {
-        reportHeaderRow.innerHTML = '<th class="text-center">No data</th>';
-        reportTableBody.innerHTML = '<tr><td class="text-center muted">No attendance records found for this selection.</td></tr>';
+    function updateShareLink() {
+      const sessions = loadSessions();
+      const last = sessions[sessions.length - 1];
+      if (!last) {
+        shareLinkText.textContent = "No session yet. Create one above.";
+        copyLinkBtn.disabled = true;
         return;
       }
+      currentSessionId = last.id;
+      const baseUrl = window.location.origin + window.location.pathname;
+      const link = `${baseUrl}?session=${encodeURIComponent(last.id)}&role=student`;
+      shareLinkText.textContent = link;
+      copyLinkBtn.disabled = false;
+      copyStatus.classList.add("d-none");
+      populateSessionDetails(last.id);
+    }
 
-      if (type === 'classSummary') {
-        renderClassSummary(sessions);
-      } else if (type === 'weekly' || type === 'monthly') {
-        renderAggregatedLearnerSummary(sessions);
-      } else { // detailed or daily
-        renderDetailedRecords(sessions);
+    copyLinkBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(shareLinkText.textContent);
+        copyStatus.classList.remove("d-none");
+        setTimeout(() => copyStatus.classList.add("d-none"), 1800);
+      } catch (e) {
+        alert("Copy failed. Manually select and copy the link.");
       }
+    });
+
+    function updateSessionDropdown() {
+      const sessions = loadSessions();
+      sessionSelect.innerHTML = "";
+      if (!sessions.length) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "No session saved yet";
+        sessionSelect.appendChild(opt);
+        return;
+      }
+      sessions.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = `${s.date} | ${s.className} | ${s.unitName}`;
+        sessionSelect.appendChild(opt);
+      });
+      // Default to latest
+      sessionSelect.value = sessions[sessions.length - 1].id;
+      currentSessionId = sessionSelect.value;
+      populateSessionDetails(currentSessionId);
     }
 
-    function renderDetailedRecords(sessions) {
-      reportHeaderRow.innerHTML = `
-        <th>Date</th>
-        <th>Class</th>
-        <th>Learner</th>
-        <th>Reg/Adm No.</th>
-        <th>Status</th>
-        <th>Topic</th>
-      `;
-      reportTableBody.innerHTML = '';
+    refreshSessionsBtn.addEventListener("click", () => {
+      updateSessionDropdown();
+      updateShareLink();
+    });
 
-      let presentCount = 0;
-      let absentCount = 0;
-      const learnerSet = new Set();
+    clearAllBtn.addEventListener("click", () => {
+      if (!confirm("This will clear ALL sessions and records from this browser. Continue?")) return;
+      localStorage.removeItem("attendanceSessions");
+      localStorage.removeItem("attendanceRecords");
+      updateSessionDropdown();
+      updateShareLink();
+      updateAttendanceTable(null);
+      updateStats();
+    });
 
-      sessions.sort((a, b) => a.date.localeCompare(b.date)).forEach(sess => {
-        const cls = state.classes.find(c => c.id === sess.classId);
-        sess.records.forEach(rec => {
-          const tr = document.createElement('tr');
-          const statusSpan = rec.present
-            ? `<span class="pill-present">Present</span>`
-            : `<span class="pill-absent">Absent</span>`;
-          tr.innerHTML = `
-            <td>${sess.date}</td>
-            <td>${cls ? cls.code : ''}</td>
-            <td>${rec.name || '-'}</td>
-            <td>${rec.regNo || '-'}</td>
-            <td>${statusSpan}</td>
-            <td>${sess.topic || '-'}</td>
-          `;
-          reportTableBody.appendChild(tr);
+    sessionSelect.addEventListener("change", () => {
+      currentSessionId = sessionSelect.value || null;
+      populateSessionDetails(currentSessionId);
+    });
 
-          if (rec.present) presentCount++;
-          else absentCount++;
-          if (rec.regNo || rec.name) {
-            learnerSet.add((rec.regNo || '').trim() + '|' + (rec.name || '').trim());
-          }
-        });
-      });
-
-      statLearners.textContent = `Learners: ${learnerSet.size}`;
-      statSessions.textContent = `Sessions: ${sessions.length}`;
-      statPresent.textContent = `Present marks: ${presentCount}`;
-      statAbsent.textContent = `Absent marks: ${absentCount}`;
-      reportStats.style.display = 'flex';
+    function populateSessionDetails(sessionId) {
+      if (!sessionId) {
+        updateAttendanceTable(null);
+        statMeta.textContent = "No session selected";
+        statTotal.textContent = "0";
+        return;
+      }
+      const sessions = loadSessions();
+      const session = sessions.find((s) => s.id === sessionId);
+      const records = loadRecords(sessionId);
+      updateAttendanceTable(records);
+      if (session) {
+        statMeta.textContent =
+          session.className +
+          " • " +
+          session.unitName +
+          " • " +
+          (session.date || "").toString();
+      }
+      statTotal.textContent = records.length.toString();
+      updateStats();
     }
 
-    function renderAggregatedLearnerSummary(sessions) {
-      reportHeaderRow.innerHTML = `
-        <th>Learner</th>
-        <th>Reg/Adm No.</th>
-        <th>Sessions marked</th>
-        <th>Present</th>
-        <th>Absent</th>
-        <th>Attendance %</th>
-      `;
-      reportTableBody.innerHTML = '';
-
-      const map = new Map(); // key: name|reg, value: {name, regNo, total, present}
-
-      sessions.forEach(sess => {
-        sess.records.forEach(rec => {
-          const key = (rec.regNo || '') + '|' + (rec.name || '');
-          if (!key.trim()) return;
-          if (!map.has(key)) {
-            map.set(key, {
-              name: rec.name || '',
-              regNo: rec.regNo || '',
-              total: 0,
-              present: 0
-            });
-          }
-          const entry = map.get(key);
-          entry.total += 1;
-          if (rec.present) entry.present += 1;
-        });
-      });
-
-      let presentSum = 0;
-      let absentSum = 0;
-
-      Array.from(map.values())
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .forEach(entry => {
-          const absent = entry.total - entry.present;
-          const percent = entry.total ? ((entry.present / entry.total) * 100).toFixed(1) : '0.0';
-          presentSum += entry.present;
-          absentSum += absent;
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${entry.name || '-'}</td>
-            <td>${entry.regNo || '-'}</td>
-            <td>${entry.total}</td>
-            <td><span class="pill-present">${entry.present}</span></td>
-            <td><span class="pill-absent">${absent}</span></td>
-            <td>${percent}%</td>
-          `;
-          reportTableBody.appendChild(tr);
-        });
-
-      statLearners.textContent = `Learners: ${map.size}`;
-      statSessions.textContent = `Sessions in range: ${sessions.length}`;
-      statPresent.textContent = `Total present marks: ${presentSum}`;
-      statAbsent.textContent = `Total absent marks: ${absentSum}`;
-      reportStats.style.display = 'flex';
-    }
-
-    function renderClassSummary(sessions) {
-      reportHeaderRow.innerHTML = `
-        <th>Class</th>
-        <th>Sessions</th>
-        <th>Total marks</th>
-        <th>Total present</th>
-        <th>Total absent</th>
-        <th>Overall attendance %</th>
-      `;
-      reportTableBody.innerHTML = '';
-
-      const clsMap = new Map(); // classId -> stats
-
-      sessions.forEach(sess => {
-        if (!clsMap.has(sess.classId)) {
-          clsMap.set(sess.classId, { sessions: 0, total: 0, present: 0 });
-        }
-        const entry = clsMap.get(sess.classId);
-        entry.sessions += 1;
-        sess.records.forEach(rec => {
-          entry.total += 1;
-          if (rec.present) entry.present += 1;
-        });
-      });
-
-      let presentSum = 0;
-      let absentSum = 0;
-
-      clsMap.forEach((entry, classId) => {
-        const cls = state.classes.find(c => c.id === classId);
-        const absent = entry.total - entry.present;
-        const percent = entry.total ? ((entry.present / entry.total) * 100).toFixed(1) : '0.0';
-        presentSum += entry.present;
-        absentSum += absent;
-
-        const tr = document.createElement('tr');
+    function updateAttendanceTable(records) {
+      attendanceTableBody.innerHTML = "";
+      if (!records || !records.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td colspan="4" class="text-center text-muted small">No attendance for this session yet.</td>';
+        attendanceTableBody.appendChild(tr);
+        return;
+      }
+      records.forEach((rec, index) => {
+        const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${cls ? cls.code + ' – ' + cls.name : 'Unknown class'}</td>
-          <td>${entry.sessions}</td>
-          <td>${entry.total}</td>
-          <td><span class="pill-present">${entry.present}</span></td>
-          <td><span class="pill-absent">${absent}</span></td>
-          <td>${percent}%</td>
+          <td>${index + 1}</td>
+          <td>${rec.name}</td>
+          <td>${rec.regNo}</td>
+          <td>${new Date(rec.time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}</td>
         `;
-        reportTableBody.appendChild(tr);
+        attendanceTableBody.appendChild(tr);
       });
-
-      statLearners.textContent = `Classes: ${clsMap.size}`;
-      statSessions.textContent = `Sessions: ${sessions.length}`;
-      statPresent.textContent = `Total present marks: ${presentSum}`;
-      statAbsent.textContent = `Total absent marks: ${absentSum}`;
-      reportStats.style.display = 'flex';
     }
 
-    // ----------------------------
-    // Export: Excel & PDF
-    // ----------------------------
-    function getReportTableAsArray() {
-      const table = document.getElementById('reportTable');
-      const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
-      const rows = [];
-      table.querySelectorAll('tbody tr').forEach(tr => {
-        const cells = Array.from(tr.children).map(td => td.textContent.trim());
-        rows.push(cells);
-      });
-      return { headers, rows };
-    }
+    // ===== STUDENT FORM =====
+    const studentForm = document.getElementById("studentForm");
+    const studentSuccess = document.getElementById("studentSuccess");
+    const studentSessionInfo = document.getElementById("studentSessionInfo");
+    const studentClass = document.getElementById("studentClass");
+    const studentUnit = document.getElementById("studentUnit");
 
-    document.getElementById('btnExportExcel').addEventListener('click', () => {
-      const { headers, rows } = getReportTableAsArray();
-      if (!headers.length || rows.length === 0) {
-        alert('No report data to export. Generate a report first.');
+    let studentSessionId = null;
+
+    studentForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!studentSessionId) {
+        alert("This page is not linked to any session. Use the link sent by your lecturer.");
         return;
       }
 
-      const wb = XLSX.utils.book_new();
-      const wsData = [headers, ...rows];
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const name = document.getElementById("studentName").value.trim();
+      const regNo = document.getElementById("studentRegNo").value.trim().toUpperCase();
 
-      XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
-      const fileName = 'JOOUST_Attendance_Report.xlsx';
+      if (!name || !regNo) {
+        alert("Please enter your full name and registration number.");
+        return;
+      }
+
+      const records = loadRecords(studentSessionId);
+      const now = new Date().toISOString();
+      records.push({ name, regNo, time: now });
+      saveRecords(studentSessionId, records);
+
+      studentForm.reset();
+      studentClass.value = studentClass.dataset.value || "";
+      studentUnit.value = studentUnit.dataset.value || "";
+
+      studentSuccess.classList.remove("d-none");
+      setTimeout(() => studentSuccess.classList.add("d-none"), 2500);
+    });
+
+    // ===== SIGNATURES =====
+    function setupSignature(canvasId, clearBtnId) {
+      const canvas = document.getElementById(canvasId);
+      const clearBtn = document.getElementById(clearBtnId);
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
+      let lastPos = { x: 0, y: 0 };
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top,
+        };
+      }
+
+      function start(e) {
+        drawing = true;
+        lastPos = getPos(e);
+      }
+
+      function move(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastPos.x, lastPos.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.stroke();
+        lastPos = pos;
+      }
+
+      function end() {
+        drawing = false;
+      }
+
+      canvas.addEventListener("mousedown", start);
+      canvas.addEventListener("mousemove", move);
+      canvas.addEventListener("mouseup", end);
+      canvas.addEventListener("mouseleave", end);
+      canvas.addEventListener("touchstart", start);
+      canvas.addEventListener("touchmove", move);
+      canvas.addEventListener("touchend", end);
+
+      clearBtn.addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
+
+      return {
+        canvas,
+        getDataURL: () => canvas.toDataURL("image/png"),
+      };
+    }
+
+    const lecturerSig = setupSignature("lecturerCanvas", "clearLecturerSig");
+    const hodSig = setupSignature("hodCanvas", "clearHodSig");
+
+    // ===== EXPORT: EXCEL & PDF =====
+    const exportExcelBtn = document.getElementById("exportExcelBtn");
+    const exportPdfBtn = document.getElementById("exportPdfBtn");
+
+    exportExcelBtn.addEventListener("click", () => {
+      if (!currentSessionId) {
+        alert("Select a session first.");
+        return;
+      }
+      const sessions = loadSessions();
+      const session = sessions.find((s) => s.id === currentSessionId);
+      const records = loadRecords(currentSessionId);
+      if (!session) return;
+
+      const data = [
+        ["JOOUST ATTENDANCE REGISTER"],
+        [
+          `Class: ${session.className}`,
+          `Unit: ${session.unitName}`,
+          `Date: ${session.date}`,
+        ],
+        [
+          `Lecturer: ${session.lecturer}`,
+          `HOD: ${session.hod || ""}`,
+          `Time: ${session.startTime || ""} - ${session.endTime || ""}`,
+        ],
+        [],
+        ["#", "Student Name", "Registration Number", "Time"],
+      ];
+
+      records.forEach((r, i) => {
+        data.push([
+          i + 1,
+          r.name,
+          r.regNo,
+          new Date(r.time).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        ]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+      const fileName = `JOOUST_Attendance_${session.className}_${session.unitName}_${session.date}.xlsx`;
       XLSX.writeFile(wb, fileName);
     });
 
-    let jooustLogoDataUrl = null;
-    const logoImg = document.getElementById('jooustLogo');
-    logoImg.addEventListener('load', () => {
-      // draw into canvas to get dataURL
-      const c = document.createElement('canvas');
-      c.width = logoImg.naturalWidth;
-      c.height = logoImg.naturalHeight;
-      const cctx = c.getContext('2d');
-      cctx.drawImage(logoImg, 0, 0);
-      jooustLogoDataUrl = c.toDataURL('image/jpeg');
-    });
-
-    document.getElementById('btnExportPDF').addEventListener('click', () => {
-      const { headers, rows } = getReportTableAsArray();
-      if (!headers.length || rows.length === 0) {
-        alert('No report data to export. Generate a report first.');
+    exportPdfBtn.addEventListener("click", () => {
+      if (!currentSessionId) {
+        alert("Select a session first.");
         return;
       }
+      const sessions = loadSessions();
+      const session = sessions.find((s) => s.id === currentSessionId);
+      const records = loadRecords(currentSessionId);
+      if (!session) return;
 
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('p', 'mm', 'a4');
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-      // Header with logo and title
-      if (jooustLogoDataUrl) {
-        doc.addImage(jooustLogoDataUrl, 'JPEG', 10, 8, 30, 30);
-      }
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Jaramogi Oginga Odinga University of Science & Technology', 45, 16);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Class Attendance Report', 45, 24);
+      // Logo
+      const logoImg = document.getElementById("jooustLogo");
+      let y = 10;
 
-      const type = reportTypeSelect.value;
-      const classId = reportClassSelect.value;
-      let subtitle = `Report type: ${reportTypeSelect.options[reportTypeSelect.selectedIndex].text}`;
-      if (classId !== 'all') {
-        const cls = state.classes.find(c => c.id === classId);
-        if (cls) subtitle += ` | Class: ${cls.code} – ${cls.name}`;
-      }
-      const start = reportStartInput.value;
-      const end = reportEndInput.value;
-      if (start || end) {
-        subtitle += ` | Period: ${start || '...'} to ${end || '...'}`;
-      }
-
-      doc.setFontSize(9);
-      doc.text(subtitle, 45, 30);
-
-      // Table
-      doc.autoTable({
-        startY: 40,
-        head: [headers],
-        body: rows,
-        styles: {
-          fontSize: 8
-        },
-        headStyles: {
-          fillColor: [0, 75, 141],
-          textColor: [255, 255, 255]
+      if (logoImg && logoImg.complete) {
+        try {
+          doc.addImage(logoImg, "JPEG", 10, 8, 25, 25);
+        } catch (e) {
+          // ignore if image fails
         }
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("JARAMOGI OGINGA ODINGA UNIVERSITY OF SCIENCE AND TECHNOLOGY", 40, y + 6, { maxWidth: 160 });
+      doc.setFontSize(12);
+      doc.text("Class Attendance Register", 40, y + 14);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Class: ${session.className}`, 10, y + 30);
+      doc.text(`Unit: ${session.unitName}`, 80, y + 30);
+      doc.text(`Date: ${session.date}`, 150, y + 30);
+
+      doc.text(`Lecturer: ${session.lecturer}`, 10, y + 36);
+      doc.text(`HOD: ${session.hod || ""}`, 80, y + 36);
+      doc.text(`Time: ${session.startTime || ""} - ${session.endTime || ""}`, 150, y + 36);
+
+      // Table header
+      let tableY = y + 44;
+      doc.setFont("helvetica", "bold");
+      doc.rect(10, tableY - 4, 190, 8);
+      doc.text("#", 12, tableY);
+      doc.text("Student Name", 22, tableY);
+      doc.text("Reg. No.", 100, tableY);
+      doc.text("Time", 160, tableY);
+
+      doc.setFont("helvetica", "normal");
+      let rowY = tableY + 6;
+      records.forEach((r, i) => {
+        if (rowY > 260) {
+          doc.addPage();
+          rowY = 20;
+        }
+        doc.text(String(i + 1), 12, rowY);
+        doc.text(r.name, 22, rowY, { maxWidth: 70 });
+        doc.text(r.regNo, 100, rowY, { maxWidth: 40 });
+        doc.text(
+          new Date(r.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          160,
+          rowY
+        );
+        rowY += 6;
       });
 
-      // Signature (only if we can find a matching single session with signature)
-      if (type === 'daily' && classId !== 'all') {
-        const date = reportStartInput.value || reportEndInput.value;
-        if (date) {
-          const sess = state.sessions.find(s => s.classId === classId && s.date === date && s.signature);
-          if (sess && sess.signature) {
-            const finalY = doc.lastAutoTable.finalY || 260;
-            if (finalY < 250) {
-              doc.addImage(sess.signature, 'PNG', 20, finalY + 8, 60, 20);
-              doc.text('Lecturer Signature', 25, finalY + 32);
-            }
-          }
-        }
+      // Signatures
+      rowY += 8;
+      doc.setFont("helvetica", "bold");
+      doc.text("Lecturer Signature:", 10, rowY);
+      doc.text("HOD Signature:", 110, rowY);
+
+      // Insert signature images if drawn
+      rowY += 2;
+      try {
+        const lectData = lecturerSig.getDataURL();
+        const hodData = hodSig.getDataURL();
+        doc.addImage(lectData, "PNG", 10, rowY, 80, 25);
+        doc.addImage(hodData, "PNG", 110, rowY, 80, 25);
+      } catch (e) {
+        // ignore if cannot add
       }
 
-      const fileName = 'JOOUST_Attendance_Report.pdf';
+      const fileName = `JOOUST_Attendance_${session.className}_${session.unitName}_${session.date}.pdf`;
       doc.save(fileName);
     });
 
-    // ----------------------------
-    // Initial load
-    // ----------------------------
-    loadState();
-    refreshClassLists();
-    renderReportTable(); // default empty view
+    // ===== SIMPLE STATS FOR WEEK / MONTH =====
+    function updateStats() {
+      const sessions = loadSessions();
+      const now = new Date();
+      const weekAgo = new Date(now);
+      weekAgo.setDate(now.getDate() - 7);
 
-    // Add one default student row for convenience
-    if (studentsTableBody.children.length === 0) {
-      addStudentRow();
+      const monthAgo = new Date(now);
+      monthAgo.setMonth(now.getMonth() - 1);
+
+      let weekCount = 0;
+      let monthCount = 0;
+      sessions.forEach((s) => {
+        const d = new Date(s.date || s.createdAt || now);
+        if (d >= weekAgo && d <= now) weekCount++;
+        if (d >= monthAgo && d <= now) monthCount++;
+      });
+      statWeek.textContent = weekCount.toString();
+      statMonth.textContent = monthCount.toString();
     }
+
+    // ===== REPORTS (summary text) =====
+    const reportType = document.getElementById("reportType");
+    const reportClassFilter = document.getElementById("reportClassFilter");
+    const reportOutput = document.getElementById("reportOutput");
+    const generateReportBtn = document.getElementById("generateReportBtn");
+
+    generateReportBtn.addEventListener("click", () => {
+      const type = reportType.value;
+      const clsFilter = reportClassFilter.value.trim().toLowerCase();
+      const sessions = loadSessions();
+      const allRecords = JSON.parse(localStorage.getItem("attendanceRecords") || "{}");
+      const now = new Date();
+      const weekAgo = new Date(now);
+      weekAgo.setDate(now.getDate() - 7);
+      const monthAgo = new Date(now);
+      monthAgo.setMonth(now.getMonth() - 1);
+
+      const lines = [];
+
+      if (!sessions.length) {
+        reportOutput.textContent = "No sessions saved yet.";
+        return;
+      }
+
+      if (type === "class") {
+        lines.push("CLASS SUMMARY REPORT");
+        if (clsFilter) lines.push(`Filter: ${clsFilter}`);
+        lines.push("====================================");
+
+        const grouped = {};
+        sessions.forEach((s) => {
+          if (clsFilter && !s.className.toLowerCase().includes(clsFilter)) return;
+          const key = `${s.className} :: ${s.unitName}`;
+          const recs = allRecords[s.id] || [];
+          if (!grouped[key]) grouped[key] = { sessions: 0, attendees: 0 };
+          grouped[key].sessions += 1;
+          grouped[key].attendees += recs.length;
+        });
+
+        Object.entries(grouped).forEach(([key, val]) => {
+          lines.push(`${key}`);
+          lines.push(
+            `  Sessions held: ${val.sessions} | Total attendance: ${val.attendees}`
+          );
+          lines.push("");
+        });
+
+        if (!Object.keys(grouped).length) lines.push("No matching classes found.");
+      } else if (type === "weekly") {
+        lines.push("WEEKLY SUMMARY REPORT (Last 7 Days)");
+        lines.push("====================================");
+        sessions.forEach((s) => {
+          const d = new Date(s.date || s.createdAt || now);
+          if (d < weekAgo || d > now) return;
+          if (clsFilter && !s.className.toLowerCase().includes(clsFilter)) return;
+          const recs = allRecords[s.id] || [];
+          lines.push(
+            `${s.date} | ${s.className} | ${s.unitName} -> ${recs.length} students`
+          );
+        });
+      } else if (type === "monthly") {
+        lines.push("MONTHLY SUMMARY REPORT (Last 30 Days)");
+        lines.push("====================================");
+        sessions.forEach((s) => {
+          const d = new Date(s.date || s.createdAt || now);
+          if (d < monthAgo || d > now) return;
+          if (clsFilter && !s.className.toLowerCase().includes(clsFilter)) return;
+          const recs = allRecords[s.id] || [];
+          lines.push(
+            `${s.date} | ${s.className} | ${s.unitName} -> ${recs.length} students`
+          );
+        });
+      }
+
+      reportOutput.textContent = lines.join("\n") || "No data for this report.";
+    });
+
+    // ===== INITIAL LOAD / MODE SWITCH (LECTURER vs STUDENT) =====
+    function initMode() {
+      const params = getQueryParams();
+      const role = (params.role || "").toLowerCase();
+      const sessionParam = params.session || null;
+
+      if (sessionParam) {
+        studentSessionId = sessionParam;
+        const sessions = loadSessions();
+        const target = sessions.find((s) => s.id === sessionParam);
+        if (target) {
+          studentSessionInfo.textContent = `You are marking attendance for: ${target.date} • ${target.className} • ${target.unitName}`;
+          studentClass.value = target.className;
+          studentClass.dataset.value = target.className;
+          studentUnit.value = target.unitName;
+          studentUnit.dataset.value = target.unitName;
+        } else {
+          studentSessionInfo.textContent =
+            "Session not yet created on this device. Lecturer should first create the session.";
+        }
+      }
+
+      if (role === "student") {
+        // Student-only view (hide admin sections)
+        document.getElementById("adminSection").style.display = "none";
+      }
+    }
+
+    // Prefill session date with today
+    document.getElementById("sessionDate").value = formatDate(new Date());
+
+    // Startup
+    updateSessionDropdown();
+    updateShareLink();
+    updateStats();
+    initMode();
   </script>
 </body>
 </html>
