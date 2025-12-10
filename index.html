@@ -2,1030 +2,746 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Attendance Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JOOUST Attendance System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF + html2canvas for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Signature Pad -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
   <style>
     :root {
-      --primary:#2563eb;
-      --primary-dark:#1d4ed8;
-      --bg:#f1f5f9;
-      --card:#ffffff;
-      --border:#e2e8f0;
-      --text:#0f172a;
-      --muted:#64748b;
-      --danger:#dc2626;
-      --success:#16a34a;
+      --jooust-blue: #003366;
+      --jooust-blue-dark: #002247;
+      --jooust-green: #4caf50;
+      --bg-light: #f4f7fb;
+      --card-bg: #ffffff;
+      --border-soft: #dde4f0;
     }
-    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-    }
-    header{
-      background:var(--primary);
-      color:white;
-      padding:0.8rem 1.5rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    header h1{margin:0;font-size:1.2rem;font-weight:600}
-    header span{font-size:0.8rem;opacity:.9}
-    main{
-      display:flex;
-      min-height:calc(100vh - 56px);
-    }
-    /* Sidebar */
-    .sidebar{
-      width:260px;
-      background:#0f172a;
-      color:#e5e7eb;
-      padding:1rem;
-    }
-    .sidebar h2{
-      font-size:0.9rem;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      margin:0 0 .6rem;
-      color:#9ca3af;
-    }
-    .sidebar-section{margin-bottom:1.5rem}
-    .sidebar label{font-size:.8rem;display:block;margin-bottom:.25rem}
-    .sidebar input{
-      width:100%;
-      padding:.4rem .5rem;
-      border-radius:.4rem;
-      border:1px solid #374151;
-      background:#111827;
-      color:#e5e7eb;
-      font-size:.85rem;
-    }
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:.25rem;
-      padding:.4rem .7rem;
-      border-radius:.5rem;
-      border:none;
-      font-size:.8rem;
-      cursor:pointer;
-      transition:background .15s,transform .05s;
-      white-space:nowrap;
-    }
-    .btn-primary{
-      background:var(--primary);
-      color:white;
-    }
-    .btn-primary:hover{background:var(--primary-dark)}
-    .btn-outline{
-      background:transparent;
-      border:1px solid #4b5563;
-      color:#e5e7eb;
-    }
-    .btn-outline:hover{background:#111827}
-    .btn-ghost{
-      background:transparent;
-      color:var(--muted);
-    }
-    .btn-ghost.active{
-      color:var(--primary-dark);
-      background:#dbeafe;
-      border-radius:999px;
-    }
-    .btn:active{transform:scale(.97)}
-    .class-list{
-      margin-top:.7rem;
-      max-height:200px;
-      overflow:auto;
-      border-top:1px solid #1f2937;
-      padding-top:.5rem;
-    }
-    .class-item{
-      font-size:.83rem;
-      padding:.3rem .4rem;
-      border-radius:.4rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      cursor:pointer;
-    }
-    .class-item span:first-child{flex:1}
-    .class-item:hover{background:#111827}
-    .class-item.active{background:#1d4ed8;color:white}
 
-    /* Content area */
-    .content{
-      flex:1;
-      padding:1rem 1.5rem;
-      overflow:auto;
+    * {
+      box-sizing: border-box;
     }
-    .tabs{
-      display:flex;
-      gap:.5rem;
-      margin-bottom:1rem;
-      flex-wrap:wrap;
+
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: var(--bg-light);
+      color: #222;
     }
-    .card{
-      background:var(--card);
-      border-radius:.9rem;
-      border:1px solid var(--border);
-      padding:1rem;
-      margin-bottom:1rem;
-      box-shadow:0 10px 20px rgba(15,23,42,.06);
+
+    header {
+      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     }
-    .card h3{
-      margin:0 0 .7rem;
-      font-size:1rem;
+
+    header img {
+      height: 60px;
+      width: auto;
+      border-radius: 8px;
+      background: #fff;
+      padding: 4px;
     }
-    .row{
-      display:flex;
-      gap:.7rem;
-      flex-wrap:wrap;
-      margin-bottom:.7rem;
-      align-items:flex-end;
+
+    header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 600;
     }
-    .row > *{flex:1 1 160px}
-    label{font-size:.8rem;display:block;margin-bottom:.2rem;color:var(--muted)}
-    input[type="text"], input[type="date"], input[type="month"], select{
-      width:100%;
-      padding:.45rem .55rem;
-      border-radius:.5rem;
-      border:1px solid var(--border);
-      font-size:.85rem;
-      background:white;
+
+    header p {
+      margin: 0;
+      font-size: 0.85rem;
+      opacity: 0.9;
     }
-    table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:.85rem;
+
+    main {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    th,td{
-      padding:.4rem .5rem;
-      border-bottom:1px solid var(--border);
-      text-align:left;
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1rem;
     }
-    th{background:#f8fafc;font-weight:600;font-size:.8rem}
-    tr:nth-child(even){background:#f9fafb}
-    .badge{
-      padding:.1rem .4rem;
-      border-radius:999px;
-      font-size:.7rem;
-      text-transform:uppercase;
-      letter-spacing:.05em;
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
-    .badge-green{
-      background:#dcfce7;
-      color:#15803d;
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border-soft);
     }
-    .badge-red{
-      background:#fee2e2;
-      color:#b91c1c;
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: var(--jooust-blue-dark);
+      border-left: 4px solid var(--jooust-green);
+      padding-left: 0.5rem;
     }
-    .muted{color:var(--muted);font-size:.8rem}
-    .signature-box{
-      border:1px dashed var(--border);
-      border-radius:.6rem;
-      padding:.6rem;
-      background:#f9fafb;
+
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
     }
-    canvas{
-      background:white;
-      width:100%;
-      max-width:400px;
-      height:140px;
-      border-radius:.5rem;
-      border:1px solid var(--border);
-      display:block;
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-soft);
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 0.6rem;
     }
-    .notice{font-size:.8rem;margin-top:.3rem;color:var(--muted)}
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:.3rem;
-      padding:.18rem .5rem;
-      border-radius:999px;
-      background:#eff6ff;
-      font-size:.74rem;
-      color:#1d4ed8;
+
+    button {
+      font-family: inherit;
+      border-radius: 6px;
+      border: none;
+      padding: 0.45rem 0.8rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
-    .stats-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:.7rem;
-      margin:.4rem 0 .8rem;
+
+    .btn-primary {
+      background: var(--jooust-blue);
+      color: #fff;
     }
-    .stat{
-      flex:1 1 160px;
-      background:#f9fafb;
-      padding:.6rem .7rem;
-      border-radius:.7rem;
-      border:1px solid var(--border);
-      font-size:.8rem;
+
+    .btn-primary:hover {
+      background: var(--jooust-blue-dark);
     }
-    .stat strong{display:block;font-size:1.1rem;margin-bottom:.1rem}
-    .text-right{text-align:right}
-    .text-center{text-align:center}
-    @media (max-width:768px){
-      main{flex-direction:column}
-      .sidebar{width:100%}
+
+    .btn-secondary {
+      background: var(--jooust-green);
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: #e53935;
+      color: #fff;
+    }
+
+    .btn-light {
+      background: #f0f3fa;
+      color: #333;
+      border: 1px solid var(--border-soft);
+    }
+
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .row > div {
+      flex: 1 1 150px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border-soft);
+      padding: 0.35rem 0.4rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--jooust-blue);
+      color: #fff;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .badge-present {
+      background: var(--jooust-green);
+    }
+
+    .badge-absent {
+      background: #e53935;
+    }
+
+    /* Signature modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .modal {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      width: 95%;
+      max-width: 450px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .signature-wrapper {
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+
+    #signatureCanvas {
+      width: 100%;
+      height: 200px;
+      display: block;
+    }
+
+    .muted {
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    .report-actions {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    .report-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.4rem;
+      border-bottom: 2px solid var(--jooust-blue);
+      padding-bottom: 0.3rem;
+    }
+
+    .report-header img {
+      height: 40px;
+      width: auto;
+    }
+
+    .report-title-block {
+      font-size: 0.9rem;
+    }
+
+    .report-title-block strong {
+      font-size: 1rem;
+      color: var(--jooust-blue-dark);
+    }
+
+    .summary-box {
+      margin-top: 0.5rem;
+      background: #f8fff8;
+      border: 1px dashed #a5d6a7;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
     }
   </style>
 </head>
 <body>
 <header>
+  <img src="jooust-logo.png" alt="JOOUST Logo" onerror="this.style.display='none'" />
   <div>
-    <h1>Smart Attendance Register</h1>
-    <span>Multi-class · Signature · Reports</span>
-  </div>
-  <div>
-    <span id="activeClassLabel" style="font-size:.8rem;"></span>
+    <h1>JOOUST Attendance Management</h1>
+    <p>Class attendance with signatures, multi-class support & exportable reports.</p>
   </div>
 </header>
 
 <main>
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-section">
-      <h2>Classes</h2>
-      <label for="newClassName">Add new class</label>
-      <input id="newClassName" type="text" placeholder="e.g. Grade 7 West" />
-      <div style="margin-top:.4rem;display:flex;gap:.4rem;">
-        <button class="btn btn-primary" id="addClassBtn">Add</button>
-        <button class="btn btn-outline" id="clearAllBtn" title="Delete all data">
-          Clear all
-        </button>
-      </div>
-      <div class="class-list" id="classList"></div>
-    </div>
+  <div class="grid">
+    <!-- Left: Attendance Capture -->
+    <section class="card">
+      <h2>1. Capture Attendance</h2>
 
-    <div class="sidebar-section">
-      <h2>Quick actions</h2>
-      <button class="btn btn-outline" id="quickTodayBtn" style="width:100%;margin-bottom:.3rem;">
-        Today attendance
-      </button>
-      <button class="btn btn-outline" id="quickWeekReportBtn" style="width:100%;">
-        This week report
-      </button>
-    </div>
-  </aside>
-
-  <!-- CONTENT -->
-  <section class="content">
-    <div class="tabs">
-      <button class="btn btn-ghost active" data-tab="tab-attendance">Take Attendance</button>
-      <button class="btn btn-ghost" data-tab="tab-students">Manage Students</button>
-      <button class="btn btn-ghost" data-tab="tab-reports">Reports</button>
-    </div>
-
-    <!-- TAKE ATTENDANCE -->
-    <div id="tab-attendance" class="tab card">
-      <h3>Take Attendance</h3>
       <div class="row">
         <div>
-          <label>Class</label>
-          <select id="attendanceClassSelect"></select>
+          <label for="className">Class / Course</label>
+          <input type="text" id="className" placeholder="e.g. BIT 101, CS 102" />
         </div>
         <div>
-          <label>Date</label>
+          <label for="attendanceDate">Date</label>
           <input type="date" id="attendanceDate" />
         </div>
-        <div>
-          <button class="btn btn-primary" id="loadStudentsBtn" style="margin-top:1.3rem;">
-            Load students
-          </button>
-        </div>
       </div>
 
-      <div id="attendanceArea" style="display:none;">
-        <div class="row">
-          <div class="pill">
-            <span>Mark Present ✔ | leave unchecked = Absent ✖</span>
-          </div>
-          <div class="muted text-right" id="attendanceSummary"></div>
-        </div>
-        <div style="overflow:auto;margin-bottom:.8rem;">
-          <table id="attendanceTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Student</th>
-                <th>Present</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <div class="row">
-          <div class="signature-box">
-            <label>Teacher's Signature</label>
-            <canvas id="signatureCanvas"></canvas>
-            <div style="margin-top:.4rem;display:flex;gap:.4rem;">
-              <button class="btn btn-outline" id="clearSignatureBtn">Clear Signature</button>
-              <span class="notice">Sign with mouse or touch. Signature will be stored with this attendance record.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="text-right">
-          <button class="btn btn-primary" id="saveAttendanceBtn">
-            Save Attendance
-          </button>
-        </div>
-      </div>
-      <div id="attendanceEmptyNotice" class="muted">Select class and date, then click <b>Load students</b>.</div>
-    </div>
-
-    <!-- MANAGE STUDENTS -->
-    <div id="tab-students" class="tab card" style="display:none;">
-      <h3>Manage Students</h3>
       <div class="row">
         <div>
-          <label>Class</label>
-          <select id="studentsClassSelect"></select>
+          <label for="studentName">Student Name</label>
+          <input type="text" id="studentName" placeholder="Enter student full name" />
         </div>
         <div>
-          <label>Student name</label>
-          <input type="text" id="newStudentName" placeholder="e.g. Jane Achieng" />
+          <label>Status</label>
+          <select id="status">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="align-items:flex-end;">
+        <div>
+          <button class="btn-light" id="btnOpenSignature">✍️ Add Signature</button>
+          <div class="muted" id="signatureInfo">No signature captured yet.</div>
+        </div>
+        <div style="text-align:right;">
+          <button class="btn-primary" id="btnAddRecord">➕ Add to Attendance List</button>
+        </div>
+      </div>
+
+      <table id="attendanceTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Class</th>
+            <th>Date</th>
+            <th>Student</th>
+            <th>Status</th>
+            <th>Signature</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- rows will be injected -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Right: Reports -->
+    <section class="card">
+      <h2>2. Reports & Export</h2>
+
+      <div class="row">
+        <div>
+          <label for="reportClass">Class (optional)</label>
+          <input type="text" id="reportClass" placeholder="Leave empty for all classes" />
         </div>
         <div>
-          <button class="btn btn-primary" id="addStudentBtn" style="margin-top:1.3rem;">
-            Add Student
-          </button>
+          <label for="reportType">Report Type</label>
+          <select id="reportType">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="classSummary">Class Summary</option>
+          </select>
         </div>
       </div>
-      <div id="studentsListArea" style="max-height:270px;overflow:auto;">
-        <table id="studentsTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Student</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="muted" id="studentsEmptyNotice">Add students to selected class.</div>
-    </div>
 
-    <!-- REPORTS -->
-    <div id="tab-reports" class="tab">
-      <!-- Weekly / Monthly card -->
-      <div class="card">
-        <h3>Weekly & Monthly Reports</h3>
-        <div class="row">
-          <div>
-            <label>Class</label>
-            <select id="reportClassSelect"></select>
-          </div>
-          <div>
-            <label>Weekly report (Start date)</label>
-            <input type="date" id="weekStartInput" />
-          </div>
-          <div>
-            <label>Monthly report (Month)</label>
-            <input type="month" id="monthInput" />
-          </div>
+      <div class="row">
+        <div>
+          <label for="reportStart">Start Date</label>
+          <input type="date" id="reportStart" />
         </div>
-        <div class="row">
-          <div>
-            <button class="btn btn-primary" id="generateWeekReportBtn">Generate Weekly</button>
-          </div>
-          <div>
-            <button class="btn btn-primary" id="generateMonthReportBtn">Generate Monthly</button>
-          </div>
+        <div>
+          <label for="reportEnd">End Date</label>
+          <input type="date" id="reportEnd" />
         </div>
-        <div id="rangeInfo" class="muted"></div>
-
-        <div class="stats-row" id="reportStats" style="display:none;">
-          <div class="stat">
-            <span class="muted">Total sessions</span>
-            <strong id="statSessions">0</strong>
-          </div>
-          <div class="stat">
-            <span class="muted">Total students</span>
-            <strong id="statStudents">0</strong>
-          </div>
-          <div class="stat">
-            <span class="muted">Overall attendance</span>
-            <strong id="statOverall">0%</strong>
-          </div>
-        </div>
-
-        <div style="overflow:auto;">
-          <table id="reportTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Student</th>
-                <th>Present days</th>
-                <th>Total sessions</th>
-                <th>% Attendance</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="muted" id="reportEmptyNotice">Generate weekly or monthly report for a class.</div>
       </div>
 
-      <!-- Class summary card -->
-      <div class="card">
-        <h3>Class Summary (All Time)</h3>
-        <div class="row">
-          <div>
-            <label>Class</label>
-            <select id="summaryClassSelect"></select>
-          </div>
-          <div>
-            <button class="btn btn-primary" id="generateSummaryBtn" style="margin-top:1.3rem;">
-              Generate Summary
-            </button>
-          </div>
-        </div>
+      <button class="btn-secondary" id="btnGenerateReport">📊 Generate Report</button>
 
-        <div style="overflow:auto;">
-          <table id="summaryTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Student</th>
-                <th>Present sessions</th>
-                <th>Total sessions</th>
-                <th>% Attendance</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="muted" id="summaryEmptyNotice">Run a summary to see overall performance.</div>
+      <div class="report-actions">
+        <button class="btn-light btn-sm" id="btnExportExcel">📥 Export to Excel</button>
+        <button class="btn-light btn-sm" id="btnExportPDF">📄 Export to PDF</button>
       </div>
-    </div>
-  </section>
+
+      <div id="reportArea" style="margin-top:0.6rem; max-height:420px; overflow:auto; background:#fff; padding:0.5rem; border-radius:6px; border:1px solid var(--border-soft);">
+        <div class="muted">Generate a report to see results here.</div>
+      </div>
+    </section>
+  </div>
 </main>
 
+<!-- Signature Modal -->
+<div class="modal-backdrop" id="signatureModalBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Sign Attendance</h3>
+      <button class="btn-light btn-sm" id="btnCloseModal">✖</button>
+    </div>
+    <p class="muted">Use your mouse, touchpad or finger (on touch devices) to sign below.</p>
+    <div class="signature-wrapper">
+      <canvas id="signatureCanvas"></canvas>
+    </div>
+    <div style="margin-top:0.5rem; display:flex; justify-content:space-between; gap:0.5rem;">
+      <button class="btn-light btn-sm" id="btnClearSignature">🧹 Clear</button>
+      <div style="flex:1;"></div>
+      <button class="btn-primary btn-sm" id="btnSaveSignature">💾 Save Signature</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // ---------- DATA LAYER (localStorage) ----------
-  const STORAGE_KEY = 'attendance_app_v1';
+  // In-memory store of attendance records
+  // { id, className, date, studentName, status, signatureData }
+  let attendanceRecords = [];
+  let nextId = 1;
+  let currentSignatureData = null;
 
-  function loadData() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return { classes: [], attendance: [] };
+  // DOM references
+  const classNameInput = document.getElementById("className");
+  const attendanceDateInput = document.getElementById("attendanceDate");
+  const studentNameInput = document.getElementById("studentName");
+  const statusInput = document.getElementById("status");
+  const btnAddRecord = document.getElementById("btnAddRecord");
+  const attendanceTableBody = document.querySelector("#attendanceTable tbody");
+  const signatureInfo = document.getElementById("signatureInfo");
+
+  const reportClassInput = document.getElementById("reportClass");
+  const reportTypeInput = document.getElementById("reportType");
+  const reportStartInput = document.getElementById("reportStart");
+  const reportEndInput = document.getElementById("reportEnd");
+  const btnGenerateReport = document.getElementById("btnGenerateReport");
+  const reportArea = document.getElementById("reportArea");
+  const btnExportExcel = document.getElementById("btnExportExcel");
+  const btnExportPDF = document.getElementById("btnExportPDF");
+
+  // Initialize date inputs with today
+  const today = new Date().toISOString().split("T")[0];
+  attendanceDateInput.value = today;
+  reportStartInput.value = today;
+  reportEndInput.value = today;
+
+  // Signature modal logic
+  const modalBackdrop = document.getElementById("signatureModalBackdrop");
+  const btnOpenSignature = document.getElementById("btnOpenSignature");
+  const btnCloseModal = document.getElementById("btnCloseModal");
+  const btnClearSignature = document.getElementById("btnClearSignature");
+  const btnSaveSignature = document.getElementById("btnSaveSignature");
+  const signatureCanvas = document.getElementById("signatureCanvas");
+  let signaturePad = null;
+
+  function openSignatureModal() {
+    modalBackdrop.style.display = "flex";
+    resizeSignatureCanvas();
+    if (!signaturePad) {
+      signaturePad = new SignaturePad(signatureCanvas);
     }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return { classes: [], attendance: [] };
-    }
+    signaturePad.clear();
   }
 
-  function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  function closeSignatureModal() {
+    modalBackdrop.style.display = "none";
   }
 
-  let data = loadData();
-  let selectedClassId = data.classes[0]?.id || null;
-
-  function createId() {
-    return 'id-' + Math.random().toString(36).slice(2, 9);
+  function resizeSignatureCanvas() {
+    const rect = signatureCanvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    signatureCanvas.width = rect.width * ratio;
+    signatureCanvas.height = rect.height * ratio;
+    const ctx = signatureCanvas.getContext("2d");
+    ctx.scale(ratio, ratio);
   }
 
-  // ---------- UI HELPERS ----------
-  const $ = (id) => document.getElementById(id);
-
-  function refreshClassUI() {
-    const classListDiv = $('classList');
-    const selects = [
-      $('attendanceClassSelect'),
-      $('studentsClassSelect'),
-      $('reportClassSelect'),
-      $('summaryClassSelect')
-    ];
-    classListDiv.innerHTML = '';
-    selects.forEach(sel => sel.innerHTML = '');
-
-    if (data.classes.length === 0) {
-      selectedClassId = null;
-      $('activeClassLabel').textContent = 'No class selected';
-      return;
+  window.addEventListener("resize", () => {
+    if (modalBackdrop.style.display === "flex" && signaturePad) {
+      resizeSignatureCanvas();
+      signaturePad.clear();
     }
+  });
 
-    data.classes.forEach((cls, index) => {
-      // sidebar list
-      const div = document.createElement('div');
-      div.className = 'class-item' + (cls.id === selectedClassId ? ' active' : '');
-      const spanName = document.createElement('span');
-      spanName.textContent = cls.name;
-      const spanCount = document.createElement('span');
-      spanCount.className = 'muted';
-      spanCount.textContent = (cls.students?.length || 0);
-      div.appendChild(spanName);
-      div.appendChild(spanCount);
-      div.onclick = () => {
-        selectedClassId = cls.id;
-        refreshClassUI();
-        fillAllSelectsSelected();
-      };
-      classListDiv.appendChild(div);
+  btnOpenSignature.addEventListener("click", openSignatureModal);
+  btnCloseModal.addEventListener("click", closeSignatureModal);
+  btnClearSignature.addEventListener("click", () => {
+    if (signaturePad) signaturePad.clear();
+  });
 
-      // selects
-      selects.forEach(sel => {
-        const opt = document.createElement('option');
-        opt.value = cls.id;
-        opt.textContent = cls.name;
-        sel.appendChild(opt);
-      });
-
-      // sync selected for selects
-      if (!selectedClassId && index === 0) {
-        selectedClassId = cls.id;
-      }
-    });
-
-    if (selectedClassId) {
-      $('activeClassLabel').textContent =
-        'Active class: ' + (data.classes.find(c => c.id === selectedClassId)?.name || '');
+  btnSaveSignature.addEventListener("click", () => {
+    if (signaturePad && !signaturePad.isEmpty()) {
+      currentSignatureData = signaturePad.toDataURL();
+      signatureInfo.textContent = "Signature captured ✔";
+      signatureInfo.style.color = "green";
+      closeSignatureModal();
     } else {
-      $('activeClassLabel').textContent = 'No class selected';
+      alert("Please sign before saving.");
     }
-
-    fillAllSelectsSelected();
-    refreshStudentsTable();
-  }
-
-  function fillAllSelectsSelected() {
-    ['attendanceClassSelect','studentsClassSelect','reportClassSelect','summaryClassSelect']
-      .forEach(id => {
-        const sel = $(id);
-        if (!sel) return;
-        sel.value = selectedClassId || (sel.options[0]?.value || '');
-      });
-  }
-
-  function getClassById(id) {
-    return data.classes.find(c => c.id === id) || null;
-  }
-
-  function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    if (isNaN(d)) return dateStr;
-    return d.toLocaleDateString();
-  }
-
-  // ---------- TABS ----------
-  document.querySelectorAll('.tabs .btn-ghost').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tabs .btn-ghost').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const tabId = btn.dataset.tab;
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.style.display = (tab.id === tabId) ? (tabId === 'tab-reports' ? 'block' : 'block') : 'none';
-      });
-    });
   });
 
-  // ---------- CLASSES ----------
-  $('addClassBtn').addEventListener('click', () => {
-    const name = $('newClassName').value.trim();
-    if (!name) return alert('Please enter class name');
-    const cls = { id: createId(), name, students: [] };
-    data.classes.push(cls);
-    selectedClassId = cls.id;
-    $('newClassName').value = '';
-    saveData();
-    refreshClassUI();
-  });
+  // Add attendance record
+  btnAddRecord.addEventListener("click", () => {
+    const className = classNameInput.value.trim();
+    const date = attendanceDateInput.value;
+    const studentName = studentNameInput.value.trim();
+    const status = statusInput.value;
 
-  $('clearAllBtn').addEventListener('click', () => {
-    if (!confirm('This will delete ALL classes & attendance data. Continue?')) return;
-    data = { classes: [], attendance: [] };
-    saveData();
-    selectedClassId = null;
-    refreshClassUI();
-    refreshStudentsTable();
-    resetAttendanceView();
-    resetReportsView();
-  });
-
-  // ---------- STUDENTS ----------
-  function refreshStudentsTable() {
-    const clsId = $('studentsClassSelect').value;
-    const cls = getClassById(clsId);
-    const tbody = $('studentsTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    if (!cls || !cls.students || cls.students.length === 0) {
-      $('studentsEmptyNotice').style.display = 'block';
+    if (!className || !date || !studentName) {
+      alert("Please fill Class, Date and Student Name.");
       return;
     }
-    $('studentsEmptyNotice').style.display = 'none';
 
-    cls.students.forEach((s, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${s.name}</td>
-        <td class="text-right">
-          <button class="btn" data-id="${s.id}" style="font-size:.7rem;">Remove</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll('button[data-id]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!confirm('Remove this student? Their attendance data will remain but listed as unknown name if deleted.')) return;
-        const id = btn.dataset.id;
-        const clsNow = getClassById(clsId);
-        if (!clsNow) return;
-        clsNow.students = clsNow.students.filter(s => s.id !== id);
-        saveData();
-        refreshStudentsTable();
-        // no need to touch attendance records; they retain studentId
-      });
-    });
-  }
-
-  $('studentsClassSelect').addEventListener('change', refreshStudentsTable);
-
-  $('addStudentBtn').addEventListener('click', () => {
-    const clsId = $('studentsClassSelect').value;
-    const cls = getClassById(clsId);
-    if (!cls) return alert('Please create/select a class first.');
-    const name = $('newStudentName').value.trim();
-    if (!name) return alert('Enter a student name.');
-    cls.students.push({ id: createId(), name });
-    $('newStudentName').value = '';
-    saveData();
-    refreshStudentsTable();
-  });
-
-  // ---------- ATTENDANCE ----------
-  function resetAttendanceView() {
-    $('attendanceArea').style.display = 'none';
-    $('attendanceEmptyNotice').style.display = 'block';
-    $('attendanceTable').querySelector('tbody').innerHTML = '';
-    $('attendanceSummary').textContent = '';
-    clearSignature();
-  }
-
-  // set default date today
-  (function setToday() {
-    const today = new Date().toISOString().slice(0,10);
-    $('attendanceDate').value = today;
-  })();
-
-  $('attendanceClassSelect').addEventListener('change', () => {
-    selectedClassId = $('attendanceClassSelect').value;
-    refreshClassUI();
-  });
-
-  $('loadStudentsBtn').addEventListener('click', () => {
-    const clsId = $('attendanceClassSelect').value;
-    const date = $('attendanceDate').value;
-    if (!clsId) return alert('Select a class.');
-    if (!date) return alert('Select a date.');
-    const cls = getClassById(clsId);
-    if (!cls) return;
-    const tbody = $('attendanceTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    if (!cls.students || cls.students.length === 0) {
-      $('attendanceArea').style.display = 'none';
-      $('attendanceEmptyNotice').style.display = 'block';
-      alert('No students in this class. Add students under "Manage Students" tab.');
-      return;
-    }
-    $('attendanceArea').style.display = 'block';
-    $('attendanceEmptyNotice').style.display = 'none';
-
-    cls.students.forEach((s, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${s.name}</td>
-        <td><input type="checkbox" data-student-id="${s.id}" checked /></td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    updateAttendanceSummary();
-  });
-
-  function updateAttendanceSummary() {
-    const checks = $('attendanceTable').querySelectorAll('input[type="checkbox"]');
-    if (checks.length === 0) {
-      $('attendanceSummary').textContent = '';
-      return;
-    }
-    let present = 0;
-    checks.forEach(ch => { if (ch.checked) present++; });
-    $('attendanceSummary').textContent =
-      `Present: ${present} / ${checks.length} (${Math.round((present/checks.length)*100)}%)`;
-  }
-
-  $('attendanceTable').addEventListener('change', (e) => {
-    if (e.target.matches('input[type="checkbox"]')) updateAttendanceSummary();
-  });
-
-  // ---------- SIGNATURE CANVAS ----------
-  const canvas = $('signatureCanvas');
-  const ctx = canvas.getContext('2d');
-  let drawing = false;
-  let lastPos = {x:0,y:0};
-
-  function getCanvasPos(e){
-    const rect = canvas.getBoundingClientRect();
-    if (e.touches && e.touches[0]) {
-      return {
-        x:(e.touches[0].clientX - rect.left) * (canvas.width/rect.width),
-        y:(e.touches[0].clientY - rect.top) * (canvas.height/rect.height)
-      };
-    } else {
-      return {
-        x:(e.clientX - rect.left) * (canvas.width/rect.width),
-        y:(e.clientY - rect.top) * (canvas.height/rect.height)
-      };
-    }
-  }
-
-  function startDraw(e){
-    drawing = true;
-    lastPos = getCanvasPos(e);
-  }
-  function endDraw(){
-    drawing = false;
-  }
-  function draw(e){
-    if (!drawing) return;
-    e.preventDefault();
-    const pos = getCanvasPos(e);
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(lastPos.x,lastPos.y);
-    ctx.lineTo(pos.x,pos.y);
-    ctx.stroke();
-    lastPos = pos;
-  }
-
-  function clearSignature(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-  }
-
-  canvas.addEventListener('mousedown',startDraw);
-  canvas.addEventListener('touchstart',startDraw);
-  canvas.addEventListener('mousemove',draw);
-  canvas.addEventListener('touchmove',draw,{passive:false});
-  window.addEventListener('mouseup',endDraw);
-  window.addEventListener('touchend',endDraw);
-
-  $('clearSignatureBtn').addEventListener('click',clearSignature);
-
-  // fix canvas resolution
-  function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    clearSignature();
-  }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  // ---------- SAVE ATTENDANCE ----------
-  $('saveAttendanceBtn').addEventListener('click', () => {
-    const clsId = $('attendanceClassSelect').value;
-    const date = $('attendanceDate').value;
-    const cls = getClassById(clsId);
-    if (!cls) return alert('Select a class.');
-    if (!date) return alert('Select a date.');
-
-    const checks = $('attendanceTable').querySelectorAll('input[type="checkbox"]');
-    if (checks.length === 0) return alert('No students loaded.');
-
-    const records = [];
-    checks.forEach(ch => {
-      records.push({
-        studentId: ch.dataset.studentId,
-        present: !!ch.checked
-      });
-    });
-
-    const signatureData = canvas.toDataURL('image/png');
-
-    // remove existing attendance for same class/date
-    data.attendance = data.attendance.filter(a => !(a.classId === clsId && a.date === date));
-
-    data.attendance.push({
-      id: createId(),
-      classId: clsId,
+    const record = {
+      id: nextId++,
+      className,
       date,
-      records,
-      signatureData
-    });
+      studentName,
+      status,
+      signatureData: currentSignatureData
+    };
 
-    saveData();
-    alert('Attendance saved with signature for ' + cls.name + ' on ' + formatDate(date));
+    attendanceRecords.push(record);
+    renderAttendanceTable();
+    // Reset student & signature for next entry
+    studentNameInput.value = "";
+    currentSignatureData = null;
+    signatureInfo.textContent = "No signature captured yet.";
+    signatureInfo.style.color = "#777";
   });
 
-  // ---------- REPORTS ----------
-  function resetReportsView(){
-    $('reportTable').querySelector('tbody').innerHTML = '';
-    $('reportEmptyNotice').style.display = 'block';
-    $('reportStats').style.display = 'none';
-    $('rangeInfo').textContent = '';
-    $('summaryTable').querySelector('tbody').innerHTML = '';
-    $('summaryEmptyNotice').style.display = 'block';
+  function renderAttendanceTable() {
+    attendanceTableBody.innerHTML = "";
+    attendanceRecords.forEach((rec, index) => {
+      const tr = document.createElement("tr");
+
+      const tdIndex = document.createElement("td");
+      tdIndex.textContent = index + 1;
+
+      const tdClass = document.createElement("td");
+      tdClass.textContent = rec.className;
+
+      const tdDate = document.createElement("td");
+      tdDate.textContent = rec.date;
+
+      const tdStudent = document.createElement("td");
+      tdStudent.textContent = rec.studentName;
+
+      const tdStatus = document.createElement("td");
+      const spanStatus = document.createElement("span");
+      spanStatus.className = "badge " + (rec.status === "Present" ? "badge-present" : "badge-absent");
+      spanStatus.textContent = rec.status;
+      tdStatus.appendChild(spanStatus);
+
+      const tdSignature = document.createElement("td");
+      if (rec.signatureData) {
+        const img = document.createElement("img");
+        img.src = rec.signatureData;
+        img.alt = "Signature";
+        img.style.maxHeight = "30px";
+        img.style.maxWidth = "100px";
+        tdSignature.appendChild(img);
+      } else {
+        tdSignature.innerHTML = "<span class='muted'>None</span>";
+      }
+
+      const tdRemove = document.createElement("td");
+      const btnRemove = document.createElement("button");
+      btnRemove.className = "btn-danger btn-sm";
+      btnRemove.textContent = "🗑";
+      btnRemove.addEventListener("click", () => {
+        attendanceRecords = attendanceRecords.filter(r => r.id !== rec.id);
+        renderAttendanceTable();
+      });
+      tdRemove.appendChild(btnRemove);
+
+      tr.appendChild(tdIndex);
+      tr.appendChild(tdClass);
+      tr.appendChild(tdDate);
+      tr.appendChild(tdStudent);
+      tr.appendChild(tdStatus);
+      tr.appendChild(tdSignature);
+      tr.appendChild(tdRemove);
+
+      attendanceTableBody.appendChild(tr);
+    });
   }
 
-  function buildReportForRange(classId, startDate, endDate) {
-    const cls = getClassById(classId);
-    if (!cls) {
-      alert('Select a class.');
-      return;
-    }
-    const sDate = new Date(startDate);
-    const eDate = new Date(endDate);
-    if (isNaN(sDate) || isNaN(eDate)) {
-      alert('Invalid date range.');
-      return;
-    }
-
-    // filter attendance for class & range
-    const sessions = data.attendance.filter(a => {
-      if (a.classId !== classId) return false;
-      const d = new Date(a.date);
-      return d >= sDate && d <= eDate;
-    });
-
-    const tbody = $('reportTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    if (sessions.length === 0) {
-      $('reportEmptyNotice').style.display = 'block';
-      $('reportStats').style.display = 'none';
-      $('rangeInfo').textContent = 'No attendance records found for this period.';
-      return;
-    }
-    $('reportEmptyNotice').style.display = 'none';
-
-    // aggregate per student
-    const map = new Map(); // studentId -> {present,total}
-    sessions.forEach(sess => {
-      sess.records.forEach(r => {
-        if (!map.has(r.studentId)) map.set(r.studentId,{present:0,total:0});
-        const item = map.get(r.studentId);
-        item.total += 1;
-        if (r.present) item.present += 1;
-      });
-    });
-
-    // stats
-    let totalPossible = 0;
-    let totalPresent = 0;
-
-    const rows = [];
-    cls.students.forEach((s) => {
-      const agg = map.get(s.id) || {present:0,total:sessions.length};
-      totalPossible += agg.total;
-      totalPresent += agg.present;
-      const percent = agg.total === 0 ? 0 : Math.round((agg.present/agg.total)*100);
-      rows.push({
-        name: s.name,
-        present: agg.present,
-        total: agg.total,
-        percent
-      });
-    });
-
-    rows.sort((a,b)=> b.percent - a.percent);
-
-    rows.forEach((r, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${r.name}</td>
-        <td>${r.present}</td>
-        <td>${r.total}</td>
-        <td>${r.percent}%</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    const overall = totalPossible === 0 ? 0 : Math.round((totalPresent/totalPossible)*100);
-    $('statSessions').textContent = sessions.length;
-    $('statStudents').textContent = cls.students.length;
-    $('statOverall').textContent = overall + '%';
-    $('reportStats').style.display = 'flex';
-    $('rangeInfo').textContent =
-      `From ${formatDate(startDate)} to ${formatDate(endDate)} · ${sessions.length} sessions`;
+  // Helper to parse dates
+  function toDate(str) {
+    return new Date(str + "T00:00:00");
   }
 
-  $('generateWeekReportBtn').addEventListener('click', () => {
-    const classId = $('reportClassSelect').value;
-    const start = $('weekStartInput').value;
-    if (!start) return alert('Select week start date.');
-    const sDate = new Date(start);
-    const eDate = new Date(sDate);
-    eDate.setDate(eDate.getDate() + 6); // 7-day window
-    buildReportForRange(classId, sDate.toISOString().slice(0,10), eDate.toISOString().slice(0,10));
-  });
+  // Generate report
+  btnGenerateReport.addEventListener("click", () => {
+    const reportClass = reportClassInput.value.trim().toLowerCase();
+    const reportType = reportTypeInput.value;
+    const start = reportStartInput.value;
+    const end = reportEndInput.value;
 
-  $('generateMonthReportBtn').addEventListener('click', () => {
-    const classId = $('reportClassSelect').value;
-    const monthVal = $('monthInput').value; // yyyy-mm
-    if (!monthVal) return alert('Select a month.');
-    const [year,month] = monthVal.split('-').map(Number);
-    const start = new Date(year, month-1, 1);
-    const end = new Date(year, month, 0);
-    buildReportForRange(classId, start.toISOString().slice(0,10), end.toISOString().slice(0,10));
-  });
-
-  // Class Summary (all time)
-  $('generateSummaryBtn').addEventListener('click', () => {
-    const classId = $('summaryClassSelect').value;
-    const cls = getClassById(classId);
-    const tbody = $('summaryTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    if (!cls) {
-      $('summaryEmptyNotice').style.display = 'block';
-      return alert('Select a class.');
+    if (!start || !end) {
+      alert("Please select Start and End dates.");
+      return;
     }
 
-    const sessions = data.attendance.filter(a => a.classId === classId);
-    if (sessions.length === 0) {
-      $('summaryEmptyNotice').style.display = 'block';
-      return alert('No attendance records for this class yet.');
+    const startDate = toDate(start);
+    const endDate = toDate(end);
+    if (endDate < startDate) {
+      alert("End date cannot be before start date.");
+      return;
     }
-    $('summaryEmptyNotice').style.display = 'none';
 
-    // aggregate
-    const map = new Map();
-    sessions.forEach(sess => {
-      sess.records.forEach(r => {
-        if (!map.has(r.studentId)) map.set(r.studentId,{present:0,total:0});
-        const item = map.get(r.studentId);
-        item.total += 1;
-        if (r.present) item.present += 1;
-      });
+    // Filter records by class & date range
+    let filtered = attendanceRecords.filter(rec => {
+      const d = toDate(rec.date);
+      const inRange = d >= startDate && d <= endDate;
+      const classMatch = reportClass ? rec.className.toLowerCase().includes(reportClass) : true;
+      return inRange && classMatch;
     });
 
-    const rows = [];
-    cls.students.forEach(s => {
-      const agg = map.get(s.id) || {present:0,total:0};
-      const percent = agg.total === 0 ? 0 : Math.round((agg.present/agg.total)*100);
-      rows.push({
-        name: s.name,
-        present: agg.present,
-        total: agg.total,
-        percent
-      });
+    if (filtered.length === 0) {
+      reportArea.innerHTML = "<div class='muted'>No records found for the selected criteria.</div>";
+      return;
+    }
+
+    // If weekly or monthly, we still show all rows but compute summary differently
+    let titleText = "";
+    if (reportType === "daily") {
+      titleText = "Daily Attendance Report";
+    } else if (reportType === "weekly") {
+      titleText = "Weekly Attendance Report";
+    } else if (reportType === "monthly") {
+      titleText = "Monthly Attendance Report";
+    } else {
+      titleText = "Class Summary Report";
+    }
+
+    // Build HTML for report
+    let html = "";
+
+    html += "<div id='reportContent'>";
+    html += "<div class='report-header'>";
+    html += "<img src='jooust-logo.png' alt='JOOUST Logo' onerror=\"this.style.display='none'\" />";
+    html += "<div class='report-title-block'>";
+    html += "<strong>Jaramogi Oginga Odinga University of Science and Technology (JOOUST)</strong><br/>";
+    html += titleText + "<br/>";
+    html += "<span class='muted'>From " + start + " to " + end + "</span>";
+    html += "</div></div>";
+
+    // Summary section
+    const totalRecords = filtered.length;
+    const presents = filtered.filter(r => r.status === "Present").length;
+    const absents = filtered.filter(r => r.status === "Absent").length;
+    html += "<div class='summary-box'>";
+    html += "<strong>Summary:</strong> Total entries: " + totalRecords +
+      " | Present: " + presents + " | Absent: " + absents;
+    if (reportClass) {
+      html += " | Class filter: <strong>" + reportClassInput.value + "</strong>";
+    }
+    html += "</div>";
+
+    // Table of details
+    html += "<table id='reportTable'><thead><tr>";
+    html += "<th>#</th><th>Class</th><th>Date</th><th>Student</th><th>Status</th><th>Signature</th>";
+    html += "</tr></thead><tbody>";
+
+    filtered.forEach((rec, idx) => {
+      html += "<tr>";
+      html += "<td>" + (idx + 1) + "</td>";
+      html += "<td>" + rec.className + "</td>";
+      html += "<td>" + rec.date + "</td>";
+      html += "<td>" + rec.studentName + "</td>";
+      html += "<td>" + rec.status + "</td>";
+      if (rec.signatureData) {
+        html += "<td><img src='" + rec.signatureData + "' style='max-height:30px;max-width:100px;' /></td>";
+      } else {
+        html += "<td>—</td>";
+      }
+      html += "</tr>";
     });
 
-    rows.sort((a,b)=> b.percent - a.percent);
+    html += "</tbody></table>";
+    html += "</div>";
 
-    rows.forEach((r, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${r.name}</td>
-        <td>${r.present}</td>
-        <td>${r.total}</td>
-        <td>${r.percent}%</td>
-      `;
-      tbody.appendChild(tr);
-    });
+    reportArea.innerHTML = html;
   });
 
-  // ---------- QUICK BUTTONS ----------
-  $('quickTodayBtn').addEventListener('click', () => {
-    // switch to attendance tab
-    document.querySelector('[data-tab="tab-attendance"]').click();
-    const today = new Date().toISOString().slice(0,10);
-    $('attendanceDate').value = today;
-    $('attendanceClassSelect').value = selectedClassId || $('attendanceClassSelect').value;
-    $('loadStudentsBtn').click();
+  // Export to Excel
+  btnExportExcel.addEventListener("click", () => {
+    const reportTable = document.getElementById("reportTable");
+    if (!reportTable) {
+      alert("Please generate a report first.");
+      return;
+    }
+    const wb = XLSX.utils.table_to_book(reportTable, { sheet: "Attendance" });
+    const todayStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, "jooust_attendance_" + todayStr + ".xlsx");
   });
 
-  $('quickWeekReportBtn').addEventListener('click', () => {
-    document.querySelector('[data-tab="tab-reports"]').click();
-    const now = new Date();
-    const day = now.getDay(); // 0-6
-    const diff = now.getDate() - day + 1; // Monday as start (1)
-    const monday = new Date(now.setDate(diff));
-    $('weekStartInput').value = monday.toISOString().slice(0,10);
-    $('reportClassSelect').value = selectedClassId || $('reportClassSelect').value;
-    $('generateWeekReportBtn').click();
-  });
+  // Export to PDF (captures the report area including JOOUST logo & colours)
+  btnExportPDF.addEventListener("click", async () => {
+    const reportContent = document.getElementById("reportContent");
+    if (!reportContent) {
+      alert("Please generate a report first.");
+      return;
+    }
 
-  // ---------- INIT ----------
-  refreshClassUI();
-  resetAttendanceView();
-  resetReportsView();
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const canvas = await html2canvas(reportContent, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, "PNG", 5, 5, pdfWidth - 10, pdfHeight);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    pdf.save("jooust_attendance_" + todayStr + ".pdf");
+  });
 </script>
 </body>
 </html>
