@@ -441,7 +441,7 @@
     <section id="lecturerRegistrationSection" class="card hidden">
       <h2>Lecturer Registration</h2>
       <div class="alert alert-info">
-        Your account will be pending until approved by the Admin.
+        Your account will be pending until approved by the Admin. The Admin can later link you to the correct Faculty / Course / Unit.
       </div>
       <div class="row">
         <div>
@@ -901,7 +901,7 @@
         username,
         password,
         approved: false,
-        assignments: [], // kept for future use; no longer filled at registration
+        assignments: [], // kept for future use, but not captured at registration UI
       };
 
       DATA.lecturers.push(lecturer);
@@ -932,7 +932,6 @@
           <th>PF/ID</th>
           <th>Username</th>
           <th>Status</th>
-          <th>Assignments</th>
           <th>Actions</th>
         </tr></thead><tbody>`;
 
@@ -940,22 +939,12 @@
         const statusChip = lec.approved
           ? '<span class="chip green">Approved</span>'
           : '<span class="chip red">Pending</span>';
-        const assignments =
-          lec.assignments && lec.assignments.length
-            ? lec.assignments
-                .map(
-                  (a) =>
-                    `${a.faculty} → ${a.course} → ${a.unit} (${a.year}, ${a.semester})`
-                )
-                .join("<br>")
-            : "<span class='muted'>None</span>";
 
         html += `<tr>
           <td>${lec.salutation} ${lec.fullName}</td>
           <td>${lec.pf}</td>
           <td>${lec.username}</td>
           <td>${statusChip}</td>
-          <td>${assignments}</td>
           <td>
             ${
               lec.approved
@@ -1283,7 +1272,7 @@
         alert("Class not found.");
         return;
       }
-      const att = DATA.attendance.filter((a) => a.classId === cls.id);
+      const att = DATA.attendance.filter((a) => a.classId === classId);
 
       const container = document.createElement("div");
       container.style.position = "fixed";
@@ -1486,8 +1475,7 @@
       const classId = getQueryParam("classId");
       if (mode !== "student" || !classId) return;
 
-      // hide main header login features; show only student section
-      $("mainHeader"); // header still useful
+      // show only student section
       showSection("studentSection");
 
       DATA = loadData();
@@ -1838,7 +1826,7 @@
           </table>
         </body>
         </html>
-      `;
+      ";
 
       const blob = new Blob(["\ufeff", html], {
         type: "application/msword",
