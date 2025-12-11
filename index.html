@@ -5,7 +5,6 @@
   <title>JOOUST Attendance Management System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- JOOUST style colours (approx) -->
   <style>
     :root {
       --jooust-blue: #0052cc;
@@ -79,7 +78,6 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      font-size: 0.85rem;
     }
 
     main {
@@ -172,11 +170,6 @@
       white-space: nowrap;
     }
 
-    .btn-sm {
-      padding: 0.35rem 0.75rem;
-      font-size: 0.8rem;
-    }
-
     .btn-primary {
       background: linear-gradient(
         135deg,
@@ -217,6 +210,11 @@
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-top: 0.75rem;
+    }
+
+    .header-actions .btn {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
     }
 
     .chip {
@@ -309,13 +307,6 @@
       font-size: 0.82rem;
     }
 
-    .link {
-      color: var(--jooust-blue-dark);
-      text-decoration: underline;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-
     .signature-pad {
       border: 1px dashed #9ca3af;
       border-radius: 8px;
@@ -399,7 +390,6 @@
     }
   </style>
 
-  <!-- External libs for export -->
   <!-- jsPDF + AutoTable for PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-YkGgS2TtFjQEJvH/SzW1t8ZB7G63V8YV3vm2/9W3UNsCXO6hECzn+fZcKQX5ouduPzjO6uTb4lrT7xYuFezYKg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha512-T/0sKmxLa0mmKwOp+QsJz3qxdltf6M7cbpTiaCtnHAHMS2JIHId2D7W6XkMTU/kxua9jqTcpKi8FtQhoUxfb3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -410,7 +400,6 @@
 <body>
   <header id="mainHeader">
     <div class="left">
-      <!-- Use your logo.jpg from repo -->
       <img src="logo.jpg" alt="JOOUST Logo" />
       <h1>
         JOOUST Attendance System
@@ -418,9 +407,11 @@
       </h1>
     </div>
     <div class="right">
-      <span id="userSummary" class="muted"></span>
-      <button id="changePasswordBtn" class="btn btn-secondary btn-sm hidden">Change Password</button>
-      <button id="logoutBtn" class="btn btn-secondary btn-sm hidden">Logout</button>
+      <div id="userSummary" class="muted"></div>
+      <div class="btn-group header-actions">
+        <button class="btn btn-secondary hidden" id="changePasswordBtn">Change Password</button>
+        <button class="btn btn-secondary hidden" id="logoutBtn">Logout</button>
+      </div>
     </div>
   </header>
 
@@ -441,7 +432,7 @@
       <div class="row">
         <div>
           <label for="loginUsername">Username</label>
-          <input id="loginUsername" type="text" placeholder="e.g. admin" />
+          <input id="loginUsername" type="text" placeholder="Enter username" />
         </div>
         <div>
           <label for="loginPassword">Password</label>
@@ -452,13 +443,10 @@
         <button class="btn btn-primary" id="loginBtn">Login</button>
         <button class="btn btn-secondary" id="showLecturerRegistration">Register as Lecturer</button>
       </div>
-      <p class="muted" style="margin-top:0.75rem;">
-        Default admin: <strong>admin / admin123</strong> (you can change inside code later).
-      </p>
       <div id="loginMessage" class="alert hidden"></div>
     </section>
 
-    <!-- LECTURER REGISTRATION -->
+    <!-- LECTURER REGISTRATION (simplified, no assignment block) -->
     <section id="lecturerRegistrationSection" class="card hidden">
       <h2>Lecturer Registration</h2>
       <div class="alert alert-info">
@@ -602,7 +590,7 @@
       <section id="reportsTab" class="card admin-tab hidden">
         <h3>Reports</h3>
         <p class="muted">
-          Filter by Faculty, Course, Unit, Year & Semester then export as PDF, Word or Excel.
+          Filter by Faculty, Course, Unit, Year & Semester then export as PDF, Word, Excel, or CSV (raw attendance).
         </p>
         <div class="row">
           <div><label for="repFaculty">Faculty</label><input id="repFaculty" type="text" /></div>
@@ -621,7 +609,7 @@
             <button class="btn btn-primary" id="exportPdfBtn">Download PDF</button>
             <button class="btn btn-secondary" id="exportWordBtn">Download Word</button>
             <button class="btn btn-secondary" id="exportExcelBtn">Download Excel</button>
-            <button class="btn btn-secondary" id="exportRawCsvBtn">Download Raw Attendance CSV</button>
+            <button class="btn btn-secondary" id="exportCsvRawBtn">Download CSV (Raw Attendance)</button>
           </div>
           <div id="reportMeta" class="muted" style="margin-top:0.5rem;"></div>
           <table id="reportTable"></table>
@@ -676,13 +664,28 @@
           These filters apply only to your own classes.
         </p>
         <div class="row">
-          <div><label for="repFacultyL">Faculty</label><input id="repFacultyL" type="text" /></div>
-          <div><label for="repCourseL">Course</label><input id="repCourseL" type="text" /></div>
-          <div><label for="repUnitL">Unit</label><input id="repUnitL" type="text" /></div>
+          <div>
+            <label for="repFacultyL">Faculty</label>
+            <select id="repFacultyL"></select>
+          </div>
+          <div>
+            <label for="repCourseL">Course</label>
+            <select id="repCourseL"></select>
+          </div>
+          <div>
+            <label for="repUnitL">Unit</label>
+            <select id="repUnitL"></select>
+          </div>
         </div>
         <div class="row">
-          <div><label for="repYearL">Year</label><input id="repYearL" type="text" /></div>
-          <div><label for="repSemesterL">Semester</label><input id="repSemesterL" type="text" /></div>
+          <div>
+            <label for="repYearL">Year</label>
+            <select id="repYearL"></select>
+          </div>
+          <div>
+            <label for="repSemesterL">Semester</label>
+            <select id="repSemesterL"></select>
+          </div>
         </div>
         <div class="btn-group">
           <button class="btn btn-primary" id="generateReportLecturerBtn">Generate My Report</button>
@@ -692,7 +695,7 @@
             <button class="btn btn-primary" id="exportPdfBtnL">Download PDF</button>
             <button class="btn btn-secondary" id="exportWordBtnL">Download Word</button>
             <button class="btn btn-secondary" id="exportExcelBtnL">Download Excel</button>
-            <button class="btn btn-secondary" id="exportRawCsvBtnL">Download Raw Attendance CSV</button>
+            <button class="btn btn-secondary" id="exportCsvRawBtnL">Download CSV (Raw Attendance)</button>
           </div>
           <div id="reportMetaL" class="muted" style="margin-top:0.5rem;"></div>
           <table id="reportTableL"></table>
@@ -776,7 +779,9 @@
       const d = new Date(dt);
       if (isNaN(d)) return dt;
       return (
-        d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        d.toLocaleDateString() +
+        " " +
+        d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       );
     }
 
@@ -815,29 +820,46 @@
       };
     }
 
-    // ========================== LOGIN, LOGOUT & REGISTRATION ==========================
+    // ========================== AUTH UI ==========================
     function updateUserSummary() {
       const el = $("userSummary");
       const logoutBtn = $("logoutBtn");
-      const changeBtn = $("changePasswordBtn");
+      const changePasswordBtn = $("changePasswordBtn");
+
       if (!currentUser) {
         el.textContent = "";
         logoutBtn.classList.add("hidden");
-        changeBtn.classList.add("hidden");
+        changePasswordBtn.classList.add("hidden");
         return;
       }
-      DATA = loadData();
+
+      logoutBtn.classList.remove("hidden");
+      changePasswordBtn.classList.remove("hidden");
+
       if (currentUser.role === "admin") {
-        el.textContent = "Logged in as Admin: " + currentUser.username;
+        el.textContent = "Logged in as Admin";
       } else if (currentUser.role === "lecturer") {
+        DATA = loadData();
         const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
         const name = lec ? lec.salutation + " " + lec.fullName : currentUser.username;
         el.textContent = "Logged in as Lecturer: " + name;
       }
-      logoutBtn.classList.remove("hidden");
-      changeBtn.classList.remove("hidden");
     }
 
+    $("logoutBtn").addEventListener("click", () => {
+      currentUser = null;
+      $("loginUsername").value = "";
+      $("loginPassword").value = "";
+      showSection("loginSection");
+      updateUserSummary();
+    });
+
+    $("changePasswordBtn").addEventListener("click", () => {
+      if (!currentUser) return;
+      openChangePasswordDialog();
+    });
+
+    // ========================== LOGIN & REGISTRATION ==========================
     $("loginBtn").addEventListener("click", () => {
       const username = $("loginUsername").value.trim();
       const password = $("loginPassword").value;
@@ -885,7 +907,9 @@
         clearAlert(msgEl);
         showSection("lecturerDashboard");
         updateUserSummary();
+        preloadLecturerFieldsFromTeaching(lec);
         renderLecturerClasses();
+        populateLecturerFilterDropdowns();
       }
     });
 
@@ -929,7 +953,8 @@
         pf,
         username,
         password,
-        approved: false
+        approved: false,
+        assignments: [],
       };
 
       DATA.lecturers.push(lecturer);
@@ -945,102 +970,6 @@
         $("regPassword").value =
           "";
     });
-
-    $("logoutBtn").addEventListener("click", () => {
-      currentUser = null;
-      updateUserSummary();
-      showSection("loginSection");
-    });
-
-    // ========================== CHANGE PASSWORD DIALOG ==========================
-    function openChangePasswordDialog() {
-      if (!currentUser) return;
-
-      const container = document.createElement("div");
-      container.style.position = "fixed";
-      container.style.inset = "0";
-      container.style.background = "rgba(15,23,42,0.6)";
-      container.style.display = "flex";
-      container.style.alignItems = "center";
-      container.style.justifyContent = "center";
-      container.style.zIndex = "9999";
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.style.maxWidth = "420px";
-      card.style.width = "95%";
-
-      card.innerHTML = `
-        <h2>Change Password</h2>
-        <p class="muted">Update your account password.</p>
-        <div class="row">
-          <div>
-            <label for="cpCurrent">Current Password</label>
-            <input id="cpCurrent" type="password" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="cpNew">New Password</label>
-            <input id="cpNew" type="password" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="cpConfirm">Confirm New Password</label>
-            <input id="cpConfirm" type="password" />
-          </div>
-        </div>
-        <div id="cpMessage" class="alert hidden"></div>
-        <div class="btn-group">
-          <button class="btn btn-primary" id="cpSave">Save</button>
-          <button class="btn btn-secondary" id="cpCancel">Cancel</button>
-        </div>
-      `;
-
-      container.appendChild(card);
-      document.body.appendChild(container);
-
-      const msgEl = card.querySelector("#cpMessage");
-
-      card.querySelector("#cpCancel").onclick = () => container.remove();
-
-      card.querySelector("#cpSave").onclick = () => {
-        const current = card.querySelector("#cpCurrent").value;
-        const np = card.querySelector("#cpNew").value;
-        const cp = card.querySelector("#cpConfirm").value;
-
-        if (!current || !np || !cp) {
-          setAlert(msgEl, "Fill all fields.", "danger");
-          return;
-        }
-        if (np !== cp) {
-          setAlert(msgEl, "New passwords do not match.", "danger");
-          return;
-        }
-
-        DATA = loadData();
-        let account = null;
-
-        if (currentUser.role === "admin") {
-          account = DATA.admins.find((a) => a.username === currentUser.username);
-        } else if (currentUser.role === "lecturer") {
-          account = DATA.lecturers.find((l) => l.id === currentUser.id);
-        }
-
-        if (!account || account.password !== current) {
-          setAlert(msgEl, "Current password is incorrect.", "danger");
-          return;
-        }
-
-        account.password = np;
-        saveData(DATA);
-        alert("Password changed successfully.");
-        container.remove();
-      };
-    }
-
-    $("changePasswordBtn").addEventListener("click", openChangePasswordDialog);
 
     // ========================== ADMIN: LECTURERS ==========================
     function renderAdminLecturers() {
@@ -1161,6 +1090,16 @@
     }
 
     // ========================== CLASS CREATION (LECTURER) ==========================
+    function preloadLecturerFieldsFromTeaching(lec) {
+      if (!lec.assignments || !lec.assignments.length) return;
+      const a = lec.assignments[0];
+      $("lcFaculty").value = a.faculty;
+      $("lcCourse").value = a.course;
+      $("lcUnit").value = a.unit;
+      $("lcYear").value = a.year;
+      $("lcSemester").value = a.semester;
+    }
+
     $("createClassBtn").addEventListener("click", () => {
       const f = $("lcFaculty").value.trim();
       const c = $("lcCourse").value.trim();
@@ -1213,6 +1152,7 @@
       DATA.classes.push(cls);
       saveData(DATA);
       renderLecturerClasses();
+      populateLecturerFilterDropdowns();
 
       const link =
         window.location.origin +
@@ -1319,6 +1259,52 @@
           }
         });
       });
+
+      // refresh dropdowns
+      populateLecturerFilterDropdowns();
+    }
+
+    // populate dropdown filters for lecturer quick reports
+    function populateLecturerFilterDropdowns() {
+      if (!currentUser || currentUser.role !== "lecturer") return;
+      DATA = loadData();
+      const my = DATA.classes.filter((c) => c.lecturerId === currentUser.id);
+      const fac = new Set();
+      const cou = new Set();
+      const uni = new Set();
+      const yea = new Set();
+      const sem = new Set();
+      my.forEach((cls) => {
+        fac.add(cls.faculty);
+        cou.add(cls.course);
+        uni.add(cls.unit);
+        yea.add(cls.year);
+        sem.add(cls.semester);
+      });
+
+      function fillSelect(id, set, allLabel) {
+        const sel = $(id);
+        if (!sel) return;
+        sel.innerHTML = "";
+        const optAll = document.createElement("option");
+        optAll.value = "";
+        optAll.textContent = allLabel;
+        sel.appendChild(optAll);
+        Array.from(set)
+          .sort()
+          .forEach((v) => {
+            const o = document.createElement("option");
+            o.value = v;
+            o.textContent = v;
+            sel.appendChild(o);
+          });
+      }
+
+      fillSelect("repFacultyL", fac, "All Faculties");
+      fillSelect("repCourseL", cou, "All Courses");
+      fillSelect("repUnitL", uni, "All Units");
+      fillSelect("repYearL", yea, "All Years");
+      fillSelect("repSemesterL", sem, "All Semesters");
     }
 
     // ========================== ADMIN: CLASSES ==========================
@@ -1388,7 +1374,7 @@
         alert("Class not found.");
         return;
       }
-      const att = DATA.attendance.filter((a) => a.classId === classId);
+      const att = DATA.attendance.filter((a) => a.classId === cls.id);
 
       const container = document.createElement("div");
       container.style.position = "fixed";
@@ -1570,7 +1556,6 @@
         if (callerRole === "admin") {
           cls.hodSignature = hodSig.getDataUrl();
         } else if (callerRole === "lecturer" && hodName) {
-          // lecturer can also capture HOD sig if together
           cls.hodSignature = hodSig.getDataUrl();
         }
 
@@ -1684,7 +1669,11 @@
         const msgEl = $("studentSubmitMsg");
 
         if (!surname || !first || !adm) {
-          setAlert(msgEl, "Surname, First Name and Admission are required.", "danger");
+          setAlert(
+            msgEl,
+            "Surname, First Name and Admission are required.",
+            "danger"
+          );
           return;
         }
 
@@ -1775,7 +1764,7 @@
       return rows;
     }
 
-    // build raw attendance rows (per student, with signature)
+    // raw attendance rows (for CSV)
     function buildRawAttendanceRows({
       faculty,
       course,
@@ -1786,29 +1775,26 @@
     }) {
       DATA = loadData();
       const rows = [];
-
-      const filteredClasses = DATA.classes.filter((cls) => {
-        if (lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return false;
+      DATA.classes.forEach((cls) => {
+        if (lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return;
         if (faculty && !cls.faculty.toLowerCase().includes(faculty.toLowerCase()))
-          return false;
+          return;
         if (course && !cls.course.toLowerCase().includes(course.toLowerCase()))
-          return false;
+          return;
         if (unit && !cls.unit.toLowerCase().includes(unit.toLowerCase()))
-          return false;
+          return;
         if (year && !cls.year.toLowerCase().includes(year.toLowerCase()))
-          return false;
+          return;
         if (
           semester &&
           !cls.semester.toLowerCase().includes(semester.toLowerCase())
         )
-          return false;
-        return true;
-      });
+          return;
 
-      filteredClasses.forEach((cls) => {
         const att = DATA.attendance.filter((a) => a.classId === cls.id);
         att.forEach((a) => {
           rows.push({
+            classId: cls.id,
             faculty: cls.faculty,
             course: cls.course,
             unit: cls.unit,
@@ -1817,22 +1803,22 @@
             venue: cls.venue,
             dateTime: formatDateTime(cls.dateTime),
             lecturer: cls.lecturerName || "",
-            admission: a.admission,
-            surname: a.surname,
-            middle: a.middle,
-            first: a.first,
-            submittedAt: formatDateTime(a.createdAt),
-            signature: a.signature,
+            studentAdmission: a.admission,
+            studentSurname: a.surname,
+            studentMiddle: a.middle,
+            studentFirst: a.first,
+            timestamp: formatDateTime(a.createdAt),
+            signatureDataUrl: a.signature,
           });
         });
       });
-
       return rows;
     }
 
     function renderReportTable(rows, tableEl) {
       if (!rows.length) {
-        tableEl.innerHTML = "<tbody><tr><td>No records found.</td></tr></tbody>";
+        tableEl.innerHTML =
+          "<tbody><tr><td>No records found.</td></tr></tbody>";
         return;
       }
       let html =
@@ -1899,7 +1885,11 @@
       }
       doc.setFontSize(16);
       doc.setTextColor(0, 82, 204);
-      doc.text("Jaramogi Oginga Odinga University of Science & Technology", 140, 40);
+      doc.text(
+        "Jaramogi Oginga Odinga University of Science & Technology",
+        140,
+        40
+      );
       doc.setFontSize(12);
       doc.setTextColor(31, 41, 55);
       doc.text(title, 140, 60);
@@ -2056,57 +2046,59 @@
       XLSX.writeFile(wb, "jooust-attendance-report.xlsx");
     }
 
-    function exportRawAttendanceCsv(rows, filename) {
+    function exportRawCsv(rows, filename) {
       if (!rows.length) {
-        alert("No attendance records found for these filters.");
+        alert("No attendance records to export.");
         return;
       }
-
       const headers = [
+        "No",
+        "ClassID",
         "Faculty",
         "Course",
         "Unit",
         "Year",
         "Semester",
         "Venue",
-        "DateTime",
+        "ClassDateTime",
         "Lecturer",
-        "Admission",
-        "Surname",
-        "MiddleName",
-        "FirstName",
-        "SubmittedAt",
-        "SignatureDataURL"
+        "StudentAdmission",
+        "StudentSurname",
+        "StudentMiddle",
+        "StudentFirst",
+        "AttendanceTimestamp",
+        "SignatureDataURL",
       ];
-
-      function esc(value) {
-        if (value == null) value = "";
-        const str = String(value).replace(/"/g, '""');
-        return `"${str}"`;
-      }
-
-      let csv = headers.join(",") + "\n";
-      rows.forEach((r) => {
-        const line = [
-          esc(r.faculty),
-          esc(r.course),
-          esc(r.unit),
-          esc(r.year),
-          esc(r.semester),
-          esc(r.venue),
-          esc(r.dateTime),
-          esc(r.lecturer),
-          esc(r.admission),
-          esc(r.surname),
-          esc(r.middle),
-          esc(r.first),
-          esc(r.submittedAt),
-          esc(r.signature),
-        ].join(",");
-        csv += line + "\n";
+      const lines = [];
+      lines.push(headers.join(","));
+      rows.forEach((r, i) => {
+        const vals = [
+          i + 1,
+          r.classId,
+          r.faculty,
+          r.course,
+          r.unit,
+          r.year,
+          r.semester,
+          r.venue,
+          r.dateTime,
+          r.lecturer,
+          r.studentAdmission,
+          r.studentSurname,
+          r.studentMiddle,
+          r.studentFirst,
+          r.timestamp,
+          r.signatureDataUrl,
+        ].map((v) => {
+          const s = String(v ?? "");
+          return '"' + s.replace(/"/g, '""') + '"';
+        });
+        lines.push(vals.join(","));
       });
 
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const blob = new Blob([lines.join("\r\n")], {
+        type: "text/csv;charset=utf-8;",
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -2127,6 +2119,16 @@
       const rows = JSON.parse($("reportTable").dataset.rows || "[]");
       exportToExcel(rows);
     });
+    $("exportCsvRawBtn").addEventListener("click", () => {
+      const rows = buildRawAttendanceRows({
+        faculty: $("repFaculty").value.trim(),
+        course: $("repCourse").value.trim(),
+        unit: $("repUnit").value.trim(),
+        year: $("repYear").value.trim(),
+        semester: $("repSemester").value.trim(),
+      });
+      exportRawCsv(rows, "jooust-attendance-raw.csv");
+    });
 
     $("exportPdfBtnL").addEventListener("click", () => {
       const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
@@ -2140,20 +2142,7 @@
       const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
       exportToExcel(rows);
     });
-
-    // new raw CSV buttons
-    $("exportRawCsvBtn").addEventListener("click", () => {
-      const rows = buildRawAttendanceRows({
-        faculty: $("repFaculty").value.trim(),
-        course: $("repCourse").value.trim(),
-        unit: $("repUnit").value.trim(),
-        year: $("repYear").value.trim(),
-        semester: $("repSemester").value.trim(),
-      });
-      exportRawAttendanceCsv(rows, "jooust-attendance-raw.csv");
-    });
-
-    $("exportRawCsvBtnL").addEventListener("click", () => {
+    $("exportCsvRawBtnL").addEventListener("click", () => {
       if (!currentUser || currentUser.role !== "lecturer") return;
       const rows = buildRawAttendanceRows({
         faculty: $("repFacultyL").value.trim(),
@@ -2163,8 +2152,98 @@
         semester: $("repSemesterL").value.trim(),
         lecturerOnlyId: currentUser.id,
       });
-      exportRawAttendanceCsv(rows, "jooust-attendance-raw-my-classes.csv");
+      exportRawCsv(rows, "jooust-attendance-raw-my-classes.csv");
     });
+
+    // ========================== CHANGE PASSWORD DIALOG ==========================
+    function openChangePasswordDialog() {
+      const container = document.createElement("div");
+      container.style.position = "fixed";
+      container.style.inset = "0";
+      container.style.background = "rgba(15,23,42,0.6)";
+      container.style.display = "flex";
+      container.style.alignItems = "center";
+      container.style.justifyContent = "center";
+      container.style.zIndex = "9999";
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.maxWidth = "420px";
+      card.style.width = "95%";
+
+      card.innerHTML = `
+        <h2>Change Password</h2>
+        <div class="row">
+          <div>
+            <label for="cpOld">Current Password</label>
+            <input id="cpOld" type="password" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="cpNew">New Password</label>
+            <input id="cpNew" type="password" />
+          </div>
+          <div>
+            <label for="cpConfirm">Confirm New Password</label>
+            <input id="cpConfirm" type="password" />
+          </div>
+        </div>
+        <div id="cpMsg" class="alert hidden"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="cpSave">Save</button>
+          <button class="btn btn-secondary" id="cpCancel">Cancel</button>
+        </div>
+      `;
+
+      container.appendChild(card);
+      document.body.appendChild(container);
+
+      const msgEl = card.querySelector("#cpMsg");
+
+      card.querySelector("#cpCancel").onclick = () => container.remove();
+
+      card.querySelector("#cpSave").onclick = () => {
+        const oldPw = card.querySelector("#cpOld").value;
+        const newPw = card.querySelector("#cpNew").value;
+        const confPw = card.querySelector("#cpConfirm").value;
+
+        if (!oldPw || !newPw || !confPw) {
+          setAlert(msgEl, "All fields are required.", "danger");
+          return;
+        }
+        if (newPw !== confPw) {
+          setAlert(msgEl, "New password and confirmation do not match.", "danger");
+          return;
+        }
+
+        DATA = loadData();
+
+        if (currentUser.role === "admin") {
+          const admin = DATA.admins.find(
+            (a) => a.username === currentUser.username
+          );
+          if (!admin || admin.password !== oldPw) {
+            setAlert(msgEl, "Current password is incorrect.", "danger");
+            return;
+          }
+          admin.password = newPw;
+          saveData(DATA);
+          alert("Admin password updated.");
+          container.remove();
+        } else if (currentUser.role === "lecturer") {
+          const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
+          if (!lec || lec.password !== oldPw) {
+            setAlert(msgEl, "Current password is incorrect.", "danger");
+            return;
+          }
+          lec.password = newPw;
+          saveData(DATA);
+          alert("Lecturer password updated.");
+          container.remove();
+        }
+      };
+    }
 
     // ========================== ADMIN TABS ==========================
     document.querySelectorAll("[data-admin-tab]").forEach((btn) => {
