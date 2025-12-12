@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>JOOUST Attendance System</title>
+<title>JOOUST Attendance Management System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- JOOUST COLOURS -->
+<!-- JOOUST COLORS -->
 <style>
 :root{
   --blue:#003b8c;
@@ -13,93 +13,37 @@
   --green:#24a148;
   --gold:#f2c94c;
   --bg:#f4f7fb;
-  --card:#ffffff;
-  --text:#1f2933;
 }
-*{box-sizing:border-box;font-family:system-ui}
-body{margin:0;background:var(--bg);color:var(--text)}
-
+*{box-sizing:border-box;font-family:Segoe UI,system-ui}
+body{margin:0;background:var(--bg)}
 header{
   background:linear-gradient(135deg,var(--blue),var(--blue2));
-  color:#fff;
-  padding:12px 18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  color:#fff;padding:12px 20px;
+  display:flex;justify-content:space-between;align-items:center
 }
-header img{height:50px;background:#fff;border-radius:8px;padding:4px}
-header h1{margin:0;font-size:20px}
-header small{opacity:.9}
-
-main{max-width:1200px;margin:20px auto;padding:10px}
-
-.card{
-  background:var(--card);
-  border-radius:14px;
-  padding:18px;
-  margin-bottom:18px;
-  box-shadow:0 10px 25px rgba(0,0,0,.08)
-}
-
-h2{margin-top:0}
-.hidden{display:none}
-
+header img{height:45px;background:#fff;padding:4px;border-radius:6px}
+main{max-width:1200px;margin:auto;padding:15px}
+.card{background:#fff;border-radius:12px;padding:15px;margin-bottom:15px;
+box-shadow:0 6px 18px rgba(0,0,0,.08)}
 input,select,button{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  margin-bottom:10px;
-}
-
+width:100%;padding:8px;border-radius:8px;
+border:1px solid #ccc;margin-bottom:10px}
 button{
-  cursor:pointer;
-  background:linear-gradient(135deg,var(--blue2),var(--blue));
-  color:#fff;
-  border:none;
-  font-weight:600;
+background:var(--blue2);color:#fff;border:none;
+font-weight:600;cursor:pointer
 }
-
-button.secondary{
-  background:#e5e7eb;color:#111
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  border:1px solid #e5e7eb;
-  padding:8px;
-}
-th{background:#eff6ff;color:#1d4ed8}
-
-.badge{
-  padding:4px 10px;
-  border-radius:20px;
-  font-size:12px;
-}
-.open{background:#dcfce7;color:#166534}
-.closed{background:#fee2e2;color:#991b1b}
-
-.signature{
-  border:2px dashed #aaa;
-  height:140px;
-  width:100%;
-  border-radius:10px;
-  touch-action:none;
-}
-
-footer{
-  text-align:center;
-  padding:20px;
-  color:#555;
-  font-size:13px;
-}
+button.secondary{background:#e5e7eb;color:#111}
+button.success{background:var(--green)}
+button.danger{background:#e11d48}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid #ddd;padding:6px}
+th{background:#eff6ff;color:#003b8c}
+.signature-pad{border:2px dashed var(--blue2);height:130px}
+footer{text-align:center;font-size:12px;color:#555;margin:20px}
 </style>
 
-<!-- EXPORT LIBRARIES -->
+<!-- LIBRARIES -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
@@ -110,171 +54,166 @@ footer{
 <header>
   <div style="display:flex;gap:10px;align-items:center">
     <img src="logo.jpg">
-    <div>
-      <h1>JOOUST Attendance System</h1>
-      <small>Faculty · Course · Unit · Digital Signatures · Smart Reports</small>
-    </div>
+    <strong>JOOUST Attendance System</strong>
   </div>
-  <div id="userInfo"></div>
+  <div id="topUser"></div>
 </header>
 
 <main>
 
 <!-- LOGIN -->
-<div id="login" class="card">
-  <h2>Login</h2>
-  <select id="role">
-    <option value="admin">Admin</option>
-    <option value="lecturer">Lecturer</option>
-  </select>
-  <input id="user" placeholder="Username">
-  <input id="pass" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+<div class="card" id="loginBox">
+<h3>Login</h3>
+<select id="loginRole">
+<option value="admin">Admin</option>
+<option value="lecturer">Lecturer</option>
+</select>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="loginMsg"></p>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dash" class="hidden">
+<div id="dashboard" class="hidden">
 
 <div class="card">
-  <button class="secondary" onclick="logout()">Logout</button>
+<button class="secondary" onclick="logout()">Logout</button>
+<button class="secondary" onclick="showChange()">Change Password</button>
 </div>
 
+<!-- CREATE CLASS -->
 <div class="card">
-  <h2>Create Class</h2>
-  <input id="faculty" placeholder="Faculty">
-  <input id="course" placeholder="Course">
-  <input id="unit" placeholder="Unit">
-  <input id="year" placeholder="Year">
-  <input id="semester" placeholder="Semester">
-  <input id="venue" placeholder="Venue">
-  <input id="date" type="datetime-local">
-  <button onclick="createClass()">Create Class</button>
+<h3>Create Class</h3>
+<input id="clsFaculty" placeholder="Faculty">
+<input id="clsCourse" placeholder="Course">
+<input id="clsUnit" placeholder="Unit">
+<input id="clsVenue" placeholder="Venue">
+<input type="datetime-local" id="clsDate">
+<button class="success" onclick="createClass()">Create Class</button>
+<p id="clsMsg"></p>
 </div>
 
+<!-- CLASSES -->
 <div class="card">
-  <h2>My Classes</h2>
-  <div id="classTable"></div>
+<h3>My Classes</h3>
+<div id="classList"></div>
 </div>
 
-<div class="card">
-  <h2>Export Reports</h2>
-  <button onclick="exportPDF()">Download PDF</button>
-  <button onclick="exportExcel()">Download Excel</button>
-  <button onclick="exportWord()">Download Word</button>
-  <button onclick="exportCSV()">Download CSV (Raw)</button>
 </div>
 
+<!-- STUDENT -->
+<div class="card hidden" id="studentBox">
+<h3>Student Attendance</h3>
+<input id="stAdm" placeholder="Admission No">
+<input id="stName" placeholder="Full Name">
+<canvas id="stSig" class="signature-pad"></canvas>
+<button onclick="clearSig()">Clear</button>
+<button class="success" onclick="submitAttendance()">Submit</button>
+<p id="stMsg"></p>
 </div>
 
 </main>
 
 <footer>
-  <strong>JOOUST Attendance Management System</strong><br>
-  Created by <strong>Gerotech</strong><br>
-  By <strong>Dan Otieno</strong>
+System developed by <strong>Gerotech</strong> | By <strong>Dan Otieno</strong>
 </footer>
 
 <script>
-/* STORAGE */
-const DB = JSON.parse(localStorage.getItem("jooust")) || {
- admins:[{u:"admin",p:"admin123"}],
- classes:[],
- attendance:[]
+const KEY="jooust_sys";
+let DB=JSON.parse(localStorage.getItem(KEY))||{
+admins:[{u:"admin",p:"admin123"}],
+lecturers:[],classes:[],attendance:[]
 };
-function save(){localStorage.setItem("jooust",JSON.stringify(DB))}
+let user=null;
+function save(){localStorage.setItem(KEY,JSON.stringify(DB));}
 
-/* LOGIN */
-let CURRENT=null;
 function login(){
- const u=user.value,p=pass.value;
- if(role.value==="admin"){
-  const ok=DB.admins.find(a=>a.u===u&&a.p===p);
-  if(!ok)return alert("Invalid admin");
-  CURRENT={role:"admin",u};
- }else{
-  alert("Lecturer demo enabled");
-  CURRENT={role:"lecturer",u};
- }
- login.style.display="none";
- dash.classList.remove("hidden");
- userInfo.innerText="Logged in as "+CURRENT.role;
- render();
+const u=loginUser.value,p=loginPass.value,r=loginRole.value;
+if(r==="admin"){
+if(DB.admins.find(a=>a.u===u&&a.p===p)){user={r,u};openDash();}
+else loginMsg.textContent="Invalid login";
+}else{
+const l=DB.lecturers.find(x=>x.u===u&&x.p===p&&x.ok);
+if(l){user={r,id:l.id,u:l.u};openDash();}
+else loginMsg.textContent="Not approved / wrong details";
+}
 }
 
-/* LOGOUT */
+function openDash(){
+loginBox.classList.add("hidden");
+dashboard.classList.remove("hidden");
+topUser.textContent="Logged in as "+user.u;
+renderClasses();
+}
+
 function logout(){
- CURRENT=null;
- location.reload();
+user=null;location.reload();
 }
 
-/* CLASS */
 function createClass(){
- DB.classes.push({
-  id:Date.now(),
-  faculty:faculty.value,
-  course:course.value,
-  unit:unit.value,
-  year:year.value,
-  semester:semester.value,
-  venue:venue.value,
-  date:date.value,
-  status:"open"
- });
- save();render();
+const c={id:Date.now(),fac:clsFaculty.value,course:clsCourse.value,
+unit:clsUnit.value,venue:clsVenue.value,dt:clsDate.value,lec:user.u};
+DB.classes.push(c);save();renderClasses();
+clsMsg.textContent="Class created & link generated";
 }
 
-/* RENDER */
-function render(){
- let h="<table><tr><th>Unit</th><th>Venue</th><th>Status</th></tr>";
- DB.classes.forEach(c=>{
-  h+=`<tr>
-   <td>${c.unit}</td>
-   <td>${c.venue}</td>
-   <td><span class="badge ${c.status}">${c.status}</span></td>
-  </tr>`;
- });
- h+="</table>";
- classTable.innerHTML=h;
+function renderClasses(){
+let html="<table><tr><th>Unit</th><th>Date</th><th>Link</th><th>Export</th></tr>";
+DB.classes.filter(c=>c.lec===user.u).forEach(c=>{
+const link=location.origin+location.pathname+"?student="+c.id;
+html+=`<tr>
+<td>${c.unit}</td>
+<td>${c.dt}</td>
+<td><button onclick="copy('${link}')">Copy Link</button></td>
+<td><button onclick="exportExcel(${c.id})">Excel</button></td>
+</tr>`;
+});
+html+="</table>";
+classList.innerHTML=html;
 }
 
-/* EXPORTS */
-function exportExcel(){
- const ws=XLSX.utils.json_to_sheet(DB.attendance);
- const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,ws,"Attendance");
- XLSX.writeFile(wb,"jooust_attendance.xlsx");
+function copy(t){navigator.clipboard.writeText(t);alert("Link copied");}
+
+function exportExcel(cid){
+const rows=DB.attendance.filter(a=>a.cid===cid);
+const ws=[["Adm","Name","Date"]];
+rows.forEach(r=>ws.push([r.adm,r.name,r.dt]));
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws),"Attendance");
+XLSX.writeFile(wb,"attendance.xlsx");
 }
 
-function exportCSV(){
- const ws=XLSX.utils.json_to_sheet(DB.attendance);
- const csv=XLSX.utils.sheet_to_csv(ws);
- const blob=new Blob([csv],{type:"text/csv"});
- const a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="jooust_raw_attendance.csv";
- a.click();
+/* STUDENT */
+const params=new URLSearchParams(location.search);
+if(params.get("student")){
+loginBox.classList.add("hidden");
+studentBox.classList.remove("hidden");
+const cid=Number(params.get("student"));
+let ctx=stSig.getContext("2d"),draw=false;
+stSig.onmousedown=e=>{draw=true;ctx.moveTo(e.offsetX,e.offsetY)}
+stSig.onmousemove=e=>{if(draw){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke()}}
+window.onmouseup=()=>draw=false;
+
+window.ontouchstart=e=>{
+draw=true;const t=e.touches[0];
+ctx.moveTo(t.clientX-stSig.offsetLeft,t.clientY-stSig.offsetTop)
+}
+window.ontouchmove=e=>{
+if(draw){
+const t=e.touches[0];
+ctx.lineTo(t.clientX-stSig.offsetLeft,t.clientY-stSig.offsetTop);
+ctx.stroke();
+}
+}
+window.ontouchend=()=>draw=false;
+
+window.submitAttendance=()=>{
+DB.attendance.push({cid,adm:stAdm.value,name:stName.value,dt:new Date().toLocaleString()});
+save();stMsg.textContent="Attendance submitted";
+};
 }
 
-function exportPDF(){
- const {jsPDF}=window.jspdf;
- const doc=new jsPDF();
- doc.text("JOOUST Attendance Report",14,20);
- doc.autoTable({
-  startY:30,
-  head:[["Admission","Name","Time"]],
-  body:DB.attendance.map(a=>[a.adm,a.name,a.time])
- });
- doc.save("jooust_attendance.pdf");
-}
-
-function exportWord(){
- const html=`<h2>JOOUST Attendance Report</h2>`;
- const blob=new Blob(["\ufeff",html],{type:"application/msword"});
- const a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="jooust_attendance.doc";
- a.click();
-}
 </script>
 
 </body>
