@@ -5,16 +5,12 @@
   <title>JOOUST Attendance Management System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!--
-    Default Admin login (NOT visible on UI):
-      username: admin
-      password: admin123
-  -->
-
+  <!-- JOOUST style colours (approx) -->
   <style>
     :root {
       --jooust-blue: #0052cc;
-      --jooust-blue-dark: #003b8c;
+      --jooust-blue-dark: #00328f;
+      --jooust-blue-soft: #e3edff;
       --jooust-green: #24a148;
       --jooust-gold: #f2c94c;
       --bg-soft: #f4f7fb;
@@ -32,7 +28,7 @@
 
     body {
       margin: 0;
-      background: var(--bg-soft);
+      background: radial-gradient(circle at top, #e5f0ff 0, #f4f7fb 40%, #edf5ff 100%);
       color: var(--text-main);
     }
 
@@ -47,7 +43,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
       position: sticky;
       top: 0;
       z-index: 50;
@@ -62,14 +58,15 @@
     header img {
       height: 52px;
       width: auto;
-      border-radius: 6px;
+      border-radius: 10px;
       background: white;
       padding: 4px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
     }
 
     header h1 {
       margin: 0;
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       line-height: 1.3;
     }
 
@@ -82,10 +79,9 @@
 
     header .right {
       display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
     }
 
     main {
@@ -96,10 +92,11 @@
 
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
-      padding: 1.5rem;
+      border-radius: 16px;
+      padding: 1.6rem;
       margin-bottom: 1rem;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e5e7eb;
     }
 
     h2 {
@@ -139,11 +136,12 @@
     textarea {
       width: 100%;
       padding: 0.55rem 0.65rem;
-      border-radius: 8px;
+      border-radius: 999px;
       border: 1px solid #d1d5db;
       font-size: 0.9rem;
       outline: none;
-      transition: border 0.15s ease, box-shadow 0.15s ease;
+      transition: border 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease;
       background: #f9fafb;
     }
 
@@ -153,6 +151,16 @@
       border-color: var(--jooust-blue);
       box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.15);
       background: white;
+    }
+
+    select {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, #6b7280 50%),
+        linear-gradient(135deg, #6b7280 50%, transparent 50%);
+      background-position: calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 13px) calc(50% - 3px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
     }
 
     .row {
@@ -167,14 +175,14 @@
       align-items: center;
       justify-content: center;
       gap: 0.4rem;
-      padding: 0.55rem 1rem;
+      padding: 0.55rem 1.1rem;
       border-radius: 999px;
       border: none;
       cursor: pointer;
       font-size: 0.9rem;
       font-weight: 600;
       transition: transform 0.1s ease, box-shadow 0.1s ease,
-        background 0.15s ease;
+        background 0.15s ease, opacity 0.15s ease;
       white-space: nowrap;
     }
 
@@ -208,15 +216,21 @@
       color: #f9fafb;
     }
 
-    .btn-small {
-      padding: 0.25rem 0.6rem;
-      font-size: 0.78rem;
-      box-shadow: none;
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
     }
 
     .btn:active {
       transform: translateY(1px);
       box-shadow: none;
+      opacity: 0.9;
     }
 
     .btn-group {
@@ -316,13 +330,21 @@
       font-size: 0.82rem;
     }
 
+    .link {
+      color: var(--jooust-blue-dark);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
     .signature-pad {
       border: 1px dashed #9ca3af;
-      border-radius: 8px;
+      border-radius: 12px;
       background: white;
       width: 100%;
-      height: 120px;
+      height: 140px;
       cursor: crosshair;
+      touch-action: none;
     }
 
     .signature-actions {
@@ -351,14 +373,9 @@
       font-size: 0.8rem;
     }
 
-    .sort-select {
-      min-width: 160px;
-      max-width: 220px;
-    }
-
     .alert {
       padding: 0.55rem 0.75rem;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 0.83rem;
       margin-bottom: 0.65rem;
     }
@@ -386,6 +403,43 @@
       margin-bottom: 0;
     }
 
+    .auth-actions {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .filter-label select {
+      margin-top: 0.2rem;
+      min-width: 150px;
+    }
+
+    footer.footer {
+      max-width: 1200px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    footer.footer span {
+      font-weight: 600;
+      color: var(--jooust-blue-dark);
+    }
+
     @media (max-width: 640px) {
       header {
         flex-direction: column;
@@ -398,31 +452,35 @@
       }
 
       header .right {
-        width: 100%;
-        justify-content: flex-start;
+        align-items: flex-start;
       }
     }
   </style>
 
   <!-- External libs for export -->
   <!-- jsPDF + AutoTable for PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-YkGgS2TtFjQEJvH/SzW1t8ZB7G63V8YV3vm2/9W3UNsCXO6hECzn+fZcKQX5ouduPzjO6uTb4lrT7xYuFezYKg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha512-T/0sKmxLa0mmKwOp+QsJz3qxdltf6M7cbpTiaCtnHAHMS2JIHId2D7W6XkMTU/kxua9jqTcpKi8FtQhoUxfb3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <!-- SheetJS for Excel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js" integrity="sha512-fVsu9i0kTrqzYoGPP6gxrKGUIFYgTc6LJvRa+X/UiDtGdvzCJ9AJNUHru6aFtsgN0VSkFmorkxLhntnHZ0uVqw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
   <header id="mainHeader">
     <div class="left">
+      <!-- Use your logo.jpg from repo -->
       <img src="logo.jpg" alt="JOOUST Logo" />
       <h1>
         JOOUST Attendance System
         <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
       </h1>
     </div>
-    <div class="right" id="headerRight">
+    <div class="right">
       <div id="userSummary" class="muted"></div>
+      <div id="authActions" class="auth-actions hidden">
+        <button class="btn btn-secondary btn-sm" id="changePasswordBtn">Change Password</button>
+        <button class="btn btn-ghost btn-sm" id="logoutBtn">Logout</button>
+      </div>
     </div>
   </header>
 
@@ -537,7 +595,7 @@
         <label>Digital Signature (use finger or mouse)</label>
         <canvas id="stSignaturePad" class="signature-pad"></canvas>
         <div class="signature-actions">
-          <button class="btn btn-secondary" id="stClearSignature">Clear</button>
+          <button class="btn btn-secondary btn-sm" id="stClearSignature">Clear</button>
         </div>
 
         <div class="btn-group">
@@ -553,8 +611,8 @@
         <h2>Admin Dashboard</h2>
         <div class="tabs">
           <button class="tab active" data-admin-tab="lecturersTab">Lecturers</button>
-          <button class="tab" data-admin-tab="classesTab">Classes</button>
           <button class="tab" data-admin-tab="facultyTab">Faculty / Course / Unit Upload</button>
+          <button class="tab" data-admin-tab="classesTab">Classes</button>
           <button class="tab" data-admin-tab="reportsTab">Reports</button>
         </div>
       </div>
@@ -562,40 +620,25 @@
       <!-- Lecturers Management -->
       <section id="lecturersTab" class="card admin-tab">
         <div class="pill-header">
-          <h3>Lecturer Accounts</h3>
-          <small>Approve new registrations & manage existing accounts.</small>
+          <div>
+            <h3>Lecturer Accounts</h3>
+            <small>Approve new registrations & manage existing accounts.</small>
+          </div>
         </div>
         <div id="lecturersTableWrapper" class="muted">No lecturers yet.</div>
-      </section>
-
-      <!-- Classes -->
-      <section id="classesTab" class="card admin-tab hidden">
-        <div class="pill-header">
-          <div>
-            <h3>All Classes</h3>
-            <small>Monitor all sessions and signatures.</small>
-          </div>
-          <div>
-            <label for="adminClassSort" class="muted">Sort classes</label>
-            <select id="adminClassSort" class="sort-select">
-              <option value="date_desc">Newest first</option>
-              <option value="date_asc">Oldest first</option>
-              <option value="unit_asc">Unit A–Z</option>
-            </select>
-          </div>
-        </div>
-        <div id="adminClassesTableWrapper" class="muted">No classes created yet.</div>
       </section>
 
       <!-- Faculty / Course / Unit Upload -->
       <section id="facultyTab" class="card admin-tab hidden">
         <div class="pill-header">
-          <h3>Faculty / Course / Unit Mapping</h3>
-          <small>Upload CSV to populate dropdown lists for reports.</small>
+          <div>
+            <h3>Faculty / Course / Unit Mapping</h3>
+            <small>Upload CSV to populate dropdown lists for reports.</small>
+          </div>
         </div>
         <div class="alert alert-info">
           CSV Structure: <code>Faculty,Course,Unit,Year,Semester</code><br />
-          Each row represents one unit / class (for dropdown filtering only).
+          Each row represents one unit / class.
         </div>
         <input type="file" id="facultyCsvInput" accept=".csv" />
         <div class="btn-group">
@@ -607,12 +650,30 @@
         <div id="facultySummary" class="muted"></div>
       </section>
 
+      <!-- Classes -->
+      <section id="classesTab" class="card admin-tab hidden">
+        <div class="pill-header">
+          <div>
+            <h3>All Classes</h3>
+            <small>Monitor all sessions and signatures.</small>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">
+              Filter by Unit
+              <select id="adminClassFilterUnit">
+                <option value="">All Units</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div id="adminClassesTableWrapper" class="muted">No classes created yet.</div>
+      </section>
+
       <!-- Reports -->
       <section id="reportsTab" class="card admin-tab hidden">
         <h3>Reports</h3>
         <p class="muted">
-          Filter by Faculty, Course, Unit, Year & Semester then export as PDF, Word, Excel,
-          or CSV (raw student attendance with signatures).
+          Filter by Faculty, Course, Unit, Year & Semester then export as PDF, Word, Excel, or CSV (raw attendance).
         </p>
         <div class="row">
           <div>
@@ -656,7 +717,7 @@
             <button class="btn btn-primary" id="exportPdfBtn">Download PDF</button>
             <button class="btn btn-secondary" id="exportWordBtn">Download Word</button>
             <button class="btn btn-secondary" id="exportExcelBtn">Download Excel</button>
-            <button class="btn btn-secondary" id="exportCsvRawBtn">Download CSV (Raw Attendance)</button>
+            <button class="btn btn-secondary" id="exportCsvBtn">Download CSV (Raw Attendance)</button>
           </div>
           <div id="reportMeta" class="muted" style="margin-top:0.5rem;"></div>
           <table id="reportTable"></table>
@@ -675,8 +736,10 @@
 
       <section class="card">
         <div class="pill-header">
-          <h3>Create / Start Class</h3>
-          <small>Fill details; system will generate a unique attendance link.</small>
+          <div>
+            <h3>Create / Start Class</h3>
+            <small>Fill details; system will generate a unique attendance link.</small>
+          </div>
         </div>
         <div class="row">
           <div><label for="lcFaculty">Faculty</label><input id="lcFaculty" type="text" /></div>
@@ -703,13 +766,13 @@
             <h3>My Classes</h3>
             <small>Share links, view attendance & sign.</small>
           </div>
-          <div>
-            <label for="lecturerClassSort" class="muted">Sort classes</label>
-            <select id="lecturerClassSort" class="sort-select">
-              <option value="date_desc">Newest first</option>
-              <option value="date_asc">Oldest first</option>
-              <option value="unit_asc">Unit A–Z</option>
-            </select>
+          <div class="filter-group">
+            <label class="filter-label">
+              Filter by Unit
+              <select id="lecturerClassFilterUnit">
+                <option value="">All Units</option>
+              </select>
+            </label>
           </div>
         </div>
         <div id="lecturerClassesTableWrapper" class="muted">No classes yet.</div>
@@ -762,7 +825,7 @@
             <button class="btn btn-primary" id="exportPdfBtnL">Download PDF</button>
             <button class="btn btn-secondary" id="exportWordBtnL">Download Word</button>
             <button class="btn btn-secondary" id="exportExcelBtnL">Download Excel</button>
-            <button class="btn btn-secondary" id="exportCsvRawBtnL">Download CSV (Raw Attendance)</button>
+            <button class="btn btn-secondary" id="exportCsvBtnL">Download CSV (Raw Attendance)</button>
           </div>
           <div id="reportMetaL" class="muted" style="margin-top:0.5rem;"></div>
           <table id="reportTableL"></table>
@@ -771,24 +834,27 @@
     </section>
   </main>
 
+  <footer class="footer">
+    <p>
+      © <span id="footerYear"></span> JOOUST Attendance Management System.
+      Developed by <span>Gerotech</span> (Dan Otieno).
+    </p>
+  </footer>
+
   <script>
     // ========================== DATA STORAGE ==========================
     const STORAGE_KEY = "jooust_attendance_data_v1";
 
-    function getBaseData() {
-      return {
-        admins: [{ username: "admin", password: "admin123" }],
-        lecturers: [],
-        facultyConfig: [],
-        classes: [],
-        attendance: [],
-      };
-    }
-
     function loadData() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        const base = getBaseData();
+        const base = {
+          admins: [{ username: "admin", password: "admin123" }],
+          lecturers: [],
+          facultyConfig: [],
+          classes: [],
+          attendance: [],
+        };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
         return base;
       }
@@ -796,7 +862,13 @@
         return JSON.parse(raw);
       } catch (e) {
         console.error("Failed to parse storage. Resetting.", e);
-        const base = getBaseData();
+        const base = {
+          admins: [{ username: "admin", password: "admin123" }],
+          lecturers: [],
+          facultyConfig: [],
+          classes: [],
+          attendance: [],
+        };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
         return base;
       }
@@ -867,6 +939,28 @@
       return urlParams.get(name);
     }
 
+    function getSelectValue(id) {
+      const el = $(id);
+      return el ? el.value.trim() : "";
+    }
+
+    function resizeCanvasToDisplaySize(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const needResize =
+        canvas.width !== rect.width || canvas.height !== rect.height;
+      if (needResize) {
+        const temp = document.createElement("canvas");
+        temp.width = rect.width;
+        temp.height = rect.height;
+        const tctx = temp.getContext("2d");
+        tctx.drawImage(canvas, 0, 0);
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(temp, 0, 0);
+      }
+    }
+
     // ========================== LOGO TO DATA URL ==========================
     function loadLogoAsDataUrl() {
       const img = new Image();
@@ -881,153 +975,29 @@
         jooustLogoDataUrl = canvas.toDataURL("image/jpeg");
       };
       img.onerror = function () {
-        console.warn("Could not load logo.jpg for embedding in PDFs/Word.");
-      };
-    }
-
-    // ========================== HEADER (USER SUMMARY / LOGOUT) ==========================
-    function updateUserSummary() {
-      const summaryEl = $("userSummary");
-      const headerRight = $("headerRight");
-      summaryEl.innerHTML = "";
-
-      // Remove old buttons if any
-      const oldLogout = $("logoutBtn");
-      const oldChange = $("changePasswordBtn");
-      if (oldLogout) oldLogout.remove();
-      if (oldChange) oldChange.remove();
-
-      if (!currentUser) return;
-
-      let label = "";
-      DATA = loadData();
-
-      if (currentUser.role === "admin") {
-        label = "Logged in as Admin";
-      } else if (currentUser.role === "lecturer") {
-        const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
-        const name = lec ? lec.salutation + " " + lec.fullName : currentUser.username;
-        label = "Logged in as Lecturer: " + name;
-      }
-
-      summaryEl.textContent = label;
-
-      const btnChange = document.createElement("button");
-      btnChange.id = "changePasswordBtn";
-      btnChange.className = "btn btn-secondary btn-small";
-      btnChange.textContent = "Change Password";
-      btnChange.addEventListener("click", openChangePasswordDialog);
-
-      const btnLogout = document.createElement("button");
-      btnLogout.id = "logoutBtn";
-      btnLogout.className = "btn btn-secondary btn-small";
-      btnLogout.textContent = "Logout";
-      btnLogout.addEventListener("click", handleLogout);
-
-      headerRight.appendChild(btnChange);
-      headerRight.appendChild(btnLogout);
-    }
-
-    function handleLogout() {
-      currentUser = null;
-      updateUserSummary();
-      showSection("loginSection");
-      $("loginUsername").value = "";
-      $("loginPassword").value = "";
-    }
-
-    // ========================== CHANGE PASSWORD ==========================
-    function openChangePasswordDialog() {
-      if (!currentUser) return;
-
-      const overlay = document.createElement("div");
-      overlay.style.position = "fixed";
-      overlay.style.inset = "0";
-      overlay.style.background = "rgba(15,23,42,0.6)";
-      overlay.style.display = "flex";
-      overlay.style.alignItems = "center";
-      overlay.style.justifyContent = "center";
-      overlay.style.zIndex = "9999";
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.style.maxWidth = "420px";
-      card.style.width = "95%";
-
-      card.innerHTML = `
-        <h2>Change Password</h2>
-        <div class="row">
-          <div>
-            <label for="cpCurrent">Current Password</label>
-            <input type="password" id="cpCurrent" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="cpNew">New Password</label>
-            <input type="password" id="cpNew" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label for="cpConfirm">Confirm New Password</label>
-            <input type="password" id="cpConfirm" />
-          </div>
-        </div>
-        <div id="cpMsg" class="alert hidden"></div>
-        <div class="btn-group">
-          <button class="btn btn-primary" id="cpSave">Save</button>
-          <button class="btn btn-secondary" id="cpCancel">Cancel</button>
-        </div>
-      `;
-
-      overlay.appendChild(card);
-      document.body.appendChild(overlay);
-
-      const cpMsg = card.querySelector("#cpMsg");
-
-      card.querySelector("#cpCancel").onclick = () => overlay.remove();
-      card.querySelector("#cpSave").onclick = () => {
-        const current = card.querySelector("#cpCurrent").value;
-        const np = card.querySelector("#cpNew").value;
-        const cp = card.querySelector("#cpConfirm").value;
-
-        if (!current || !np || !cp) {
-          setAlert(cpMsg, "Fill all fields.", "danger");
-          return;
-        }
-        if (np !== cp) {
-          setAlert(cpMsg, "New passwords do not match.", "danger");
-          return;
-        }
-
-        DATA = loadData();
-        if (currentUser.role === "admin") {
-          const admin = DATA.admins.find((a) => a.username === currentUser.username);
-          if (!admin || admin.password !== current) {
-            setAlert(cpMsg, "Current password is incorrect.", "danger");
-            return;
-          }
-          admin.password = np;
-        } else if (currentUser.role === "lecturer") {
-          const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
-          if (!lec || lec.password !== current) {
-            setAlert(cpMsg, "Current password is incorrect.", "danger");
-            return;
-          }
-          lec.password = np;
-        } else {
-          setAlert(cpMsg, "Unknown user role.", "danger");
-          return;
-        }
-
-        saveData(DATA);
-        alert("Password changed successfully.");
-        overlay.remove();
+        console.warn("Could not load logo.jpg for embedding in PDFs/Word/Excel.");
       };
     }
 
     // ========================== LOGIN & REGISTRATION ==========================
+    function updateUserSummary() {
+      const el = $("userSummary");
+      const authActions = $("authActions");
+      if (!currentUser) {
+        el.textContent = "";
+        authActions.classList.add("hidden");
+        return;
+      }
+      authActions.classList.remove("hidden");
+      if (currentUser.role === "admin") {
+        el.textContent = "Logged in as Admin";
+      } else if (currentUser.role === "lecturer") {
+        const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
+        const name = lec ? lec.salutation + " " + lec.fullName : currentUser.username;
+        el.textContent = "Logged in as Lecturer: " + name;
+      }
+    }
+
     $("loginBtn").addEventListener("click", () => {
       const username = $("loginUsername").value.trim();
       const password = $("loginPassword").value;
@@ -1055,7 +1025,8 @@
         renderAdminLecturers();
         renderFacultySummary();
         renderAdminClasses();
-        refreshAdminFilterDropdowns();
+        populateAdminReportDropdowns();
+        populateClassFilters();
       } else {
         const lec = DATA.lecturers.find(
           (l) => l.username === username && l.password === password
@@ -1077,7 +1048,8 @@
         showSection("lecturerDashboard");
         updateUserSummary();
         renderLecturerClasses();
-        refreshLecturerFilterDropdowns();
+        populateLecturerReportDropdowns();
+        populateClassFilters();
       }
     });
 
@@ -1139,6 +1111,98 @@
           "";
     });
 
+    // Logout
+    $("logoutBtn").addEventListener("click", () => {
+      currentUser = null;
+      updateUserSummary();
+      showSection("loginSection");
+    });
+
+    // Change password (modal)
+    $("changePasswordBtn").addEventListener("click", () => {
+      if (!currentUser) return;
+
+      const container = document.createElement("div");
+      container.style.position = "fixed";
+      container.style.inset = "0";
+      container.style.background = "rgba(15,23,42,0.6)";
+      container.style.display = "flex";
+      container.style.alignItems = "center";
+      container.style.justifyContent = "center";
+      container.style.zIndex = "9999";
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.maxWidth = "420px";
+      card.style.width = "90%";
+      card.innerHTML = `
+        <h2>Change Password</h2>
+        <div class="row">
+          <div>
+            <label>Current Password</label>
+            <input type="password" id="cpOld" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>New Password</label>
+            <input type="password" id="cpNew" />
+          </div>
+          <div>
+            <label>Confirm New Password</label>
+            <input type="password" id="cpNew2" />
+          </div>
+        </div>
+        <div id="cpMsg" class="alert hidden"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="cpSave">Save</button>
+          <button class="btn btn-secondary" id="cpCancel">Cancel</button>
+        </div>
+      `;
+      container.appendChild(card);
+      document.body.appendChild(container);
+
+      card.querySelector("#cpCancel").onclick = () => container.remove();
+
+      card.querySelector("#cpSave").onclick = () => {
+        const oldP = card.querySelector("#cpOld").value;
+        const newP = card.querySelector("#cpNew").value;
+        const newP2 = card.querySelector("#cpNew2").value;
+        const msgEl = card.querySelector("#cpMsg");
+
+        if (!oldP || !newP || !newP2) {
+          setAlert(msgEl, "Fill all fields.", "danger");
+          return;
+        }
+        if (newP !== newP2) {
+          setAlert(msgEl, "New passwords do not match.", "danger");
+          return;
+        }
+
+        DATA = loadData();
+        if (currentUser.role === "admin") {
+          const admin = DATA.admins.find(
+            (a) => a.username === currentUser.username
+          );
+          if (!admin || admin.password !== oldP) {
+            setAlert(msgEl, "Current password is incorrect.", "danger");
+            return;
+          }
+          admin.password = newP;
+        } else if (currentUser.role === "lecturer") {
+          const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
+          if (!lec || lec.password !== oldP) {
+            setAlert(msgEl, "Current password is incorrect.", "danger");
+            return;
+          }
+          lec.password = newP;
+        }
+        saveData(DATA);
+        setAlert(msgEl, "Password updated successfully.", "success");
+        setTimeout(() => container.remove(), 1000);
+      };
+    });
+
     // ========================== ADMIN: LECTURERS ==========================
     function renderAdminLecturers() {
       const wrapper = $("lecturersTableWrapper");
@@ -1170,8 +1234,8 @@
           <td>
             ${
               lec.approved
-                ? `<button class="btn btn-secondary" data-action="toggle-approve" data-id="${lec.id}">Revoke</button>`
-                : `<button class="btn btn-success" data-action="toggle-approve" data-id="${lec.id}">Approve</button>`
+                ? `<button class="btn btn-secondary btn-sm" data-action="toggle-approve" data-id="${lec.id}">Revoke</button>`
+                : `<button class="btn btn-success btn-sm" data-action="toggle-approve" data-id="${lec.id}">Approve</button>`
             }
           </td>
         </tr>`;
@@ -1224,7 +1288,8 @@
           "success"
         );
         renderFacultySummary();
-        refreshAdminFilterDropdowns();
+        populateAdminReportDropdowns();
+        populateLecturerReportDropdowns();
       };
       reader.readAsText(file);
     });
@@ -1237,7 +1302,8 @@
       saveData(DATA);
       setAlert(msgEl, "All mappings cleared.", "success");
       renderFacultySummary();
-      refreshAdminFilterDropdowns();
+      populateAdminReportDropdowns();
+      populateLecturerReportDropdowns();
     });
 
     function renderFacultySummary() {
@@ -1284,7 +1350,6 @@
         return;
       }
 
-      DATA = loadData();
       const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
       if (!lec) {
         setAlert(msgEl, "Lecturer not found.", "danger");
@@ -1313,8 +1378,9 @@
       saveData(DATA);
       renderLecturerClasses();
       renderAdminClasses();
-      refreshAdminFilterDropdowns();
-      refreshLecturerFilterDropdowns();
+      populateAdminReportDropdowns();
+      populateLecturerReportDropdowns();
+      populateClassFilters();
 
       const link =
         window.location.origin +
@@ -1329,20 +1395,6 @@
       );
     });
 
-    function sortClasses(list, sortMode) {
-      const arr = list.slice();
-      if (sortMode === "date_asc" || sortMode === "date_desc") {
-        arr.sort((a, b) => {
-          const da = new Date(a.dateTime).getTime();
-          const db = new Date(b.dateTime).getTime();
-          return sortMode === "date_asc" ? da - db : db - da;
-        });
-      } else if (sortMode === "unit_asc") {
-        arr.sort((a, b) => (a.unit || "").localeCompare(b.unit || ""));
-      }
-      return arr;
-    }
-
     function renderLecturerClasses() {
       const wrap = $("lecturerClassesTableWrapper");
       DATA = loadData();
@@ -1351,9 +1403,11 @@
         return;
       }
 
-      const sortMode = $("lecturerClassSort") ? $("lecturerClassSort").value : "date_desc";
-      const myRaw = DATA.classes.filter((c) => c.lecturerId === currentUser.id);
-      const my = sortClasses(myRaw, sortMode);
+      const filterUnit = getSelectValue("lecturerClassFilterUnit");
+      let my = DATA.classes.filter((c) => c.lecturerId === currentUser.id);
+      if (filterUnit) {
+        my = my.filter((c) => c.unit === filterUnit);
+      }
 
       if (!my.length) {
         wrap.textContent = "No classes created yet.";
@@ -1393,13 +1447,13 @@
           <td>${statusBadge}</td>
           <td>${att.length} student(s)</td>
           <td>
-            <button class="btn btn-secondary" data-action="copy-link" data-id="${cls.id}">Copy Link</button>
+            <button class="btn btn-secondary btn-sm" data-action="copy-link" data-id="${cls.id}">Copy Link</button>
             ${
               cls.status === "open"
-                ? `<button class="btn btn-danger" data-action="close-class" data-id="${cls.id}">End Class</button>`
-                : `<button class="btn btn-success" data-action="reopen-class" data-id="${cls.id}">Re-open</button>`
+                ? `<button class="btn btn-danger btn-sm" data-action="close-class" data-id="${cls.id}">End Class</button>`
+                : `<button class="btn btn-success btn-sm" data-action="reopen-class" data-id="${cls.id}">Re-open</button>`
             }
-            <button class="btn btn-primary" data-action="view-details" data-id="${cls.id}">View & Sign</button>
+            <button class="btn btn-primary btn-sm" data-action="view-details" data-id="${cls.id}">View & Sign</button>
           </td>
         </tr>`;
       });
@@ -1446,13 +1500,20 @@
     function renderAdminClasses() {
       const wrap = $("adminClassesTableWrapper");
       DATA = loadData();
-      if (!DATA.classes.length) {
+      const filterUnit = getSelectValue("adminClassFilterUnit");
+
+      let classes = [...DATA.classes];
+      if (filterUnit) {
+        classes = classes.filter((c) => c.unit === filterUnit);
+      }
+
+      if (!classes.length) {
         wrap.textContent = "No classes created yet.";
         return;
       }
 
-      const sortMode = $("adminClassSort") ? $("adminClassSort").value : "date_desc";
-      const classes = sortClasses(DATA.classes, sortMode);
+      // sort by date descending
+      classes.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
 
       let html = `<table><thead><tr>
         <th>Class</th>
@@ -1486,7 +1547,7 @@
           <td>${statusBadge}</td>
           <td>${att.length}</td>
           <td>
-            <button class="btn btn-primary" data-action="view-details" data-id="${cls.id}">View & Sign</button>
+            <button class="btn btn-primary btn-sm" data-action="view-details" data-id="${cls.id}">View & Sign</button>
           </td>
         </tr>`;
       });
@@ -1512,7 +1573,7 @@
         alert("Class not found.");
         return;
       }
-      const att = DATA.attendance.filter((a) => a.classId === classId);
+      const att = DATA.attendance.filter((a) => a.classId === cls.id);
 
       const container = document.createElement("div");
       container.style.position = "fixed";
@@ -1585,7 +1646,7 @@
         <label>Lecturer Signature</label>
         <canvas id="dlgLecturerSig" class="signature-pad"></canvas>
         <div class="signature-actions">
-          <button class="btn btn-secondary" id="dlgLecturerClear">Clear</button>
+          <button class="btn btn-secondary btn-sm" id="dlgLecturerClear">Clear</button>
         </div>
 
         <h3 style="margin-top:1rem;">HOD Approval</h3>
@@ -1598,7 +1659,7 @@
         <label>HOD Signature</label>
         <canvas id="dlgHodSig" class="signature-pad"></canvas>
         <div class="signature-actions">
-          <button class="btn btn-secondary" id="dlgHodClear">Clear</button>
+          <button class="btn btn-secondary btn-sm" id="dlgHodClear">Clear</button>
         </div>
 
         <div class="btn-group">
@@ -1612,6 +1673,7 @@
 
       function initSigCanvas(canvasId, existingDataUrl) {
         const canvas = card.querySelector("#" + canvasId);
+        resizeCanvasToDisplaySize(canvas);
         const ctx = canvas.getContext("2d");
         ctx.lineWidth = 2;
         ctx.lineCap = "round";
@@ -1620,10 +1682,10 @@
         const rect = () => canvas.getBoundingClientRect();
         function getPos(e) {
           const r = rect();
-          const x =
-            (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-          const y =
-            (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          const x = clientX - r.left;
+          const y = clientY - r.top;
           return { x, y };
         }
 
@@ -1749,8 +1811,8 @@
         $("studentAlreadySubmitted").classList.remove("hidden");
       }
 
-      // Signature pad
       const canvas = $("stSignaturePad");
+      resizeCanvasToDisplaySize(canvas);
       const ctx = canvas.getContext("2d");
       ctx.lineWidth = 2;
       ctx.lineCap = "round";
@@ -1759,10 +1821,10 @@
       const rect = () => canvas.getBoundingClientRect();
       function getPos(e) {
         const r = rect();
-        const x =
-          (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-        const y =
-          (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const x = clientX - r.left;
+        const y = clientY - r.top;
         return { x, y };
       }
 
@@ -1852,7 +1914,7 @@
       });
     }
 
-    // ========================== REPORTING HELPERS ==========================
+    // ========================== REPORTING (ADMIN + LECTURER) ==========================
     function buildReportRows({
       faculty,
       course,
@@ -1900,7 +1962,7 @@
       lecturerOnlyId = null,
     }) {
       DATA = loadData();
-      const res = [];
+      const rows = [];
       DATA.classes.forEach((cls) => {
         if (lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return;
         if (faculty && cls.faculty !== faculty) return;
@@ -1911,7 +1973,7 @@
 
         const att = DATA.attendance.filter((a) => a.classId === cls.id);
         att.forEach((a) => {
-          res.push({
+          rows.push({
             faculty: cls.faculty,
             course: cls.course,
             unit: cls.unit,
@@ -1920,16 +1982,17 @@
             venue: cls.venue,
             dateTime: formatDateTime(cls.dateTime),
             lecturer: cls.lecturerName || "",
+            classStatus: cls.status,
             admission: a.admission,
             surname: a.surname,
             middle: a.middle,
             first: a.first,
+            timestamp: formatDateTime(a.createdAt),
             signature: a.signature,
-            submittedAt: formatDateTime(a.createdAt),
           });
         });
       });
-      return res;
+      return rows;
     }
 
     function renderReportTable(rows, tableEl) {
@@ -1958,92 +2021,13 @@
       tableEl.innerHTML = html;
     }
 
-    // ========================== FILTER DROPDOWNS ==========================
-    function collectFilterOptions({ lecturerOnlyId = null } = {}) {
-      DATA = loadData();
-      const faculties = new Set();
-      const courses = new Set();
-      const units = new Set();
-      const years = new Set();
-      const semesters = new Set();
-
-      DATA.classes.forEach((cls) => {
-        if (lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return;
-        if (cls.faculty) faculties.add(cls.faculty);
-        if (cls.course) courses.add(cls.course);
-        if (cls.unit) units.add(cls.unit);
-        if (cls.year) years.add(cls.year);
-        if (cls.semester) semesters.add(cls.semester);
-      });
-
-      // Also include from facultyConfig if present (for admin dropdowns)
-      DATA.facultyConfig.forEach((r) => {
-        if (!lecturerOnlyId) {
-          if (r.faculty) faculties.add(r.faculty);
-          if (r.course) courses.add(r.course);
-          if (r.unit) units.add(r.unit);
-          if (r.year) years.add(r.year);
-          if (r.semester) semesters.add(r.semester);
-        }
-      });
-
-      return {
-        faculties: Array.from(faculties).sort(),
-        courses: Array.from(courses).sort(),
-        units: Array.from(units).sort(),
-        years: Array.from(years).sort(),
-        semesters: Array.from(semesters).sort(),
-      };
-    }
-
-    function populateSelectOptions(selectEl, values, allLabel) {
-      if (!selectEl) return;
-      const current = selectEl.value;
-      selectEl.innerHTML = "";
-      const optAll = document.createElement("option");
-      optAll.value = "";
-      optAll.textContent = allLabel;
-      selectEl.appendChild(optAll);
-
-      values.forEach((v) => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        selectEl.appendChild(opt);
-      });
-
-      if (values.includes(current)) {
-        selectEl.value = current;
-      }
-    }
-
-    function refreshAdminFilterDropdowns() {
-      const opts = collectFilterOptions();
-      populateSelectOptions($("repFaculty"), opts.faculties, "All Faculties");
-      populateSelectOptions($("repCourse"), opts.courses, "All Courses");
-      populateSelectOptions($("repUnit"), opts.units, "All Units");
-      populateSelectOptions($("repYear"), opts.years, "All Years");
-      populateSelectOptions($("repSemester"), opts.semesters, "All Semesters");
-    }
-
-    function refreshLecturerFilterDropdowns() {
-      if (!currentUser || currentUser.role !== "lecturer") return;
-      const opts = collectFilterOptions({ lecturerOnlyId: currentUser.id });
-      populateSelectOptions($("repFacultyL"), opts.faculties, "All Faculties");
-      populateSelectOptions($("repCourseL"), opts.courses, "All Courses");
-      populateSelectOptions($("repUnitL"), opts.units, "All Units");
-      populateSelectOptions($("repYearL"), opts.years, "All Years");
-      populateSelectOptions($("repSemesterL"), opts.semesters, "All Semesters");
-    }
-
-    // ========================== ADMIN REPORT EVENTS ==========================
     $("generateReportBtn").addEventListener("click", () => {
       const rows = buildReportRows({
-        faculty: $("repFaculty").value || "",
-        course: $("repCourse").value || "",
-        unit: $("repUnit").value || "",
-        year: $("repYear").value || "",
-        semester: $("repSemester").value || "",
+        faculty: getSelectValue("repFaculty"),
+        course: getSelectValue("repCourse"),
+        unit: getSelectValue("repUnit"),
+        year: getSelectValue("repYear"),
+        semester: getSelectValue("repSemester"),
       });
 
       renderReportTable(rows, $("reportTable"));
@@ -2055,11 +2039,11 @@
     $("generateReportLecturerBtn").addEventListener("click", () => {
       if (!currentUser || currentUser.role !== "lecturer") return;
       const rows = buildReportRows({
-        faculty: $("repFacultyL").value || "",
-        course: $("repCourseL").value || "",
-        unit: $("repUnitL").value || "",
-        year: $("repYearL").value || "",
-        semester: $("repSemesterL").value || "",
+        faculty: getSelectValue("repFacultyL"),
+        course: getSelectValue("repCourseL"),
+        unit: getSelectValue("repUnitL"),
+        year: getSelectValue("repYearL"),
+        semester: getSelectValue("repSemesterL"),
         lecturerOnlyId: currentUser.id,
       });
 
@@ -2071,6 +2055,10 @@
 
     // ========================== EXPORT HELPERS ==========================
     function exportToPdf(rows, title) {
+      if (!window.jspdf) {
+        alert("PDF library not loaded. Check your internet connection.");
+        return;
+      }
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF("l", "pt", "a4");
       const margin = 40;
@@ -2127,6 +2115,18 @@
           textColor: 255,
         },
       });
+
+      const finalY = doc.lastAutoTable
+        ? doc.lastAutoTable.finalY + 20
+        : 100;
+      doc.setFontSize(10);
+      doc.setTextColor(90);
+      doc.text(
+        "System developed by Gerotech (Dan Otieno).",
+        margin,
+        finalY + 10
+      );
+
       doc.save("jooust-attendance-report.pdf");
     }
 
@@ -2179,6 +2179,9 @@
               ${tableRows || "<tr><td colspan='11'>No records.</td></tr>"}
             </tbody>
           </table>
+          <p style="margin-top:16px;font-size:11px;color:#555;">
+            System developed by <strong>Gerotech</strong> (Dan Otieno).
+          </p>
         </body>
         </html>
       `;
@@ -2195,6 +2198,10 @@
     }
 
     function exportToExcel(rows) {
+      if (typeof XLSX === "undefined") {
+        alert("Excel library not loaded. Check your internet connection.");
+        return;
+      }
       if (!rows.length) {
         alert("No data to export.");
         return;
@@ -2230,6 +2237,22 @@
         ]);
       });
 
+      // Add footer row
+      wsData.push([]);
+      wsData.push([
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "System developed by Gerotech (Dan Otieno).",
+      ]);
+
       const wb = XLSX.utils.book_new();
       wb.Props = {
         Title: "JOOUST Attendance Report",
@@ -2241,53 +2264,23 @@
       XLSX.writeFile(wb, "jooust-attendance-report.xlsx");
     }
 
-    function exportRawCsv(rows, filename) {
-      if (!rows.length) {
-        alert("No raw attendance data for the selected filters.");
+    function exportToCsv(rawRows, filename) {
+      if (!rawRows.length) {
+        alert("No raw attendance to export.");
         return;
       }
-      const headers = [
-        "Faculty",
-        "Course",
-        "Unit",
-        "Year",
-        "Semester",
-        "Venue",
-        "DateTime",
-        "Lecturer",
-        "Admission",
-        "Surname",
-        "MiddleName",
-        "FirstName",
-        "SignatureDataUrl",
-        "SubmittedAt",
-      ];
-      const lines = [headers.join(",")];
-      rows.forEach((r) => {
-        const vals = [
-          r.faculty,
-          r.course,
-          r.unit,
-          r.year,
-          r.semester,
-          r.venue,
-          r.dateTime,
-          r.lecturer,
-          r.admission,
-          r.surname,
-          r.middle,
-          r.first,
-          r.signature,
-          r.submittedAt,
-        ].map((v) => {
-          const s = v == null ? "" : String(v);
-          // escape quotes
-          if (s.includes(",") || s.includes('"') || s.includes("\n")) {
-            return '"' + s.replace(/"/g, '""') + '"';
-          }
-          return s;
-        });
-        lines.push(vals.join(","));
+      const header = Object.keys(rawRows[0]);
+      const lines = [header.join(",")];
+      rawRows.forEach((row) => {
+        const line = header
+          .map((key) =>
+            String(row[key] ?? "")
+              .replace(/"/g, '""')
+              .replace(/\n/g, " ")
+          )
+          .map((v) => `"${v}"`)
+          .join(",");
+        lines.push(line);
       });
       const blob = new Blob([lines.join("\n")], {
         type: "text/csv;charset=utf-8;",
@@ -2312,15 +2305,15 @@
       const rows = JSON.parse($("reportTable").dataset.rows || "[]");
       exportToExcel(rows);
     });
-    $("exportCsvRawBtn").addEventListener("click", () => {
+    $("exportCsvBtn").addEventListener("click", () => {
       const rawRows = buildRawAttendanceRows({
-        faculty: $("repFaculty").value || "",
-        course: $("repCourse").value || "",
-        unit: $("repUnit").value || "",
-        year: $("repYear").value || "",
-        semester: $("repSemester").value || "",
+        faculty: getSelectValue("repFaculty"),
+        course: getSelectValue("repCourse"),
+        unit: getSelectValue("repUnit"),
+        year: getSelectValue("repYear"),
+        semester: getSelectValue("repSemester"),
       });
-      exportRawCsv(rawRows, "jooust-attendance-raw.csv");
+      exportToCsv(rawRows, "jooust-attendance-raw.csv");
     });
 
     $("exportPdfBtnL").addEventListener("click", () => {
@@ -2335,17 +2328,17 @@
       const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
       exportToExcel(rows);
     });
-    $("exportCsvRawBtnL").addEventListener("click", () => {
+    $("exportCsvBtnL").addEventListener("click", () => {
       if (!currentUser || currentUser.role !== "lecturer") return;
       const rawRows = buildRawAttendanceRows({
-        faculty: $("repFacultyL").value || "",
-        course: $("repCourseL").value || "",
-        unit: $("repUnitL").value || "",
-        year: $("repYearL").value || "",
-        semester: $("repSemesterL").value || "",
+        faculty: getSelectValue("repFacultyL"),
+        course: getSelectValue("repCourseL"),
+        unit: getSelectValue("repUnitL"),
+        year: getSelectValue("repYearL"),
+        semester: getSelectValue("repSemesterL"),
         lecturerOnlyId: currentUser.id,
       });
-      exportRawCsv(rawRows, "jooust-attendance-raw-mine.csv");
+      exportToCsv(rawRows, "jooust-attendance-raw-myclasses.csv");
     });
 
     // ========================== ADMIN TABS ==========================
@@ -2362,19 +2355,165 @@
       });
     });
 
-    // Sort dropdown change listeners
-    if ($("lecturerClassSort")) {
-      $("lecturerClassSort").addEventListener("change", renderLecturerClasses);
+    // ========================== DROPDOWN FILTER POPULATION ==========================
+    function populateAdminReportDropdowns() {
+      const facSel = $("repFaculty");
+      const courseSel = $("repCourse");
+      const unitSel = $("repUnit");
+      const yearSel = $("repYear");
+      const semSel = $("repSemester");
+      if (!facSel) return;
+
+      const fromConfig = DATA.facultyConfig || [];
+      const fromClasses = DATA.classes || [];
+
+      const faculties = new Set();
+      const courses = new Set();
+      const units = new Set();
+      const years = new Set();
+      const sems = new Set();
+
+      fromConfig.forEach((r) => {
+        faculties.add(r.faculty);
+        courses.add(r.course);
+        units.add(r.unit);
+        years.add(r.year);
+        sems.add(r.semester);
+      });
+      fromClasses.forEach((c) => {
+        faculties.add(c.faculty);
+        courses.add(c.course);
+        units.add(c.unit);
+        years.add(c.year);
+        sems.add(c.semester);
+      });
+
+      function fillSelect(sel, values, allLabel) {
+        const current = sel.value;
+        sel.innerHTML = "";
+        const optAll = document.createElement("option");
+        optAll.value = "";
+        optAll.textContent = allLabel;
+        sel.appendChild(optAll);
+        Array.from(values)
+          .filter((v) => v)
+          .sort()
+          .forEach((v) => {
+            const opt = document.createElement("option");
+            opt.value = v;
+            opt.textContent = v;
+            sel.appendChild(opt);
+          });
+        sel.value = current;
+      }
+
+      fillSelect(facSel, faculties, "All Faculties");
+      fillSelect(courseSel, courses, "All Courses");
+      fillSelect(unitSel, units, "All Units");
+      fillSelect(yearSel, years, "All Years");
+      fillSelect(semSel, sems, "All Semesters");
     }
-    if ($("adminClassSort")) {
-      $("adminClassSort").addEventListener("change", renderAdminClasses);
+
+    function populateLecturerReportDropdowns() {
+      if (!currentUser || currentUser.role !== "lecturer") return;
+      const facSel = $("repFacultyL");
+      if (!facSel) return;
+
+      const courseSel = $("repCourseL");
+      const unitSel = $("repUnitL");
+      const yearSel = $("repYearL");
+      const semSel = $("repSemesterL");
+
+      const myClasses = (DATA.classes || []).filter(
+        (c) => c.lecturerId === currentUser.id
+      );
+
+      const faculties = new Set();
+      const courses = new Set();
+      const units = new Set();
+      const years = new Set();
+      const sems = new Set();
+
+      myClasses.forEach((c) => {
+        faculties.add(c.faculty);
+        courses.add(c.course);
+        units.add(c.unit);
+        years.add(c.year);
+        sems.add(c.semester);
+      });
+
+      function fillSelect(sel, values, allLabel) {
+        const current = sel.value;
+        sel.innerHTML = "";
+        const optAll = document.createElement("option");
+        optAll.value = "";
+        optAll.textContent = allLabel;
+        sel.appendChild(optAll);
+        Array.from(values)
+          .filter((v) => v)
+          .sort()
+          .forEach((v) => {
+            const opt = document.createElement("option");
+            opt.value = v;
+            opt.textContent = v;
+            sel.appendChild(opt);
+          });
+        sel.value = current;
+      }
+
+      fillSelect(facSel, faculties, "All Faculties");
+      fillSelect(courseSel, courses, "All Courses");
+      fillSelect(unitSel, units, "All Units");
+      fillSelect(yearSel, years, "All Years");
+      fillSelect(semSel, sems, "All Semesters");
+    }
+
+    function populateClassFilters() {
+      const adminSel = $("adminClassFilterUnit");
+      const lecSel = $("lecturerClassFilterUnit");
+      const allUnits = new Set((DATA.classes || []).map((c) => c.unit).filter(Boolean));
+
+      function fill(sel, allLabel) {
+        if (!sel) return;
+        const current = sel.value;
+        sel.innerHTML = "";
+        const optAll = document.createElement("option");
+        optAll.value = "";
+        optAll.textContent = allLabel;
+        sel.appendChild(optAll);
+        Array.from(allUnits)
+          .sort()
+          .forEach((u) => {
+            const opt = document.createElement("option");
+            opt.value = u;
+            opt.textContent = u;
+            sel.appendChild(opt);
+          });
+        sel.value = current;
+      }
+
+      fill(adminSel, "All Units");
+      fill(lecSel, "All Units");
+    }
+
+    if ($("adminClassFilterUnit")) {
+      $("adminClassFilterUnit").addEventListener("change", renderAdminClasses);
+    }
+    if ($("lecturerClassFilterUnit")) {
+      $("lecturerClassFilterUnit").addEventListener(
+        "change",
+        renderLecturerClasses
+      );
     }
 
     // ========================== INIT ==========================
     window.addEventListener("load", () => {
       loadLogoAsDataUrl();
       setupStudentView();
-      refreshAdminFilterDropdowns();
+      $("footerYear").textContent = new Date().getFullYear();
+      DATA = loadData();
+      populateAdminReportDropdowns();
+      populateClassFilters();
     });
   </script>
 </body>
