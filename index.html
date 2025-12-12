@@ -5,495 +5,197 @@
   <title>JOOUST Attendance Management System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- JOOUST style colours (approx) -->
   <style>
-    :root {
-      --jooust-blue: #0052cc;
-      --jooust-blue-dark: #00328f;
-      --jooust-blue-soft: #e3edff;
-      --jooust-green: #24a148;
-      --jooust-gold: #f2c94c;
-      --bg-soft: #f4f7fb;
-      --card-bg: #ffffff;
-      --text-main: #1f2933;
-      --text-muted: #6b7280;
-      --danger: #e11d48;
+    :root{
+      --jooust-blue:#0052cc;
+      --jooust-blue-dark:#003b8c;
+      --jooust-green:#24a148;
+      --jooust-gold:#f2c94c;
+
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#1f2933;
+      --muted:#6b7280;
+
+      --danger:#e11d48;
+      --shadow:0 12px 28px rgba(15, 23, 42, 0.10);
+      --radius:16px;
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:
+      radial-gradient(900px 400px at 15% 0%, rgba(242,201,76,.20), transparent 60%),
+      radial-gradient(900px 450px at 85% 0%, rgba(36,161,72,.16), transparent 65%),
+      var(--bg);
+      color:var(--text);
     }
 
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top, #e5f0ff 0, #f4f7fb 40%, #edf5ff 100%);
-      color: var(--text-main);
+    header{
+      background:linear-gradient(135deg,var(--jooust-blue-dark),var(--jooust-blue));
+      color:#fff;
+      padding:0.9rem 1.2rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      position:sticky;top:0;z-index:50;
+      box-shadow:0 8px 22px rgba(0,0,0,.25);
+    }
+    header .left{display:flex;align-items:center;gap:.9rem;min-width:220px}
+    header img{height:52px;width:auto;border-radius:10px;background:#fff;padding:6px;box-shadow:0 8px 18px rgba(0,0,0,.15)}
+    header h1{margin:0;font-size:1.2rem;line-height:1.15}
+    header h1 span{display:block;font-size:.82rem;font-weight:400;opacity:.92;margin-top:.15rem}
+    header .right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:flex-end}
+    .topchip{
+      display:inline-flex;align-items:center;gap:.35rem;
+      padding:.35rem .7rem;border-radius:999px;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+      font-size:.85rem
     }
 
-    header {
-      background: linear-gradient(
-        135deg,
-        var(--jooust-blue-dark),
-        var(--jooust-blue)
-      );
-      color: white;
-      padding: 0.75rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-      position: sticky;
-      top: 0;
-      z-index: 50;
+    main{max-width:1200px;margin:1.2rem auto 2.2rem;padding:0 1rem}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.95));
+      border-radius:var(--radius);
+      padding:1.4rem;
+      margin-bottom:1rem;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(0,82,204,.08);
     }
 
-    header .left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+    .brand-strip{
+      height:10px;border-radius:999px;margin:-.2rem 0 1rem 0;
+      background:linear-gradient(90deg,var(--jooust-green),var(--jooust-gold),var(--jooust-blue));
+      opacity:.95;
     }
 
-    header img {
-      height: 52px;
-      width: auto;
-      border-radius: 10px;
-      background: white;
-      padding: 4px;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
+    h2{margin:.2rem 0 1rem;font-size:1.2rem;display:flex;align-items:center;gap:.55rem}
+    h2::before{
+      content:"";display:inline-block;width:7px;height:22px;border-radius:999px;
+      background:linear-gradient(180deg,var(--jooust-green),var(--jooust-gold));
+    }
+    h3{margin:.2rem 0 .75rem}
+    .muted{color:var(--muted);font-size:.86rem}
+    .hidden{display:none!important}
+
+    label{font-size:.86rem;color:var(--muted);display:block;margin-bottom:.25rem}
+    input, select, textarea{
+      width:100%;
+      padding:.62rem .72rem;
+      border-radius:12px;
+      border:1px solid #d1d5db;
+      font-size:.95rem;
+      outline:none;
+      background:#f9fafb;
+      transition:border .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:var(--jooust-blue);
+      box-shadow:0 0 0 3px rgba(0,82,204,.18);
+      background:#fff;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 1.35rem;
-      line-height: 1.3;
+    .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.85rem 1rem;margin-bottom:.85rem}
+
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+      padding:.62rem 1.05rem;border-radius:999px;border:none;cursor:pointer;
+      font-size:.95rem;font-weight:700;white-space:nowrap;
+      transition:transform .08s ease, box-shadow .12s ease, background .15s ease, opacity .15s ease;
+      user-select:none;
     }
+    .btn:active{transform:translateY(1px);box-shadow:none}
+    .btn-primary{background:linear-gradient(135deg,var(--jooust-blue),var(--jooust-blue-dark));color:#fff;box-shadow:0 10px 18px rgba(0,82,204,.32)}
+    .btn-success{background:linear-gradient(135deg,var(--jooust-green),#16a34a);color:#fff;box-shadow:0 10px 18px rgba(22,163,74,.28)}
+    .btn-secondary{background:#eef2f7;color:#111827;border:1px solid #dbe3ef}
+    .btn-danger{background:var(--danger);color:#fff;box-shadow:0 10px 18px rgba(225,29,72,.20)}
+    .btn-ghost{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
 
-    header h1 span {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 400;
-      opacity: 0.9;
+    .btn-group{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.7rem}
+
+    .tabs{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.6rem}
+    .tab{
+      padding:.48rem 1rem;border-radius:999px;font-size:.92rem;
+      border:1px solid #d1d5db;background:#f3f4f6;cursor:pointer;
     }
+    .tab.active{background:var(--jooust-blue);border-color:var(--jooust-blue-dark);color:#fff;font-weight:800;box-shadow:0 10px 18px rgba(0,82,204,.22)}
 
-    header .right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.25rem;
+    table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:.55rem}
+    th,td{border:1px solid #e5e7eb;padding:.55rem .5rem;text-align:left;vertical-align:top}
+    th{background:#eff6ff;color:#1d4ed8;font-weight:800}
+    tr:nth-child(even) td{background:#f9fafb}
+
+    .badge{padding:.1rem .55rem;border-radius:999px;font-size:.75rem;background:#e5e7eb;font-weight:800;display:inline-block}
+    .badge.open{background:#dcfce7;color:#166534}
+    .badge.closed{background:#fee2e2;color:#b91c1c}
+
+    .chip{display:inline-flex;align-items:center;gap:.25rem;padding:.28rem .7rem;border-radius:999px;font-size:.80rem;background:#e5f5ff;color:#075985;font-weight:800}
+    .chip.green{background:#dcfce7;color:#166534}
+    .chip.red{background:#fee2e2;color:#b91c1c}
+
+    .alert{padding:.65rem .85rem;border-radius:12px;font-size:.9rem;margin-top:.65rem;border:1px solid transparent}
+    .alert-info{background:#e0f2fe;color:#0b5394;border-color:#bae6fd}
+    .alert-danger{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+    .alert-success{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+
+    .signature-pad{
+      border:2px dashed rgba(0,82,204,.25);
+      border-radius:14px;background:#fff;width:100%;height:140px;
+      touch-action:none; /* IMPORTANT for phones */
+      cursor:crosshair;
     }
+    .signature-actions{display:flex;justify-content:flex-end;margin-top:.35rem;gap:.35rem}
 
-    main {
-      max-width: 1200px;
-      margin: 1.25rem auto 2.5rem;
-      padding: 0 1rem;
+    .footer{
+      margin-top:1.2rem;text-align:center;color:rgba(31,41,51,.75);font-size:.86rem
     }
+    .footer b{color:var(--jooust-blue-dark)}
 
-    .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 1.6rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-      border: 1px solid #e5e7eb;
-    }
-
-    h2 {
-      margin-top: 0;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    h2::before {
-      content: "";
-      display: inline-block;
-      width: 6px;
-      height: 20px;
-      border-radius: 999px;
-      background: linear-gradient(
-        180deg,
-        var(--jooust-green),
-        var(--jooust-gold)
-      );
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      display: block;
-      margin-bottom: 0.25rem;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 0.55rem 0.65rem;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border 0.15s ease, box-shadow 0.15s ease,
-        background 0.15s ease;
-      background: #f9fafb;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: var(--jooust-blue);
-      box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.15);
-      background: white;
-    }
-
-    select {
-      appearance: none;
-      background-image: linear-gradient(45deg, transparent 50%, #6b7280 50%),
-        linear-gradient(135deg, #6b7280 50%, transparent 50%);
-      background-position: calc(100% - 18px) calc(50% - 3px),
-        calc(100% - 13px) calc(50% - 3px);
-      background-size: 6px 6px, 6px 6px;
-      background-repeat: no-repeat;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 0.75rem 1rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      padding: 0.55rem 1.1rem;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: transform 0.1s ease, box-shadow 0.1s ease,
-        background 0.15s ease, opacity 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: linear-gradient(
-        135deg,
-        var(--jooust-blue),
-        var(--jooust-blue-dark)
-      );
-      color: white;
-      box-shadow: 0 6px 12px rgba(0, 82, 204, 0.35);
-    }
-
-    .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    .btn-success {
-      background: linear-gradient(
-        135deg,
-        var(--jooust-green),
-        #16a34a
-      );
-      color: white;
-      box-shadow: 0 6px 12px rgba(22, 163, 74, 0.35);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: #f9fafb;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      color: white;
-    }
-
-    .btn-sm {
-      padding: 0.3rem 0.8rem;
-      font-size: 0.8rem;
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-      box-shadow: none;
-      opacity: 0.9;
-    }
-
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.25rem 0.65rem;
-      border-radius: 999px;
-      font-size: 0.78rem;
-      background: #e5f5ff;
-      color: #075985;
-    }
-
-    .chip.green {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .chip.red {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.75rem;
-    }
-
-    .tab {
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      font-size: 0.88rem;
-      border: 1px solid #d1d5db;
-      background: #f3f4f6;
-      cursor: pointer;
-    }
-
-    .tab.active {
-      background: var(--jooust-blue);
-      border-color: var(--jooust-blue-dark);
-      color: white;
-      font-weight: 600;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-      margin-top: 0.5rem;
-    }
-
-    th,
-    td {
-      border: 1px solid #e5e7eb;
-      padding: 0.45rem 0.4rem;
-      text-align: left;
-    }
-
-    th {
-      background: #eff6ff;
-      color: #1d4ed8;
-      font-weight: 600;
-    }
-
-    tr:nth-child(even) td {
-      background: #f9fafb;
-    }
-
-    .badge {
-      padding: 0.05rem 0.4rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      background: #e5e7eb;
-    }
-
-    .badge.open {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .badge.closed {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    .muted {
-      color: var(--text-muted);
-      font-size: 0.82rem;
-    }
-
-    .link {
-      color: var(--jooust-blue-dark);
-      text-decoration: underline;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-
-    .signature-pad {
-      border: 1px dashed #9ca3af;
-      border-radius: 12px;
-      background: white;
-      width: 100%;
-      height: 140px;
-      cursor: crosshair;
-      touch-action: none;
-    }
-
-    .signature-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 0.3rem;
-      gap: 0.3rem;
-    }
-
-    .pill-header {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .pill-header h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
-
-    .pill-header small {
-      color: var(--text-muted);
-      font-size: 0.8rem;
-    }
-
-    .alert {
-      padding: 0.55rem 0.75rem;
-      border-radius: 10px;
-      font-size: 0.83rem;
-      margin-bottom: 0.65rem;
-    }
-
-    .alert-info {
-      background: #e0f2fe;
-      color: #0b5394;
-    }
-
-    .alert-danger {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .alert-success {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .text-center {
-      text-align: center;
-    }
-
-    .mb-0 {
-      margin-bottom: 0;
-    }
-
-    .auth-actions {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
-
-    .filter-group {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .filter-label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .filter-label select {
-      margin-top: 0.2rem;
-      min-width: 150px;
-    }
-
-    footer.footer {
-      max-width: 1200px;
-      margin: 0 auto 1.5rem;
-      padding: 0 1rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    footer.footer span {
-      font-weight: 600;
-      color: var(--jooust-blue-dark);
-    }
-
-    @media (max-width: 640px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-
-      header img {
-        height: 44px;
-      }
-
-      header .right {
-        align-items: flex-start;
-      }
+    @media (max-width:640px){
+      header{flex-direction:column;align-items:flex-start}
+      header img{height:46px}
+      header .right{justify-content:flex-start}
     }
   </style>
-
-  <!-- External libs for export -->
-  <!-- jsPDF + AutoTable for PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-  <!-- SheetJS for Excel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
+
 <body>
   <header id="mainHeader">
     <div class="left">
-      <!-- Use your logo.jpg from repo -->
       <img src="logo.jpg" alt="JOOUST Logo" />
       <h1>
         JOOUST Attendance System
-        <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
+        <span>Digital Signatures · Mobile Friendly · Smart Reports</span>
       </h1>
     </div>
+
     <div class="right">
-      <div id="userSummary" class="muted"></div>
-      <div id="authActions" class="auth-actions hidden">
-        <button class="btn btn-secondary btn-sm" id="changePasswordBtn">Change Password</button>
-        <button class="btn btn-ghost btn-sm" id="logoutBtn">Logout</button>
-      </div>
+      <span id="userSummary" class="topchip"></span>
+      <button id="changePwdBtn" class="btn btn-ghost hidden" type="button">Change Password</button>
+      <button id="logoutBtn" class="btn btn-ghost hidden" type="button">Logout</button>
     </div>
   </header>
 
   <main>
-    <!-- LOGIN & LECTURER REGISTRATION -->
+    <!-- LOGIN -->
     <section id="loginSection" class="card">
+      <div class="brand-strip"></div>
       <h2>Login</h2>
+
       <div class="row">
         <div>
           <label>Login as</label>
-          <div>
-            <label><input type="radio" name="loginRole" value="admin" checked /> Admin</label>
-            <label><input type="radio" name="loginRole" value="lecturer" /> Lecturer</label>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.25rem">
+            <label style="display:flex;gap:.45rem;align-items:center;color:#111827">
+              <input type="radio" name="loginRole" value="admin" checked />
+              Admin
+            </label>
+            <label style="display:flex;gap:.45rem;align-items:center;color:#111827">
+              <input type="radio" name="loginRole" value="lecturer" />
+              Lecturer
+            </label>
           </div>
         </div>
       </div>
@@ -501,26 +203,36 @@
       <div class="row">
         <div>
           <label for="loginUsername">Username</label>
-          <input id="loginUsername" type="text" placeholder="Enter username" />
+          <input id="loginUsername" type="text" placeholder="e.g. admin" autocomplete="username" />
         </div>
         <div>
           <label for="loginPassword">Password</label>
-          <input id="loginPassword" type="password" placeholder="Enter password" />
+          <input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password" />
         </div>
       </div>
+
       <div class="btn-group">
-        <button class="btn btn-primary" id="loginBtn">Login</button>
-        <button class="btn btn-secondary" id="showLecturerRegistration">Register as Lecturer</button>
+        <button class="btn btn-primary" id="loginBtn" type="button">Login</button>
+        <button class="btn btn-secondary" id="showLecturerRegistration" type="button">Register as Lecturer</button>
       </div>
+
       <div id="loginMessage" class="alert hidden"></div>
+
+      <!-- IMPORTANT: credentials not shown on dashboard; only shown here on login page -->
+      <p class="muted" style="margin:.85rem 0 0">
+        Default Admin Login: <b>admin</b> / <b>admin123</b>
+      </p>
     </section>
 
-    <!-- LECTURER REGISTRATION -->
+    <!-- LECTURER REGISTRATION (Assignments removed as requested) -->
     <section id="lecturerRegistrationSection" class="card hidden">
+      <div class="brand-strip"></div>
       <h2>Lecturer Registration</h2>
+
       <div class="alert alert-info">
-        Your account will be pending until approved by the Admin.
+        Registration will be pending until approved by the Admin.
       </div>
+
       <div class="row">
         <div>
           <label for="regSalutation">Salutation</label>
@@ -545,69 +257,60 @@
         </div>
         <div>
           <label for="regUsername">Preferred Username</label>
-          <input id="regUsername" type="text" placeholder="jdoe" />
+          <input id="regUsername" type="text" placeholder="jdoe" autocomplete="username" />
         </div>
         <div>
           <label for="regPassword">Password</label>
-          <input id="regPassword" type="password" />
+          <input id="regPassword" type="password" autocomplete="new-password" />
         </div>
       </div>
 
       <div class="btn-group">
-        <button class="btn btn-primary" id="submitLecturerRegistration">
-          Submit Registration
-        </button>
-        <button class="btn btn-secondary" id="backToLogin">Back to Login</button>
+        <button class="btn btn-success" id="submitLecturerRegistration" type="button">Submit Registration</button>
+        <button class="btn btn-secondary" id="backToLogin" type="button">Back to Login</button>
       </div>
+
       <div id="lecturerRegMessage" class="alert hidden"></div>
     </section>
 
-    <!-- STUDENT VIEW (SHARED LINK) -->
+    <!-- STUDENT VIEW -->
     <section id="studentSection" class="card hidden">
+      <div class="brand-strip"></div>
       <h2>Class Attendance – Student Sign-In</h2>
       <div id="studentClassInfo" class="alert alert-info"></div>
+
       <div id="studentAlreadySubmitted" class="alert alert-success hidden">
         You have already submitted attendance for this class on this device.
       </div>
 
       <div id="studentFormWrapper">
         <div class="row">
-          <div>
-            <label for="stSurname">Sir Name</label>
-            <input id="stSurname" type="text" />
-          </div>
-          <div>
-            <label for="stMiddleName">Middle Name</label>
-            <input id="stMiddleName" type="text" />
-          </div>
-          <div>
-            <label for="stFirstName">First Name</label>
-            <input id="stFirstName" type="text" />
-          </div>
+          <div><label for="stSurname">Surname</label><input id="stSurname" type="text" /></div>
+          <div><label for="stMiddleName">Middle Name</label><input id="stMiddleName" type="text" /></div>
+          <div><label for="stFirstName">First Name</label><input id="stFirstName" type="text" /></div>
         </div>
         <div class="row">
-          <div>
-            <label for="stAdmission">Admission Number</label>
-            <input id="stAdmission" type="text" />
-          </div>
+          <div><label for="stAdmission">Admission Number</label><input id="stAdmission" type="text" /></div>
         </div>
 
-        <label>Digital Signature (use finger or mouse)</label>
+        <label>Digital Signature (finger or mouse)</label>
         <canvas id="stSignaturePad" class="signature-pad"></canvas>
         <div class="signature-actions">
-          <button class="btn btn-secondary btn-sm" id="stClearSignature">Clear</button>
+          <button class="btn btn-secondary" id="stClearSignature" type="button">Clear</button>
         </div>
 
         <div class="btn-group">
-          <button class="btn btn-success" id="stSubmit">Submit Attendance</button>
+          <button class="btn btn-success" id="stSubmit" type="button">Submit Attendance</button>
         </div>
-        <div id="studentSubmitMsg" class="alert hidden" style="margin-top:0.75rem;"></div>
+
+        <div id="studentSubmitMsg" class="alert hidden"></div>
       </div>
     </section>
 
     <!-- ADMIN DASHBOARD -->
     <section id="adminDashboard" class="hidden">
       <div class="card">
+        <div class="brand-strip"></div>
         <h2>Admin Dashboard</h2>
         <div class="tabs">
           <button class="tab active" data-admin-tab="lecturersTab">Lecturers</button>
@@ -617,109 +320,97 @@
         </div>
       </div>
 
-      <!-- Lecturers Management -->
+      <!-- Lecturers (Assignments removed as requested) -->
       <section id="lecturersTab" class="card admin-tab">
-        <div class="pill-header">
-          <div>
-            <h3>Lecturer Accounts</h3>
-            <small>Approve new registrations & manage existing accounts.</small>
-          </div>
-        </div>
+        <div class="brand-strip"></div>
+        <h3>Lecturer Accounts</h3>
+        <p class="muted">Approve new registrations & manage lecturer accounts.</p>
         <div id="lecturersTableWrapper" class="muted">No lecturers yet.</div>
       </section>
 
-      <!-- Faculty / Course / Unit Upload -->
+      <!-- Faculty CSV -->
       <section id="facultyTab" class="card admin-tab hidden">
-        <div class="pill-header">
-          <div>
-            <h3>Faculty / Course / Unit Mapping</h3>
-            <small>Upload CSV to populate dropdown lists for reports.</small>
-          </div>
-        </div>
+        <div class="brand-strip"></div>
+        <h3>Faculty / Course / Unit Mapping</h3>
+        <p class="muted">Upload CSV to power dropdowns (reports & sorting).</p>
         <div class="alert alert-info">
-          CSV Structure: <code>Faculty,Course,Unit,Year,Semester</code><br />
-          Each row represents one unit / class.
+          CSV columns: <code>Faculty,Course,Unit,Year,Semester</code>
         </div>
         <input type="file" id="facultyCsvInput" accept=".csv" />
         <div class="btn-group">
-          <button class="btn btn-primary" id="uploadFacultyCsvBtn">Upload & Save</button>
-          <button class="btn btn-secondary" id="clearFacultyDataBtn">Clear All Mappings</button>
+          <button class="btn btn-primary" id="uploadFacultyCsvBtn" type="button">Upload & Save</button>
+          <button class="btn btn-secondary" id="clearFacultyDataBtn" type="button">Clear All Mappings</button>
         </div>
-        <div id="facultyUploadMsg" class="alert hidden" style="margin-top:0.75rem;"></div>
-        <h4 style="margin-top:1rem;">Current Records</h4>
+        <div id="facultyUploadMsg" class="alert hidden"></div>
+        <h4 style="margin-top:1rem">Current Records</h4>
         <div id="facultySummary" class="muted"></div>
       </section>
 
-      <!-- Classes -->
+      <!-- Classes with sort/filter dropdowns -->
       <section id="classesTab" class="card admin-tab hidden">
-        <div class="pill-header">
+        <div class="brand-strip"></div>
+        <h3>All Classes</h3>
+        <p class="muted">Filter / sort for easier management.</p>
+
+        <div class="row">
           <div>
-            <h3>All Classes</h3>
-            <small>Monitor all sessions and signatures.</small>
+            <label for="adminFilterStatus">Status</label>
+            <select id="adminFilterStatus">
+              <option value="">All</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
           </div>
-          <div class="filter-group">
-            <label class="filter-label">
-              Filter by Unit
-              <select id="adminClassFilterUnit">
-                <option value="">All Units</option>
-              </select>
-            </label>
+          <div>
+            <label for="adminFilterLecturer">Lecturer</label>
+            <select id="adminFilterLecturer"><option value="">All</option></select>
+          </div>
+          <div>
+            <label for="adminFilterUnit">Unit</label>
+            <select id="adminFilterUnit"><option value="">All</option></select>
+          </div>
+          <div>
+            <label for="adminSortBy">Sort by</label>
+            <select id="adminSortBy">
+              <option value="date_desc">Date (Newest)</option>
+              <option value="date_asc">Date (Oldest)</option>
+              <option value="unit_asc">Unit (A-Z)</option>
+              <option value="unit_desc">Unit (Z-A)</option>
+            </select>
           </div>
         </div>
+
         <div id="adminClassesTableWrapper" class="muted">No classes created yet.</div>
       </section>
 
-      <!-- Reports -->
+      <!-- Reports dropdowns + CSV raw export -->
       <section id="reportsTab" class="card admin-tab hidden">
+        <div class="brand-strip"></div>
         <h3>Reports</h3>
-        <p class="muted">
-          Filter by Faculty, Course, Unit, Year & Semester then export as PDF, Word, Excel, or CSV (raw attendance).
-        </p>
+        <p class="muted">Use dropdowns for faster filtering. Export PDF/Word/Excel/CSV.</p>
+
         <div class="row">
-          <div>
-            <label for="repFaculty">Faculty</label>
-            <select id="repFaculty">
-              <option value="">All Faculties</option>
-            </select>
-          </div>
-          <div>
-            <label for="repCourse">Course</label>
-            <select id="repCourse">
-              <option value="">All Courses</option>
-            </select>
-          </div>
-          <div>
-            <label for="repUnit">Unit</label>
-            <select id="repUnit">
-              <option value="">All Units</option>
-            </select>
-          </div>
+          <div><label for="repFaculty">Faculty</label><select id="repFaculty"></select></div>
+          <div><label for="repCourse">Course</label><select id="repCourse"></select></div>
+          <div><label for="repUnit">Unit</label><select id="repUnit"></select></div>
         </div>
         <div class="row">
-          <div>
-            <label for="repYear">Year</label>
-            <select id="repYear">
-              <option value="">All Years</option>
-            </select>
-          </div>
-          <div>
-            <label for="repSemester">Semester</label>
-            <select id="repSemester">
-              <option value="">All Semesters</option>
-            </select>
-          </div>
+          <div><label for="repYear">Year</label><select id="repYear"></select></div>
+          <div><label for="repSemester">Semester</label><select id="repSemester"></select></div>
         </div>
+
         <div class="btn-group">
-          <button class="btn btn-primary" id="generateReportBtn">Generate Report</button>
+          <button class="btn btn-primary" id="generateReportBtn" type="button">Generate Report</button>
         </div>
+
         <div id="reportArea" class="hidden" style="margin-top:1rem;">
           <div class="btn-group">
-            <button class="btn btn-primary" id="exportPdfBtn">Download PDF</button>
-            <button class="btn btn-secondary" id="exportWordBtn">Download Word</button>
-            <button class="btn btn-secondary" id="exportExcelBtn">Download Excel</button>
-            <button class="btn btn-secondary" id="exportCsvBtn">Download CSV (Raw Attendance)</button>
+            <button class="btn btn-primary" id="exportPdfBtn" type="button">Download PDF</button>
+            <button class="btn btn-secondary" id="exportWordBtn" type="button">Download Word</button>
+            <button class="btn btn-secondary" id="exportExcelBtn" type="button">Download Excel</button>
+            <button class="btn btn-secondary" id="exportRawCsvBtn" type="button">Download Raw Attendance CSV</button>
           </div>
-          <div id="reportMeta" class="muted" style="margin-top:0.5rem;"></div>
+          <div id="reportMeta" class="muted" style="margin-top:.6rem;"></div>
           <table id="reportTable"></table>
         </div>
       </section>
@@ -728,19 +419,16 @@
     <!-- LECTURER DASHBOARD -->
     <section id="lecturerDashboard" class="hidden">
       <section class="card">
+        <div class="brand-strip"></div>
         <h2>Lecturer Dashboard</h2>
-        <p class="muted">
-          Create classes, share attendance links with students, and manage your reports.
-        </p>
+        <p class="muted">Create classes, share mobile-friendly links, view/download attendance.</p>
       </section>
 
       <section class="card">
-        <div class="pill-header">
-          <div>
-            <h3>Create / Start Class</h3>
-            <small>Fill details; system will generate a unique attendance link.</small>
-          </div>
-        </div>
+        <div class="brand-strip"></div>
+        <h3>Create / Start Class</h3>
+
+        <!-- If you upload facultyConfig CSV, you can still type freely here -->
         <div class="row">
           <div><label for="lcFaculty">Faculty</label><input id="lcFaculty" type="text" /></div>
           <div><label for="lcCourse">Course</label><input id="lcCourse" type="text" /></div>
@@ -754,316 +442,185 @@
           <div><label for="lcVenue">Venue</label><input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" /></div>
           <div><label for="lcDateTime">Date & Time</label><input id="lcDateTime" type="datetime-local" /></div>
         </div>
+
         <div class="btn-group">
-          <button class="btn btn-success" id="createClassBtn">Create / Start Class</button>
+          <button class="btn btn-success" id="createClassBtn" type="button">Create / Start Class</button>
         </div>
-        <div id="createClassMsg" class="alert hidden" style="margin-top:0.75rem;"></div>
+        <div id="createClassMsg" class="alert hidden"></div>
       </section>
 
       <section class="card">
-        <div class="pill-header">
-          <div>
-            <h3>My Classes</h3>
-            <small>Share links, view attendance & sign.</small>
-          </div>
-          <div class="filter-group">
-            <label class="filter-label">
-              Filter by Unit
-              <select id="lecturerClassFilterUnit">
-                <option value="">All Units</option>
-              </select>
-            </label>
-          </div>
-        </div>
+        <div class="brand-strip"></div>
+        <h3>My Classes</h3>
+        <p class="muted">Copy student link, end/reopen class, view & download attendance.</p>
         <div id="lecturerClassesTableWrapper" class="muted">No classes yet.</div>
       </section>
 
       <section class="card">
+        <div class="brand-strip"></div>
         <h3>Quick Reports (My Classes)</h3>
-        <p class="muted">
-          These filters apply only to your own classes.
-        </p>
+        <p class="muted">Dropdown filters apply only to your classes.</p>
+
         <div class="row">
-          <div>
-            <label for="repFacultyL">Faculty</label>
-            <select id="repFacultyL">
-              <option value="">All Faculties</option>
-            </select>
-          </div>
-          <div>
-            <label for="repCourseL">Course</label>
-            <select id="repCourseL">
-              <option value="">All Courses</option>
-            </select>
-          </div>
-          <div>
-            <label for="repUnitL">Unit</label>
-            <select id="repUnitL">
-              <option value="">All Units</option>
-            </select>
-          </div>
+          <div><label for="repFacultyL">Faculty</label><select id="repFacultyL"></select></div>
+          <div><label for="repCourseL">Course</label><select id="repCourseL"></select></div>
+          <div><label for="repUnitL">Unit</label><select id="repUnitL"></select></div>
         </div>
         <div class="row">
-          <div>
-            <label for="repYearL">Year</label>
-            <select id="repYearL">
-              <option value="">All Years</option>
-            </select>
-          </div>
-          <div>
-            <label for="repSemesterL">Semester</label>
-            <select id="repSemesterL">
-              <option value="">All Semesters</option>
-            </select>
-          </div>
+          <div><label for="repYearL">Year</label><select id="repYearL"></select></div>
+          <div><label for="repSemesterL">Semester</label><select id="repSemesterL"></select></div>
         </div>
+
         <div class="btn-group">
-          <button class="btn btn-primary" id="generateReportLecturerBtn">Generate My Report</button>
+          <button class="btn btn-primary" id="generateReportLecturerBtn" type="button">Generate My Report</button>
         </div>
+
         <div id="reportAreaLecturer" class="hidden" style="margin-top:1rem;">
           <div class="btn-group">
-            <button class="btn btn-primary" id="exportPdfBtnL">Download PDF</button>
-            <button class="btn btn-secondary" id="exportWordBtnL">Download Word</button>
-            <button class="btn btn-secondary" id="exportExcelBtnL">Download Excel</button>
-            <button class="btn btn-secondary" id="exportCsvBtnL">Download CSV (Raw Attendance)</button>
+            <button class="btn btn-primary" id="exportPdfBtnL" type="button">Download PDF</button>
+            <button class="btn btn-secondary" id="exportWordBtnL" type="button">Download Word</button>
+            <button class="btn btn-secondary" id="exportExcelBtnL" type="button">Download Excel</button>
+            <button class="btn btn-secondary" id="exportRawCsvBtnL" type="button">Download Raw Attendance CSV</button>
           </div>
-          <div id="reportMetaL" class="muted" style="margin-top:0.5rem;"></div>
+          <div id="reportMetaL" class="muted" style="margin-top:.6rem;"></div>
           <table id="reportTableL"></table>
         </div>
       </section>
     </section>
+
+    <div class="footer">
+      System created by <b>Gerotech</b> under <b>Dan Otieno</b>.
+    </div>
   </main>
 
-  <footer class="footer">
-    <p>
-      © <span id="footerYear"></span> JOOUST Attendance Management System.
-      Developed by <span>Gerotech</span> (Dan Otieno).
-    </p>
-  </footer>
+  <!-- PDF library (optional) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <script>
-    // ========================== DATA STORAGE ==========================
-    const STORAGE_KEY = "jooust_attendance_data_v1";
+    // ========================== STORAGE ==========================
+    const STORAGE_KEY = "jooust_attendance_data_v2";
 
-    function loadData() {
+    function baseData(){
+      return {
+        admins:[{username:"admin",password:"admin123"}],
+        lecturers:[],
+        facultyConfig:[], // {faculty,course,unit,year,semester}
+        classes:[],       // {id, lecturerId, faculty, course, unit, year, semester, venue, dateTime, status, lecturerName, lecturerSignature, hodName, hodSignature}
+        attendance:[]     // {id, classId, surname, middle, first, admission, signature, createdAt}
+      };
+    }
+
+    function loadData(){
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        const base = {
-          admins: [{ username: "admin", password: "admin123" }],
-          lecturers: [],
-          facultyConfig: [],
-          classes: [],
-          attendance: [],
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
-        return base;
-      }
-      try {
-        return JSON.parse(raw);
-      } catch (e) {
-        console.error("Failed to parse storage. Resetting.", e);
-        const base = {
-          admins: [{ username: "admin", password: "admin123" }],
-          lecturers: [],
-          facultyConfig: [],
-          classes: [],
-          attendance: [],
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
-        return base;
-      }
+      if(!raw){ const b = baseData(); localStorage.setItem(STORAGE_KEY, JSON.stringify(b)); return b; }
+      try{ return JSON.parse(raw); }
+      catch(e){ const b=baseData(); localStorage.setItem(STORAGE_KEY, JSON.stringify(b)); return b; }
     }
-
-    function saveData(data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
+    function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 
     let DATA = loadData();
-
-    // Current session
-    let currentUser = null; // {role: 'admin'|'lecturer', id/username}
+    let currentUser = null; // {role:'admin'|'lecturer', username?, id?}
     let jooustLogoDataUrl = null;
 
-    // ========================== UTILS ==========================
-    function $(id) {
-      return document.getElementById(id);
-    }
+    // ========================== HELPERS ==========================
+    const $ = (id)=>document.getElementById(id);
 
-    function showSection(id) {
-      [
-        "loginSection",
-        "lecturerRegistrationSection",
-        "adminDashboard",
-        "lecturerDashboard",
-        "studentSection",
-      ].forEach((sid) => {
-        const el = $(sid);
-        if (!el) return;
+    function showSection(id){
+      ["loginSection","lecturerRegistrationSection","adminDashboard","lecturerDashboard","studentSection"].forEach(sid=>{
+        const el=$(sid); if(!el) return;
         el.classList.toggle("hidden", sid !== id);
       });
+      // show/hide header buttons
+      $("logoutBtn").classList.toggle("hidden", !currentUser);
+      $("changePwdBtn").classList.toggle("hidden", !currentUser);
+      $("userSummary").textContent = currentUser ? (currentUser.role==="admin" ? `Admin: ${currentUser.username}` : `Lecturer: ${getLecturerName(currentUser.id)}`) : "";
+      $("userSummary").classList.toggle("hidden", !currentUser);
     }
 
-    function uuid() {
-      return (
-        Date.now().toString(36) +
-        "-" +
-        Math.random().toString(36).substring(2, 10)
-      );
+    function uuid(){
+      return Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);
     }
-
-    function formatDateTime(dt) {
-      if (!dt) return "";
+    function formatDateTime(dt){
+      if(!dt) return "";
       const d = new Date(dt);
-      if (isNaN(d)) return dt;
-      return (
-        d.toLocaleDateString() +
-        " " +
-        d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
+      if(isNaN(d)) return dt;
+      return d.toLocaleDateString()+" "+d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
     }
 
-    function setAlert(el, message, type = "info") {
-      el.textContent = message;
-      el.classList.remove("hidden", "alert-info", "alert-danger", "alert-success");
-      if (type === "danger") el.classList.add("alert-danger");
-      else if (type === "success") el.classList.add("alert-success");
-      else el.classList.add("alert-info");
+    function setAlert(el, msg, type="info"){
+      el.textContent = msg;
+      el.classList.remove("hidden","alert-info","alert-danger","alert-success");
+      el.classList.add(type==="danger" ? "alert-danger" : type==="success" ? "alert-success" : "alert-info");
+    }
+    function clearAlert(el){ el.classList.add("hidden"); }
+
+    function getQueryParam(name){ return new URLSearchParams(location.search).get(name); }
+
+    function getLecturerById(id){
+      DATA = loadData();
+      return DATA.lecturers.find(l=>l.id===id) || null;
+    }
+    function getLecturerName(id){
+      const lec = getLecturerById(id);
+      return lec ? `${lec.salutation} ${lec.fullName}` : "Lecturer";
     }
 
-    function clearAlert(el) {
-      el.classList.add("hidden");
-    }
-
-    function getQueryParam(name) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(name);
-    }
-
-    function getSelectValue(id) {
-      const el = $(id);
-      return el ? el.value.trim() : "";
-    }
-
-    function resizeCanvasToDisplaySize(canvas) {
-      const rect = canvas.getBoundingClientRect();
-      const needResize =
-        canvas.width !== rect.width || canvas.height !== rect.height;
-      if (needResize) {
-        const temp = document.createElement("canvas");
-        temp.width = rect.width;
-        temp.height = rect.height;
-        const tctx = temp.getContext("2d");
-        tctx.drawImage(canvas, 0, 0);
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(temp, 0, 0);
-      }
-    }
-
-    // ========================== LOGO TO DATA URL ==========================
-    function loadLogoAsDataUrl() {
+    // ========================== LOGO to DataURL (for PDF/Word) ==========================
+    function loadLogoAsDataUrl(){
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = "logo.jpg";
-      img.onload = function () {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-        jooustLogoDataUrl = canvas.toDataURL("image/jpeg");
-      };
-      img.onerror = function () {
-        console.warn("Could not load logo.jpg for embedding in PDFs/Word/Excel.");
+      img.onload = ()=>{
+        const c=document.createElement("canvas");
+        c.width=img.width; c.height=img.height;
+        c.getContext("2d").drawImage(img,0,0);
+        jooustLogoDataUrl = c.toDataURL("image/jpeg");
       };
     }
 
-    // ========================== LOGIN & REGISTRATION ==========================
-    function updateUserSummary() {
-      const el = $("userSummary");
-      const authActions = $("authActions");
-      if (!currentUser) {
-        el.textContent = "";
-        authActions.classList.add("hidden");
-        return;
-      }
-      authActions.classList.remove("hidden");
-      if (currentUser.role === "admin") {
-        el.textContent = "Logged in as Admin";
-      } else if (currentUser.role === "lecturer") {
-        const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
-        const name = lec ? lec.salutation + " " + lec.fullName : currentUser.username;
-        el.textContent = "Logged in as Lecturer: " + name;
-      }
-    }
-
-    $("loginBtn").addEventListener("click", () => {
+    // ========================== AUTH ==========================
+    $("loginBtn").addEventListener("click", ()=>{
       const username = $("loginUsername").value.trim();
       const password = $("loginPassword").value;
       const role = document.querySelector('input[name="loginRole"]:checked').value;
       const msgEl = $("loginMessage");
 
-      if (!username || !password) {
-        setAlert(msgEl, "Please enter username and password.", "danger");
-        return;
+      if(!username || !password){
+        setAlert(msgEl,"Please enter username and password.","danger"); return;
       }
+
       DATA = loadData();
 
-      if (role === "admin") {
-        const found = DATA.admins.find(
-          (a) => a.username === username && a.password === password
-        );
-        if (!found) {
-          setAlert(msgEl, "Invalid admin credentials.", "danger");
-          return;
-        }
-        currentUser = { role: "admin", username };
+      if(role==="admin"){
+        const found = DATA.admins.find(a=>a.username===username && a.password===password);
+        if(!found){ setAlert(msgEl,"Invalid admin credentials.","danger"); return; }
+        currentUser = {role:"admin", username};
         clearAlert(msgEl);
         showSection("adminDashboard");
-        updateUserSummary();
-        renderAdminLecturers();
-        renderFacultySummary();
-        renderAdminClasses();
-        populateAdminReportDropdowns();
-        populateClassFilters();
-      } else {
-        const lec = DATA.lecturers.find(
-          (l) => l.username === username && l.password === password
-        );
-        if (!lec) {
-          setAlert(msgEl, "Lecturer not found or wrong password.", "danger");
-          return;
-        }
-        if (!lec.approved) {
-          setAlert(
-            msgEl,
-            "Your account is pending approval by Admin.",
-            "danger"
-          );
-          return;
-        }
-        currentUser = { role: "lecturer", id: lec.id, username: lec.username };
+        refreshAllAdminUI();
+      }else{
+        const lec = DATA.lecturers.find(l=>l.username===username && l.password===password);
+        if(!lec){ setAlert(msgEl,"Lecturer not found or wrong password.","danger"); return; }
+        if(!lec.approved){ setAlert(msgEl,"Your account is pending approval by Admin.","danger"); return; }
+        currentUser = {role:"lecturer", id:lec.id, username:lec.username};
         clearAlert(msgEl);
         showSection("lecturerDashboard");
-        updateUserSummary();
         renderLecturerClasses();
-        populateLecturerReportDropdowns();
-        populateClassFilters();
+        refreshLecturerDropdowns();
       }
     });
 
-    $("showLecturerRegistration").addEventListener("click", () => {
+    $("showLecturerRegistration").addEventListener("click", ()=>{
       showSection("lecturerRegistrationSection");
       clearAlert($("loginMessage"));
     });
-
-    $("backToLogin").addEventListener("click", () => {
+    $("backToLogin").addEventListener("click", ()=>{
       showSection("loginSection");
       clearAlert($("lecturerRegMessage"));
     });
 
-    $("submitLecturerRegistration").addEventListener("click", () => {
+    $("submitLecturerRegistration").addEventListener("click", ()=>{
       const salutation = $("regSalutation").value;
       const fullName = $("regFullName").value.trim();
       const pf = $("regPF").value.trim();
@@ -1071,873 +628,631 @@
       const password = $("regPassword").value;
 
       const msgEl = $("lecturerRegMessage");
-
-      if (!fullName || !pf || !username || !password) {
-        setAlert(msgEl, "Please fill all required fields.", "danger");
-        return;
+      if(!fullName || !pf || !username || !password){
+        setAlert(msgEl,"Please fill all required fields.","danger"); return;
       }
 
       DATA = loadData();
-      if (
-        DATA.lecturers.some((l) => l.username === username) ||
-        DATA.admins.some((a) => a.username === username)
-      ) {
-        setAlert(msgEl, "Username already exists.", "danger");
-        return;
+      if(DATA.lecturers.some(l=>l.username===username) || DATA.admins.some(a=>a.username===username)){
+        setAlert(msgEl,"Username already exists.","danger"); return;
       }
 
-      const lecturer = {
-        id: uuid(),
-        salutation,
-        fullName,
-        pf,
-        username,
-        password,
-        approved: false,
-        assignments: [],
-      };
-
-      DATA.lecturers.push(lecturer);
+      DATA.lecturers.push({
+        id:uuid(),
+        salutation, fullName, pf, username, password,
+        approved:false
+      });
       saveData(DATA);
-      setAlert(
-        msgEl,
-        "Registration submitted. Wait for admin approval.",
-        "success"
-      );
-      $("regFullName").value =
-        $("regPF").value =
-        $("regUsername").value =
-        $("regPassword").value =
-          "";
+
+      setAlert(msgEl,"Registration submitted. Wait for admin approval.","success");
+      $("regFullName").value = $("regPF").value = $("regUsername").value = $("regPassword").value = "";
     });
 
-    // Logout
-    $("logoutBtn").addEventListener("click", () => {
+    $("logoutBtn").addEventListener("click", ()=>{
       currentUser = null;
-      updateUserSummary();
+      // If you want to exit student mode too:
+      // history.replaceState({}, "", location.pathname);
       showSection("loginSection");
+      $("loginUsername").value = "";
+      $("loginPassword").value = "";
     });
 
-    // Change password (modal)
-    $("changePasswordBtn").addEventListener("click", () => {
-      if (!currentUser) return;
+    $("changePwdBtn").addEventListener("click", ()=>{
+      if(!currentUser) return;
+      openChangePasswordDialog();
+    });
 
-      const container = document.createElement("div");
-      container.style.position = "fixed";
-      container.style.inset = "0";
-      container.style.background = "rgba(15,23,42,0.6)";
-      container.style.display = "flex";
-      container.style.alignItems = "center";
-      container.style.justifyContent = "center";
-      container.style.zIndex = "9999";
+    function openChangePasswordDialog(){
+      const overlay = document.createElement("div");
+      overlay.style.position="fixed";
+      overlay.style.inset="0";
+      overlay.style.background="rgba(15,23,42,.60)";
+      overlay.style.display="flex";
+      overlay.style.alignItems="center";
+      overlay.style.justifyContent="center";
+      overlay.style.zIndex="99999";
 
-      const card = document.createElement("div");
-      card.className = "card";
-      card.style.maxWidth = "420px";
-      card.style.width = "90%";
-      card.innerHTML = `
+      const box = document.createElement("div");
+      box.className="card";
+      box.style.maxWidth="520px";
+      box.style.width="94%";
+      box.innerHTML = `
+        <div class="brand-strip"></div>
         <h2>Change Password</h2>
         <div class="row">
           <div>
             <label>Current Password</label>
-            <input type="password" id="cpOld" />
+            <input id="cp_old" type="password" />
           </div>
         </div>
         <div class="row">
           <div>
             <label>New Password</label>
-            <input type="password" id="cpNew" />
+            <input id="cp_new" type="password" />
           </div>
           <div>
             <label>Confirm New Password</label>
-            <input type="password" id="cpNew2" />
+            <input id="cp_new2" type="password" />
           </div>
         </div>
-        <div id="cpMsg" class="alert hidden"></div>
+        <div id="cp_msg" class="alert hidden"></div>
         <div class="btn-group">
-          <button class="btn btn-primary" id="cpSave">Save</button>
-          <button class="btn btn-secondary" id="cpCancel">Cancel</button>
+          <button class="btn btn-primary" id="cp_save" type="button">Save</button>
+          <button class="btn btn-secondary" id="cp_close" type="button">Close</button>
         </div>
       `;
-      container.appendChild(card);
-      document.body.appendChild(container);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
 
-      card.querySelector("#cpCancel").onclick = () => container.remove();
+      box.querySelector("#cp_close").onclick = ()=>overlay.remove();
+      box.querySelector("#cp_save").onclick = ()=>{
+        const oldP = box.querySelector("#cp_old").value;
+        const newP = box.querySelector("#cp_new").value;
+        const newP2 = box.querySelector("#cp_new2").value;
+        const msg = box.querySelector("#cp_msg");
 
-      card.querySelector("#cpSave").onclick = () => {
-        const oldP = card.querySelector("#cpOld").value;
-        const newP = card.querySelector("#cpNew").value;
-        const newP2 = card.querySelector("#cpNew2").value;
-        const msgEl = card.querySelector("#cpMsg");
-
-        if (!oldP || !newP || !newP2) {
-          setAlert(msgEl, "Fill all fields.", "danger");
-          return;
-        }
-        if (newP !== newP2) {
-          setAlert(msgEl, "New passwords do not match.", "danger");
-          return;
-        }
+        if(!oldP || !newP || !newP2) return setAlert(msg,"Fill all fields.","danger");
+        if(newP.length < 4) return setAlert(msg,"Password too short (min 4).","danger");
+        if(newP !== newP2) return setAlert(msg,"New passwords do not match.","danger");
 
         DATA = loadData();
-        if (currentUser.role === "admin") {
-          const admin = DATA.admins.find(
-            (a) => a.username === currentUser.username
-          );
-          if (!admin || admin.password !== oldP) {
-            setAlert(msgEl, "Current password is incorrect.", "danger");
-            return;
-          }
+        if(currentUser.role==="admin"){
+          const admin = DATA.admins.find(a=>a.username===currentUser.username);
+          if(!admin || admin.password !== oldP) return setAlert(msg,"Current password is wrong.","danger");
           admin.password = newP;
-        } else if (currentUser.role === "lecturer") {
-          const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
-          if (!lec || lec.password !== oldP) {
-            setAlert(msgEl, "Current password is incorrect.", "danger");
-            return;
-          }
+          saveData(DATA);
+          setAlert(msg,"Admin password changed successfully.","success");
+        } else {
+          const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
+          if(!lec || lec.password !== oldP) return setAlert(msg,"Current password is wrong.","danger");
           lec.password = newP;
+          saveData(DATA);
+          setAlert(msg,"Lecturer password changed successfully.","success");
         }
-        saveData(DATA);
-        setAlert(msgEl, "Password updated successfully.", "success");
-        setTimeout(() => container.remove(), 1000);
       };
-    });
+    }
 
-    // ========================== ADMIN: LECTURERS ==========================
-    function renderAdminLecturers() {
+    // ========================== ADMIN: Lecturers ==========================
+    function renderAdminLecturers(){
       const wrapper = $("lecturersTableWrapper");
       DATA = loadData();
-
-      if (!DATA.lecturers.length) {
-        wrapper.textContent = "No lecturers registered yet.";
-        return;
-      }
+      if(!DATA.lecturers.length){ wrapper.textContent="No lecturers registered yet."; return; }
 
       let html = `<table><thead><tr>
-          <th>Lecturer</th>
-          <th>PF/ID</th>
-          <th>Username</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr></thead><tbody>`;
+        <th>Lecturer</th><th>PF/ID</th><th>Username</th><th>Status</th><th>Actions</th>
+      </tr></thead><tbody>`;
 
-      DATA.lecturers.forEach((lec) => {
-        const statusChip = lec.approved
-          ? '<span class="chip green">Approved</span>'
-          : '<span class="chip red">Pending</span>';
-
+      DATA.lecturers.forEach(lec=>{
+        const statusChip = lec.approved ? `<span class="chip green">Approved</span>` : `<span class="chip red">Pending</span>`;
         html += `<tr>
           <td>${lec.salutation} ${lec.fullName}</td>
           <td>${lec.pf}</td>
           <td>${lec.username}</td>
           <td>${statusChip}</td>
           <td>
-            ${
-              lec.approved
-                ? `<button class="btn btn-secondary btn-sm" data-action="toggle-approve" data-id="${lec.id}">Revoke</button>`
-                : `<button class="btn btn-success btn-sm" data-action="toggle-approve" data-id="${lec.id}">Approve</button>`
+            ${lec.approved
+              ? `<button class="btn btn-secondary" data-action="toggle-approve" data-id="${lec.id}" type="button">Revoke</button>`
+              : `<button class="btn btn-success" data-action="toggle-approve" data-id="${lec.id}" type="button">Approve</button>`
             }
           </td>
         </tr>`;
       });
 
-      html += "</tbody></table>";
+      html += `</tbody></table>`;
       wrapper.innerHTML = html;
 
-      wrapper
-        .querySelectorAll("button[data-action='toggle-approve']")
-        .forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const id = btn.getAttribute("data-id");
-            const lec = DATA.lecturers.find((l) => l.id === id);
-            if (!lec) return;
-            lec.approved = !lec.approved;
-            saveData(DATA);
-            renderAdminLecturers();
-          });
+      wrapper.querySelectorAll("button[data-action='toggle-approve']").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id=btn.getAttribute("data-id");
+          DATA = loadData();
+          const lec = DATA.lecturers.find(l=>l.id===id);
+          if(!lec) return;
+          lec.approved = !lec.approved;
+          saveData(DATA);
+          renderAdminLecturers();
+          refreshAdminClassFilters();
         });
+      });
     }
 
-    // ========================== ADMIN: FACULTY CSV ==========================
-    $("uploadFacultyCsvBtn").addEventListener("click", () => {
-      const fileInput = $("facultyCsvInput");
+    // ========================== ADMIN: Faculty CSV ==========================
+    $("uploadFacultyCsvBtn").addEventListener("click", ()=>{
+      const file = $("facultyCsvInput").files[0];
       const msgEl = $("facultyUploadMsg");
-      const file = fileInput.files[0];
-      if (!file) {
-        setAlert(msgEl, "Select a CSV file first.", "danger");
-        return;
-      }
+      if(!file){ setAlert(msgEl,"Select a CSV file first.","danger"); return; }
 
       const reader = new FileReader();
-      reader.onload = function (e) {
+      reader.onload = (e)=>{
         const text = e.target.result;
-        const lines = text.split(/\r?\n/).filter((l) => l.trim());
+        const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
         const records = [];
-        for (let line of lines) {
-          const parts = line.split(",").map((p) => p.trim());
-          if (parts.length < 5) continue;
+        for(const line of lines){
+          const parts = line.split(",").map(p=>p.trim());
+          if(parts.length < 5) continue;
           const [faculty, course, unit, year, semester] = parts;
-          records.push({ faculty, course, unit, year, semester });
+          if(!faculty || !course || !unit) continue;
+          records.push({faculty, course, unit, year, semester});
         }
         DATA = loadData();
         DATA.facultyConfig = records;
         saveData(DATA);
-        setAlert(
-          msgEl,
-          `Uploaded ${records.length} entries successfully.`,
-          "success"
-        );
+        setAlert(msgEl,`Uploaded ${records.length} entries successfully.`,"success");
         renderFacultySummary();
-        populateAdminReportDropdowns();
-        populateLecturerReportDropdowns();
+        refreshAllDropdowns();
       };
       reader.readAsText(file);
     });
 
-    $("clearFacultyDataBtn").addEventListener("click", () => {
+    $("clearFacultyDataBtn").addEventListener("click", ()=>{
       const msgEl = $("facultyUploadMsg");
-      if (!confirm("Clear all existing faculty/course/unit mappings?")) return;
+      if(!confirm("Clear all existing mappings?")) return;
       DATA = loadData();
       DATA.facultyConfig = [];
       saveData(DATA);
-      setAlert(msgEl, "All mappings cleared.", "success");
+      setAlert(msgEl,"All mappings cleared.","success");
       renderFacultySummary();
-      populateAdminReportDropdowns();
-      populateLecturerReportDropdowns();
+      refreshAllDropdowns();
     });
 
-    function renderFacultySummary() {
+    function renderFacultySummary(){
       const wrap = $("facultySummary");
       DATA = loadData();
-      if (!DATA.facultyConfig.length) {
-        wrap.textContent = "No mappings uploaded yet.";
-        return;
-      }
-      const total = DATA.facultyConfig.length;
-      const faculties = [
-        ...new Set(DATA.facultyConfig.map((r) => r.faculty)),
-      ];
-      wrap.innerHTML = `
-        <p class="muted mb-0">
-          Total entries: <strong>${total}</strong><br>
-          Faculties: ${faculties.join(", ")}
-        </p>
-      `;
+      if(!DATA.facultyConfig.length){ wrap.textContent="No mappings uploaded yet."; return; }
+      const faculties = [...new Set(DATA.facultyConfig.map(r=>r.faculty))];
+      wrap.innerHTML = `<p class="muted" style="margin:0">
+        Total entries: <b>${DATA.facultyConfig.length}</b><br/>
+        Faculties: ${faculties.join(", ")}
+      </p>`;
     }
 
-    // ========================== CLASS CREATION (LECTURER) ==========================
-    $("createClassBtn").addEventListener("click", () => {
-      const f = $("lcFaculty").value.trim();
-      const c = $("lcCourse").value.trim();
-      const u = $("lcUnit").value.trim();
-      const y = $("lcYear").value.trim();
-      const s = $("lcSemester").value.trim();
-      const v = $("lcVenue").value.trim();
-      const dt = $("lcDateTime").value;
-      const msgEl = $("createClassMsg");
+    // ========================== CLASS CREATION (Lecturer) ==========================
+    $("createClassBtn").addEventListener("click", ()=>{
+      const f=$("lcFaculty").value.trim();
+      const c=$("lcCourse").value.trim();
+      const u=$("lcUnit").value.trim();
+      const y=$("lcYear").value.trim();
+      const s=$("lcSemester").value.trim();
+      const v=$("lcVenue").value.trim();
+      const dt=$("lcDateTime").value;
+      const msgEl=$("createClassMsg");
 
-      if (!currentUser || currentUser.role !== "lecturer") {
-        setAlert(
-          msgEl,
-          "You must be logged in as lecturer to create classes.",
-          "danger"
-        );
-        return;
+      if(!currentUser || currentUser.role!=="lecturer"){
+        setAlert(msgEl,"You must be logged in as lecturer.","danger"); return;
+      }
+      if(!f||!c||!u||!y||!s||!v||!dt){
+        setAlert(msgEl,"Please fill all class details.","danger"); return;
       }
 
-      if (!f || !c || !u || !y || !s || !v || !dt) {
-        setAlert(msgEl, "Please fill all class details.", "danger");
-        return;
-      }
-
-      const lec = DATA.lecturers.find((l) => l.id === currentUser.id);
-      if (!lec) {
-        setAlert(msgEl, "Lecturer not found.", "danger");
-        return;
-      }
+      DATA = loadData();
+      const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
+      if(!lec){ setAlert(msgEl,"Lecturer not found.","danger"); return; }
 
       const classId = uuid();
-      const cls = {
-        id: classId,
-        lecturerId: lec.id,
-        faculty: f,
-        course: c,
-        unit: u,
-        year: y,
-        semester: s,
-        venue: v,
-        dateTime: dt,
-        status: "open",
-        lecturerName: lec.salutation + " " + lec.fullName,
-        lecturerSignature: null,
-        hodName: "",
-        hodSignature: null,
-      };
-
-      DATA.classes.push(cls);
+      DATA.classes.push({
+        id:classId,
+        lecturerId:lec.id,
+        faculty:f, course:c, unit:u, year:y, semester:s,
+        venue:v, dateTime:dt,
+        status:"open",
+        lecturerName:`${lec.salutation} ${lec.fullName}`,
+        lecturerSignature:null,
+        hodName:"",
+        hodSignature:null
+      });
       saveData(DATA);
+
       renderLecturerClasses();
-      renderAdminClasses();
-      populateAdminReportDropdowns();
-      populateLecturerReportDropdowns();
-      populateClassFilters();
+      refreshAllDropdowns();
+      refreshAdminClassFilters();
 
-      const link =
-        window.location.origin +
-        window.location.pathname +
-        "?mode=student&classId=" +
-        encodeURIComponent(classId);
-
-      setAlert(
-        msgEl,
-        "Class created. Share this link with students: " + link,
-        "success"
-      );
+      const link = location.origin + location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
+      setAlert(msgEl,"Class created. Share this student link: " + link,"success");
     });
 
-    function renderLecturerClasses() {
+    function renderLecturerClasses(){
       const wrap = $("lecturerClassesTableWrapper");
       DATA = loadData();
-      if (!currentUser || currentUser.role !== "lecturer") {
-        wrap.textContent = "Not logged in.";
-        return;
-      }
+      if(!currentUser || currentUser.role!=="lecturer"){ wrap.textContent="Not logged in."; return; }
 
-      const filterUnit = getSelectValue("lecturerClassFilterUnit");
-      let my = DATA.classes.filter((c) => c.lecturerId === currentUser.id);
-      if (filterUnit) {
-        my = my.filter((c) => c.unit === filterUnit);
-      }
-
-      if (!my.length) {
-        wrap.textContent = "No classes created yet.";
-        return;
-      }
+      const my = DATA.classes.filter(c=>c.lecturerId===currentUser.id);
+      if(!my.length){ wrap.textContent="No classes created yet."; return; }
 
       let html = `<table><thead><tr>
-        <th>Class</th>
-        <th>Venue / Date</th>
-        <th>Status</th>
-        <th>Attendance</th>
-        <th>Actions</th>
+        <th>Class</th><th>Venue / Date</th><th>Status</th><th>Attendance</th><th>Actions</th>
       </tr></thead><tbody>`;
 
-      my.forEach((cls) => {
-        const att = DATA.attendance.filter((a) => a.classId === cls.id);
-        const statusBadge =
-          cls.status === "open"
-            ? '<span class="badge open">Open</span>'
-            : '<span class="badge closed">Closed</span>';
-        const link =
-          window.location.origin +
-          window.location.pathname +
-          "?mode=student&classId=" +
-          encodeURIComponent(cls.id);
+      my.forEach(cls=>{
+        const att = DATA.attendance.filter(a=>a.classId===cls.id);
+        const statusBadge = cls.status==="open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`;
         html += `<tr>
           <td>
-            <strong>${cls.unit}</strong><br>
-            <span class="muted">${cls.course}</span><br>
-            <span class="muted">${cls.faculty}</span><br>
+            <b>${cls.unit}</b><br/>
+            <span class="muted">${cls.course}</span><br/>
+            <span class="muted">${cls.faculty}</span><br/>
             <span class="muted">${cls.year}, ${cls.semester}</span>
           </td>
           <td>
-            <span>${cls.venue}</span><br>
+            ${cls.venue}<br/>
             <span class="muted">${formatDateTime(cls.dateTime)}</span>
           </td>
           <td>${statusBadge}</td>
           <td>${att.length} student(s)</td>
           <td>
-            <button class="btn btn-secondary btn-sm" data-action="copy-link" data-id="${cls.id}">Copy Link</button>
-            ${
-              cls.status === "open"
-                ? `<button class="btn btn-danger btn-sm" data-action="close-class" data-id="${cls.id}">End Class</button>`
-                : `<button class="btn btn-success btn-sm" data-action="reopen-class" data-id="${cls.id}">Re-open</button>`
+            <button class="btn btn-secondary" data-action="copy-link" data-id="${cls.id}" type="button">Copy Link</button>
+            ${cls.status==="open"
+              ? `<button class="btn btn-danger" data-action="close-class" data-id="${cls.id}" type="button">End</button>`
+              : `<button class="btn btn-success" data-action="reopen-class" data-id="${cls.id}" type="button">Re-open</button>`
             }
-            <button class="btn btn-primary btn-sm" data-action="view-details" data-id="${cls.id}">View & Sign</button>
+            <button class="btn btn-primary" data-action="view-details" data-id="${cls.id}" type="button">View & Download</button>
           </td>
         </tr>`;
       });
 
-      html += "</tbody></table>";
+      html += `</tbody></table>`;
       wrap.innerHTML = html;
 
-      wrap.querySelectorAll("button[data-action]").forEach((btn) => {
+      wrap.querySelectorAll("button[data-action]").forEach(btn=>{
         const action = btn.getAttribute("data-action");
         const id = btn.getAttribute("data-id");
-        btn.addEventListener("click", () => {
-          if (action === "copy-link") {
-            const link =
-              window.location.origin +
-              window.location.pathname +
-              "?mode=student&classId=" +
-              encodeURIComponent(id);
-            navigator.clipboard
-              .writeText(link)
-              .then(() => alert("Link copied: " + link))
-              .catch(() => alert("Link: " + link));
-          } else if (action === "close-class") {
-            const cls = DATA.classes.find((c) => c.id === id);
-            if (!cls) return;
-            cls.status = "closed";
-            saveData(DATA);
-            renderLecturerClasses();
-            renderAdminClasses();
-          } else if (action === "reopen-class") {
-            const cls = DATA.classes.find((c) => c.id === id);
-            if (!cls) return;
-            cls.status = "open";
-            saveData(DATA);
-            renderLecturerClasses();
-            renderAdminClasses();
-          } else if (action === "view-details") {
+        btn.addEventListener("click", ()=>{
+          DATA = loadData();
+          if(action==="copy-link"){
+            const link = location.origin + location.pathname + "?mode=student&classId=" + encodeURIComponent(id);
+            navigator.clipboard?.writeText(link).then(()=>alert("Link copied")).catch(()=>alert(link));
+          }
+          if(action==="close-class"){
+            const cls = DATA.classes.find(c=>c.id===id); if(!cls) return;
+            cls.status="closed"; saveData(DATA); renderLecturerClasses(); refreshAllDropdowns(); refreshAdminClassFilters();
+          }
+          if(action==="reopen-class"){
+            const cls = DATA.classes.find(c=>c.id===id); if(!cls) return;
+            cls.status="open"; saveData(DATA); renderLecturerClasses(); refreshAllDropdowns(); refreshAdminClassFilters();
+          }
+          if(action==="view-details"){
             openClassDetailDialog(id, "lecturer");
           }
         });
       });
     }
 
-    // ========================== ADMIN: CLASSES ==========================
-    function renderAdminClasses() {
+    // ========================== ADMIN: CLASSES (sort/filter) ==========================
+    function refreshAdminClassFilters(){
+      // lecturer filter
+      DATA = loadData();
+      const lecSel = $("adminFilterLecturer");
+      const unitSel = $("adminFilterUnit");
+      if(!lecSel || !unitSel) return;
+
+      const currentL = lecSel.value;
+      const currentU = unitSel.value;
+
+      const lecturers = [...new Set(DATA.classes.map(c=>c.lecturerId))].map(id=>({id, name:getLecturerName(id)}));
+      lecSel.innerHTML = `<option value="">All</option>` + lecturers
+        .sort((a,b)=>a.name.localeCompare(b.name))
+        .map(l=>`<option value="${l.id}">${l.name}</option>`).join("");
+
+      const units = [...new Set(DATA.classes.map(c=>c.unit))].sort((a,b)=>a.localeCompare(b));
+      unitSel.innerHTML = `<option value="">All</option>` + units.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join("");
+
+      lecSel.value = lecturers.some(x=>x.id===currentL) ? currentL : "";
+      unitSel.value = units.includes(currentU) ? currentU : "";
+    }
+
+    function renderAdminClasses(){
       const wrap = $("adminClassesTableWrapper");
       DATA = loadData();
-      const filterUnit = getSelectValue("adminClassFilterUnit");
+      if(!DATA.classes.length){ wrap.textContent="No classes created yet."; return; }
 
-      let classes = [...DATA.classes];
-      if (filterUnit) {
-        classes = classes.filter((c) => c.unit === filterUnit);
-      }
+      const statusFilter = $("adminFilterStatus").value;
+      const lecFilter = $("adminFilterLecturer").value;
+      const unitFilter = $("adminFilterUnit").value;
+      const sortBy = $("adminSortBy").value;
 
-      if (!classes.length) {
-        wrap.textContent = "No classes created yet.";
-        return;
-      }
+      let rows = [...DATA.classes];
 
-      // sort by date descending
-      classes.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+      if(statusFilter) rows = rows.filter(c=>c.status===statusFilter);
+      if(lecFilter) rows = rows.filter(c=>c.lecturerId===lecFilter);
+      if(unitFilter) rows = rows.filter(c=>c.unit===unitFilter);
+
+      rows.sort((a,b)=>{
+        const da = new Date(a.dateTime).getTime() || 0;
+        const db = new Date(b.dateTime).getTime() || 0;
+        if(sortBy==="date_desc") return db-da;
+        if(sortBy==="date_asc") return da-db;
+        if(sortBy==="unit_asc") return a.unit.localeCompare(b.unit);
+        if(sortBy==="unit_desc") return b.unit.localeCompare(a.unit);
+        return 0;
+      });
 
       let html = `<table><thead><tr>
-        <th>Class</th>
-        <th>Lecturer</th>
-        <th>Venue / Date</th>
-        <th>Status</th>
-        <th>Attendance</th>
-        <th>Actions</th>
+        <th>Class</th><th>Lecturer</th><th>Venue / Date</th><th>Status</th><th>Attendance</th><th>Actions</th>
       </tr></thead><tbody>`;
 
-      classes.forEach((cls) => {
-        const att = DATA.attendance.filter((a) => a.classId === cls.id);
-        const statusBadge =
-          cls.status === "open"
-            ? '<span class="badge open">Open</span>'
-            : '<span class="badge closed">Closed</span>';
-        const lec =
-          DATA.lecturers.find((l) => l.id === cls.lecturerId) || {};
+      rows.forEach(cls=>{
+        const att = DATA.attendance.filter(a=>a.classId===cls.id);
+        const statusBadge = cls.status==="open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`;
         html += `<tr>
           <td>
-            <strong>${cls.unit}</strong><br>
-            <span class="muted">${cls.course}</span><br>
-            <span class="muted">${cls.faculty}</span><br>
-            <span class="muted">${cls.year}, ${cls.semester}</span>
+            <b>${escapeHtml(cls.unit)}</b><br/>
+            <span class="muted">${escapeHtml(cls.course)}</span><br/>
+            <span class="muted">${escapeHtml(cls.faculty)}</span><br/>
+            <span class="muted">${escapeHtml(cls.year)}, ${escapeHtml(cls.semester)}</span>
           </td>
-          <td>${lec.salutation || ""} ${lec.fullName || ""}</td>
-          <td>
-            <span>${cls.venue}</span><br>
-            <span class="muted">${formatDateTime(cls.dateTime)}</span>
-          </td>
+          <td>${escapeHtml(getLecturerName(cls.lecturerId))}</td>
+          <td>${escapeHtml(cls.venue)}<br/><span class="muted">${formatDateTime(cls.dateTime)}</span></td>
           <td>${statusBadge}</td>
           <td>${att.length}</td>
-          <td>
-            <button class="btn btn-primary btn-sm" data-action="view-details" data-id="${cls.id}">View & Sign</button>
-          </td>
+          <td><button class="btn btn-primary" data-action="view-details" data-id="${cls.id}" type="button">View & Download</button></td>
         </tr>`;
       });
 
-      html += "</tbody></table>";
+      html += `</tbody></table>`;
       wrap.innerHTML = html;
 
-      wrap.querySelectorAll("button[data-action='view-details']").forEach(
-        (btn) => {
-          const id = btn.getAttribute("data-id");
-          btn.addEventListener("click", () =>
-            openClassDetailDialog(id, "admin")
-          );
-        }
-      );
+      wrap.querySelectorAll("button[data-action='view-details']").forEach(btn=>{
+        const id = btn.getAttribute("data-id");
+        btn.addEventListener("click", ()=>openClassDetailDialog(id,"admin"));
+      });
     }
 
-    // ========================== CLASS DETAIL DIALOG (INLINE) ==========================
-    function openClassDetailDialog(classId, callerRole) {
-      DATA = loadData();
-      const cls = DATA.classes.find((c) => c.id === classId);
-      if (!cls) {
-        alert("Class not found.");
-        return;
-      }
-      const att = DATA.attendance.filter((a) => a.classId === cls.id);
+    // hook filters
+    ["adminFilterStatus","adminFilterLecturer","adminFilterUnit","adminSortBy"].forEach(id=>{
+      const el = $(id);
+      if(el) el.addEventListener("change", renderAdminClasses);
+    });
 
-      const container = document.createElement("div");
-      container.style.position = "fixed";
-      container.style.inset = "0";
-      container.style.background = "rgba(15,23,42,0.6)";
-      container.style.display = "flex";
-      container.style.alignItems = "center";
-      container.style.justifyContent = "center";
-      container.style.zIndex = "9999";
+    // ========================== CLASS DETAIL + Attendance Download ==========================
+    function openClassDetailDialog(classId, callerRole){
+      DATA = loadData();
+      const cls = DATA.classes.find(c=>c.id===classId);
+      if(!cls){ alert("Class not found."); return; }
+      const att = DATA.attendance.filter(a=>a.classId===cls.id);
+
+      const overlay = document.createElement("div");
+      overlay.style.position="fixed";
+      overlay.style.inset="0";
+      overlay.style.background="rgba(15,23,42,.60)";
+      overlay.style.display="flex";
+      overlay.style.alignItems="center";
+      overlay.style.justifyContent="center";
+      overlay.style.zIndex="99999";
 
       const card = document.createElement("div");
-      card.className = "card";
-      card.style.maxWidth = "900px";
-      card.style.maxHeight = "90vh";
-      card.style.overflow = "auto";
-      card.style.width = "95%";
-      card.style.position = "relative";
+      card.className="card";
+      card.style.maxWidth="980px";
+      card.style.width="96%";
+      card.style.maxHeight="90vh";
+      card.style.overflow="auto";
 
       card.innerHTML = `
+        <div class="brand-strip"></div>
         <h2>Class Details & Signatures</h2>
         <p class="muted">
-          Faculty: <strong>${cls.faculty}</strong> &nbsp; | &nbsp;
-          Course: <strong>${cls.course}</strong> &nbsp; | &nbsp;
-          Unit: <strong>${cls.unit}</strong><br>
-          Year: <strong>${cls.year}</strong> &nbsp; | &nbsp;
-          Semester: <strong>${cls.semester}</strong> &nbsp; | &nbsp;
-          Venue: <strong>${cls.venue}</strong><br>
-          Date & Time: <strong>${formatDateTime(cls.dateTime)}</strong>
+          Faculty: <b>${escapeHtml(cls.faculty)}</b> &nbsp; | &nbsp;
+          Course: <b>${escapeHtml(cls.course)}</b> &nbsp; | &nbsp;
+          Unit: <b>${escapeHtml(cls.unit)}</b><br/>
+          Year: <b>${escapeHtml(cls.year)}</b> &nbsp; | &nbsp;
+          Semester: <b>${escapeHtml(cls.semester)}</b> &nbsp; | &nbsp;
+          Venue: <b>${escapeHtml(cls.venue)}</b><br/>
+          Date & Time: <b>${formatDateTime(cls.dateTime)}</b>
         </p>
-        <h3>Attendance List (${att.length})</h3>
-        ${
-          att.length
-            ? `<table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Admission No</th>
-                    <th>Surname</th>
-                    <th>Middle Name</th>
-                    <th>First Name</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${att
-                    .map(
-                      (a, i) => `<tr>
-                      <td>${i + 1}</td>
-                      <td>${a.admission}</td>
-                      <td>${a.surname}</td>
-                      <td>${a.middle}</td>
-                      <td>${a.first}</td>
-                      <td>${formatDateTime(a.createdAt)}</td>
-                    </tr>`
-                    )
-                    .join("")}
-                </tbody>
-              </table>`
-            : "<p class='muted'>No students have signed yet.</p>"
-        }
 
-        <h3 style="margin-top:1rem;">Lecturer Confirmation</h3>
+        <div class="btn-group" style="margin-top:.5rem">
+          <button class="btn btn-secondary" id="dlgCsv" type="button">Download Raw CSV (with signatures)</button>
+          <button class="btn btn-secondary" id="dlgExcel" type="button">Download Excel</button>
+          <button class="btn btn-primary" id="dlgPdf" type="button">Download PDF Summary</button>
+        </div>
+
+        <h3 style="margin-top:1rem;">Attendance List (${att.length})</h3>
+        ${att.length ? `
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Admission No</th><th>Surname</th><th>Middle</th><th>First</th><th>Time</th><th>Signature</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${att.map((a,i)=>`
+                <tr>
+                  <td>${i+1}</td>
+                  <td>${escapeHtml(a.admission)}</td>
+                  <td>${escapeHtml(a.surname)}</td>
+                  <td>${escapeHtml(a.middle||"")}</td>
+                  <td>${escapeHtml(a.first)}</td>
+                  <td>${formatDateTime(a.createdAt)}</td>
+                  <td>${a.signature ? `<img src="${a.signature}" alt="sig" style="height:36px;max-width:140px;object-fit:contain;border:1px solid #e5e7eb;border-radius:8px;background:#fff" />` : ""}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        ` : `<p class="muted">No students have signed yet.</p>`}
+
+        <h3 style="margin-top:1.2rem;">Lecturer Confirmation</h3>
         <div class="row">
           <div>
             <label>Lecturer Name</label>
-            <input id="dlgLecturerName" type="text" value="${cls.lecturerName ||
-              ""}" />
+            <input id="dlgLecturerName" type="text" value="${escapeAttr(cls.lecturerName||"")}" />
           </div>
         </div>
         <label>Lecturer Signature</label>
         <canvas id="dlgLecturerSig" class="signature-pad"></canvas>
         <div class="signature-actions">
-          <button class="btn btn-secondary btn-sm" id="dlgLecturerClear">Clear</button>
+          <button class="btn btn-secondary" id="dlgLecturerClear" type="button">Clear</button>
         </div>
 
-        <h3 style="margin-top:1rem;">HOD Approval</h3>
+        <h3 style="margin-top:1.1rem;">HOD Approval</h3>
         <div class="row">
           <div>
             <label>HOD Name</label>
-            <input id="dlgHodName" type="text" value="${cls.hodName || ""}" />
+            <input id="dlgHodName" type="text" value="${escapeAttr(cls.hodName||"")}" />
           </div>
         </div>
         <label>HOD Signature</label>
         <canvas id="dlgHodSig" class="signature-pad"></canvas>
         <div class="signature-actions">
-          <button class="btn btn-secondary btn-sm" id="dlgHodClear">Clear</button>
+          <button class="btn btn-secondary" id="dlgHodClear" type="button">Clear</button>
         </div>
 
         <div class="btn-group">
-          <button class="btn btn-primary" id="dlgSave">Save Signatures</button>
-          <button class="btn btn-secondary" id="dlgClose">Close</button>
+          <button class="btn btn-success" id="dlgSave" type="button">Save Signatures</button>
+          <button class="btn btn-secondary" id="dlgClose" type="button">Close</button>
         </div>
       `;
 
-      container.appendChild(card);
-      document.body.appendChild(container);
+      overlay.appendChild(card);
+      document.body.appendChild(overlay);
 
-      function initSigCanvas(canvasId, existingDataUrl) {
-        const canvas = card.querySelector("#" + canvasId);
-        resizeCanvasToDisplaySize(canvas);
-        const ctx = canvas.getContext("2d");
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        let drawing = false;
+      // signature pads (mobile friendly pointer events)
+      const lecPad = makeSignaturePad(card.querySelector("#dlgLecturerSig"), cls.lecturerSignature);
+      const hodPad = makeSignaturePad(card.querySelector("#dlgHodSig"), cls.hodSignature);
 
-        const rect = () => canvas.getBoundingClientRect();
-        function getPos(e) {
-          const r = rect();
-          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-          const x = clientX - r.left;
-          const y = clientY - r.top;
-          return { x, y };
-        }
+      card.querySelector("#dlgLecturerClear").onclick = ()=>lecPad.clear();
+      card.querySelector("#dlgHodClear").onclick = ()=>hodPad.clear();
 
-        canvas.addEventListener("mousedown", (e) => {
-          drawing = true;
-          const p = getPos(e);
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-        });
-        canvas.addEventListener("mousemove", (e) => {
-          if (!drawing) return;
-          const p = getPos(e);
-          ctx.lineTo(p.x, p.y);
-          ctx.stroke();
-        });
-        window.addEventListener("mouseup", () => (drawing = false));
+      card.querySelector("#dlgSave").onclick = ()=>{
+        DATA = loadData();
+        const liveCls = DATA.classes.find(c=>c.id===classId);
+        if(!liveCls) return;
 
-        canvas.addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          drawing = true;
-          const p = getPos(e);
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-        });
-        canvas.addEventListener("touchmove", (e) => {
-          e.preventDefault();
-          if (!drawing) return;
-          const p = getPos(e);
-          ctx.lineTo(p.x, p.y);
-          ctx.stroke();
-        });
-        window.addEventListener("touchend", () => (drawing = false));
+        liveCls.lecturerName = card.querySelector("#dlgLecturerName").value.trim();
+        liveCls.hodName = card.querySelector("#dlgHodName").value.trim();
 
-        if (existingDataUrl) {
-          const img = new Image();
-          img.onload = () => {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          };
-          img.src = existingDataUrl;
-        }
-
-        return {
-          canvas,
-          ctx,
-          clear: () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-          },
-          getDataUrl: () => canvas.toDataURL("image/png"),
-        };
-      }
-
-      const lecSig = initSigCanvas("dlgLecturerSig", cls.lecturerSignature);
-      const hodSig = initSigCanvas("dlgHodSig", cls.hodSignature);
-
-      card.querySelector("#dlgLecturerClear").onclick = () => lecSig.clear();
-      card.querySelector("#dlgHodClear").onclick = () => hodSig.clear();
-
-      card.querySelector("#dlgSave").onclick = () => {
-        const lecName = card.querySelector("#dlgLecturerName").value.trim();
-        const hodName = card.querySelector("#dlgHodName").value.trim();
-
-        cls.lecturerName = lecName;
-        cls.hodName = hodName;
-
-        if (callerRole === "lecturer" || callerRole === "admin") {
-          cls.lecturerSignature = lecSig.getDataUrl();
-        }
-        if (callerRole === "admin") {
-          cls.hodSignature = hodSig.getDataUrl();
-        } else if (callerRole === "lecturer" && hodName) {
-          // lecturer can also capture HOD sig if together
-          cls.hodSignature = hodSig.getDataUrl();
-        }
+        // lecturer/admin can save lecturer signature; admin can save HOD; lecturer can also if present
+        if(callerRole==="lecturer" || callerRole==="admin") liveCls.lecturerSignature = lecPad.getDataUrl();
+        if(callerRole==="admin" || callerRole==="lecturer") liveCls.hodSignature = hodPad.getDataUrl();
 
         saveData(DATA);
-        alert("Signatures saved.");
+        alert("Saved.");
         renderLecturerClasses();
         renderAdminClasses();
       };
 
-      card.querySelector("#dlgClose").onclick = () => {
-        container.remove();
+      card.querySelector("#dlgClose").onclick = ()=>overlay.remove();
+
+      // Downloads
+      card.querySelector("#dlgCsv").onclick = ()=>downloadRawAttendanceCSV(cls.id, `JOOUST-${cls.unit}-${safeFileDate(cls.dateTime)}.csv`);
+      card.querySelector("#dlgExcel").onclick = ()=>downloadExcelFromRawAttendance(cls.id, `JOOUST-${cls.unit}-${safeFileDate(cls.dateTime)}.xls`);
+      card.querySelector("#dlgPdf").onclick = ()=>{
+        const rows = buildReportRows({ faculty:cls.faculty, course:cls.course, unit:cls.unit, year:cls.year, semester:cls.semester, classId:cls.id });
+        exportToPdf(rows, `Class Summary Report: ${cls.unit} (${formatDateTime(cls.dateTime)})`);
       };
     }
 
-    // ========================== STUDENT FORM ==========================
-    function setupStudentView() {
+    // ========================== STUDENT VIEW (mobile-friendly signature) ==========================
+    function setupStudentView(){
       const mode = getQueryParam("mode");
       const classId = getQueryParam("classId");
-      if (mode !== "student" || !classId) return;
+      if(mode!=="student" || !classId) return;
 
       showSection("studentSection");
 
       DATA = loadData();
-      const cls = DATA.classes.find((c) => c.id === classId);
+      const cls = DATA.classes.find(c=>c.id===classId);
       const infoEl = $("studentClassInfo");
-      if (!cls) {
-        infoEl.textContent = "Class not found. Check the link.";
+
+      if(!cls){
+        infoEl.textContent="Class not found. Check the link.";
         return;
       }
 
       infoEl.innerHTML = `
-        <strong>${cls.unit}</strong> – ${cls.course}<br>
-        Faculty: <strong>${cls.faculty}</strong> | Year: <strong>${cls.year}</strong> | Semester: <strong>${cls.semester}</strong><br>
-        Venue: <strong>${cls.venue}</strong> | Date & Time: <strong>${formatDateTime(
-        cls.dateTime
-      )}</strong><br>
-        Lecturer: <strong>${cls.lecturerName || "N/A"}</strong>
+        <b>${escapeHtml(cls.unit)}</b> – ${escapeHtml(cls.course)}<br/>
+        Faculty: <b>${escapeHtml(cls.faculty)}</b> | Year: <b>${escapeHtml(cls.year)}</b> | Semester: <b>${escapeHtml(cls.semester)}</b><br/>
+        Venue: <b>${escapeHtml(cls.venue)}</b> | Date & Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
+        Lecturer: <b>${escapeHtml(cls.lecturerName || "N/A")}</b>
       `;
 
-      if (cls.status !== "open") {
-        setAlert(
-          $("studentSubmitMsg"),
-          "This class has been closed. Attendance link is no longer active.",
-          "danger"
-        );
+      if(cls.status !== "open"){
+        setAlert($("studentSubmitMsg"),"This class has been closed. Attendance link is no longer active.","danger");
         $("studentFormWrapper").classList.add("hidden");
         return;
       }
 
       const deviceKey = "cls_submitted_" + classId;
-      if (localStorage.getItem(deviceKey)) {
-        $("studentAlreadySubmitted").classList.remove("hidden");
-      }
+      if(localStorage.getItem(deviceKey)) $("studentAlreadySubmitted").classList.remove("hidden");
 
-      const canvas = $("stSignaturePad");
-      resizeCanvasToDisplaySize(canvas);
-      const ctx = canvas.getContext("2d");
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      let drawing = false;
+      const pad = makeSignaturePad($("stSignaturePad"));
 
-      const rect = () => canvas.getBoundingClientRect();
-      function getPos(e) {
-        const r = rect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const x = clientX - r.left;
-        const y = clientY - r.top;
-        return { x, y };
-      }
+      $("stClearSignature").onclick = ()=>pad.clear();
 
-      canvas.addEventListener("mousedown", (e) => {
-        drawing = true;
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-      });
-      canvas.addEventListener("mousemove", (e) => {
-        if (!drawing) return;
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-      });
-      window.addEventListener("mouseup", () => (drawing = false));
-
-      canvas.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        drawing = true;
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-      });
-      canvas.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        if (!drawing) return;
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-      });
-      window.addEventListener("touchend", () => (drawing = false));
-
-      $("stClearSignature").addEventListener("click", () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      });
-
-      $("stSubmit").addEventListener("click", () => {
+      $("stSubmit").onclick = ()=>{
         const surname = $("stSurname").value.trim();
         const middle = $("stMiddleName").value.trim();
         const first = $("stFirstName").value.trim();
         const adm = $("stAdmission").value.trim();
         const msgEl = $("studentSubmitMsg");
 
-        if (!surname || !first || !adm) {
-          setAlert(msgEl, "Surname, First Name and Admission are required.", "danger");
-          return;
+        if(!surname || !first || !adm){
+          setAlert(msgEl,"Surname, First Name and Admission are required.","danger"); return;
         }
-
         DATA = loadData();
-        const cls = DATA.classes.find((c) => c.id === classId);
-        if (!cls || cls.status !== "open") {
-          setAlert(msgEl, "Class is not open.", "danger");
-          return;
+        const liveCls = DATA.classes.find(c=>c.id===classId);
+        if(!liveCls || liveCls.status!=="open"){
+          setAlert(msgEl,"Class is not open.","danger"); return;
+        }
+        const existing = DATA.attendance.find(a=>a.classId===classId && a.admission===adm);
+        if(existing){
+          setAlert(msgEl,"Attendance for this admission number already exists.","danger"); return;
         }
 
-        const existingForAdm = DATA.attendance.find(
-          (a) => a.classId === classId && a.admission === adm
-        );
-        if (existingForAdm) {
-          setAlert(
-            msgEl,
-            "Attendance for this admission number already exists.",
-            "danger"
-          );
-          return;
-        }
-
-        const sigDataUrl = canvas.toDataURL("image/png");
-
-        const rec = {
-          id: uuid(),
+        const sig = pad.getDataUrl();
+        DATA.attendance.push({
+          id:uuid(),
           classId,
-          surname,
-          middle,
-          first,
-          admission: adm,
-          signature: sigDataUrl,
-          createdAt: new Date().toISOString(),
-        };
-        DATA.attendance.push(rec);
+          surname, middle, first,
+          admission:adm,
+          signature:sig,
+          createdAt:new Date().toISOString()
+        });
         saveData(DATA);
+
         localStorage.setItem(deviceKey, adm);
-        setAlert(msgEl, "Attendance submitted successfully.", "success");
+        setAlert(msgEl,"Attendance submitted successfully.","success");
         $("studentFormWrapper").classList.add("hidden");
         $("studentAlreadySubmitted").classList.remove("hidden");
-      });
+      };
     }
 
-    // ========================== REPORTING (ADMIN + LECTURER) ==========================
-    function buildReportRows({
-      faculty,
-      course,
-      unit,
-      year,
-      semester,
-      lecturerOnlyId = null,
-    }) {
+    // ========================== REPORTING (Dropdown-based) ==========================
+    function buildReportRows({faculty, course, unit, year, semester, lecturerOnlyId=null, classId=null}){
       DATA = loadData();
-      const filteredClasses = DATA.classes.filter((cls) => {
-        if (lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return false;
-        if (faculty && cls.faculty !== faculty) return false;
-        if (course && cls.course !== course) return false;
-        if (unit && cls.unit !== unit) return false;
-        if (year && cls.year !== year) return false;
-        if (semester && cls.semester !== semester) return false;
+      const classes = DATA.classes.filter(cls=>{
+        if(classId && cls.id !== classId) return false;
+        if(lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return false;
+
+        if(faculty && cls.faculty !== faculty) return false;
+        if(course && cls.course !== course) return false;
+        if(unit && cls.unit !== unit) return false;
+        if(year && cls.year !== year) return false;
+        if(semester && cls.semester !== semester) return false;
+
         return true;
       });
 
-      const rows = [];
-      filteredClasses.forEach((cls) => {
-        const att = DATA.attendance.filter((a) => a.classId === cls.id);
-        rows.push({
+      return classes.map(cls=>{
+        const att = DATA.attendance.filter(a=>a.classId===cls.id);
+        return {
+          classId: cls.id,
           faculty: cls.faculty,
           course: cls.course,
           unit: cls.unit,
@@ -1945,575 +1260,510 @@
           semester: cls.semester,
           venue: cls.venue,
           dateTime: formatDateTime(cls.dateTime),
-          lecturer: cls.lecturerName || "",
+          lecturer: cls.lecturerName || getLecturerName(cls.lecturerId),
           students: att.length,
-          status: cls.status,
-        });
+          status: cls.status
+        };
       });
-      return rows;
     }
 
-    function buildRawAttendanceRows({
-      faculty,
-      course,
-      unit,
-      year,
-      semester,
-      lecturerOnlyId = null,
-    }) {
-      DATA = loadData();
-      const rows = [];
-      DATA.classes.forEach((cls) => {
-        if (lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return;
-        if (faculty && cls.faculty !== faculty) return;
-        if (course && cls.course !== course) return;
-        if (unit && cls.unit !== unit) return;
-        if (year && cls.year !== year) return;
-        if (semester && cls.semester !== semester) return;
-
-        const att = DATA.attendance.filter((a) => a.classId === cls.id);
-        att.forEach((a) => {
-          rows.push({
-            faculty: cls.faculty,
-            course: cls.course,
-            unit: cls.unit,
-            year: cls.year,
-            semester: cls.semester,
-            venue: cls.venue,
-            dateTime: formatDateTime(cls.dateTime),
-            lecturer: cls.lecturerName || "",
-            classStatus: cls.status,
-            admission: a.admission,
-            surname: a.surname,
-            middle: a.middle,
-            first: a.first,
-            timestamp: formatDateTime(a.createdAt),
-            signature: a.signature,
-          });
-        });
-      });
-      return rows;
-    }
-
-    function renderReportTable(rows, tableEl) {
-      if (!rows.length) {
+    function renderReportTable(rows, tableEl){
+      if(!rows.length){
         tableEl.innerHTML = "<tbody><tr><td>No records found.</td></tr></tbody>";
         return;
       }
-      let html =
-        "<thead><tr><th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th><th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th></tr></thead><tbody>";
-      rows.forEach((r, i) => {
-        html += `<tr>
-          <td>${i + 1}</td>
-          <td>${r.faculty}</td>
-          <td>${r.course}</td>
-          <td>${r.unit}</td>
-          <td>${r.year}</td>
-          <td>${r.semester}</td>
-          <td>${r.venue}</td>
-          <td>${r.dateTime}</td>
-          <td>${r.lecturer}</td>
-          <td>${r.students}</td>
-          <td>${r.status}</td>
-        </tr>`;
-      });
-      html += "</tbody>";
-      tableEl.innerHTML = html;
+      tableEl.innerHTML = `
+        <thead><tr>
+          <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th>
+          <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map((r,i)=>`
+            <tr>
+              <td>${i+1}</td>
+              <td>${escapeHtml(r.faculty)}</td>
+              <td>${escapeHtml(r.course)}</td>
+              <td>${escapeHtml(r.unit)}</td>
+              <td>${escapeHtml(r.year)}</td>
+              <td>${escapeHtml(r.semester)}</td>
+              <td>${escapeHtml(r.venue)}</td>
+              <td>${escapeHtml(r.dateTime)}</td>
+              <td>${escapeHtml(r.lecturer)}</td>
+              <td>${r.students}</td>
+              <td>${escapeHtml(r.status)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      `;
     }
 
-    $("generateReportBtn").addEventListener("click", () => {
+    $("generateReportBtn").addEventListener("click", ()=>{
       const rows = buildReportRows({
-        faculty: getSelectValue("repFaculty"),
-        course: getSelectValue("repCourse"),
-        unit: getSelectValue("repUnit"),
-        year: getSelectValue("repYear"),
-        semester: getSelectValue("repSemester"),
+        faculty: pickSelVal("repFaculty"),
+        course: pickSelVal("repCourse"),
+        unit: pickSelVal("repUnit"),
+        year: pickSelVal("repYear"),
+        semester: pickSelVal("repSemester")
       });
-
       renderReportTable(rows, $("reportTable"));
+      $("reportTable").dataset.rows = JSON.stringify(rows);
       $("reportArea").classList.remove("hidden");
       $("reportMeta").textContent = `Total classes found: ${rows.length}`;
-      $("reportTable").dataset.rows = JSON.stringify(rows);
     });
 
-    $("generateReportLecturerBtn").addEventListener("click", () => {
-      if (!currentUser || currentUser.role !== "lecturer") return;
+    $("generateReportLecturerBtn").addEventListener("click", ()=>{
+      if(!currentUser || currentUser.role!=="lecturer") return;
       const rows = buildReportRows({
-        faculty: getSelectValue("repFacultyL"),
-        course: getSelectValue("repCourseL"),
-        unit: getSelectValue("repUnitL"),
-        year: getSelectValue("repYearL"),
-        semester: getSelectValue("repSemesterL"),
-        lecturerOnlyId: currentUser.id,
+        faculty: pickSelVal("repFacultyL"),
+        course: pickSelVal("repCourseL"),
+        unit: pickSelVal("repUnitL"),
+        year: pickSelVal("repYearL"),
+        semester: pickSelVal("repSemesterL"),
+        lecturerOnlyId: currentUser.id
       });
-
       renderReportTable(rows, $("reportTableL"));
+      $("reportTableL").dataset.rows = JSON.stringify(rows);
       $("reportAreaLecturer").classList.remove("hidden");
       $("reportMetaL").textContent = `Total classes found: ${rows.length}`;
-      $("reportTableL").dataset.rows = JSON.stringify(rows);
     });
 
-    // ========================== EXPORT HELPERS ==========================
-    function exportToPdf(rows, title) {
-      if (!window.jspdf) {
-        alert("PDF library not loaded. Check your internet connection.");
+    // ========================== EXPORTS ==========================
+    // PDF (uses jsPDF if available; otherwise tells user)
+    function exportToPdf(rows, title){
+      if(!window.jspdf || !window.jspdf.jsPDF || !window.jspdfAutoTable){
+        alert("PDF library not loaded. Ensure you have internet or allow CDN scripts, then refresh.");
         return;
       }
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF("l", "pt", "a4");
+      const doc = new jsPDF("l","pt","a4");
       const margin = 40;
 
-      if (jooustLogoDataUrl) {
-        doc.addImage(jooustLogoDataUrl, "JPEG", margin, 20, 80, 60);
+      if(jooustLogoDataUrl){
+        doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 78, 58);
       }
-      doc.setFontSize(16);
-      doc.setTextColor(0, 82, 204);
-      doc.text(
-        "Jaramogi Oginga Odinga University of Science & Technology",
-        140,
-        40
-      );
-      doc.setFontSize(12);
-      doc.setTextColor(31, 41, 55);
-      doc.text(title, 140, 60);
+      doc.setFontSize(15);
+      doc.setTextColor(0,82,204);
+      doc.text("Jaramogi Oginga Odinga University of Science & Technology", 130, 40);
+      doc.setFontSize(11);
+      doc.setTextColor(31,41,55);
+      doc.text(title, 130, 60);
 
-      const data = rows.map((r, i) => [
-        i + 1,
-        r.faculty,
-        r.course,
-        r.unit,
-        r.year,
-        r.semester,
-        r.venue,
-        r.dateTime,
-        r.lecturer,
-        r.students,
-        r.status,
+      const data = rows.map((r,i)=>[
+        i+1, r.faculty, r.course, r.unit, r.year, r.semester, r.venue, r.dateTime, r.lecturer, r.students, r.status
       ]);
 
       doc.autoTable({
-        startY: 90,
-        head: [
-          [
-            "#",
-            "Faculty",
-            "Course",
-            "Unit",
-            "Year",
-            "Sem",
-            "Venue",
-            "Date/Time",
-            "Lecturer",
-            "Students",
-            "Status",
-          ],
-        ],
+        startY: 86,
+        head: [[ "#","Faculty","Course","Unit","Year","Sem","Venue","Date/Time","Lecturer","Students","Status" ]],
         body: data,
         styles: { fontSize: 8 },
-        headStyles: {
-          fillColor: [0, 82, 204],
-          textColor: 255,
-        },
+        headStyles: { fillColor:[0,82,204], textColor:255 }
       });
 
-      const finalY = doc.lastAutoTable
-        ? doc.lastAutoTable.finalY + 20
-        : 100;
-      doc.setFontSize(10);
-      doc.setTextColor(90);
-      doc.text(
-        "System developed by Gerotech (Dan Otieno).",
-        margin,
-        finalY + 10
-      );
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text("System created by Gerotech under Dan Otieno.", margin, doc.internal.pageSize.height - 18);
 
       doc.save("jooust-attendance-report.pdf");
     }
 
-    function exportToWord(rows, title) {
+    // Word export (no library needed)
+    function exportToWord(rows, title){
       const dateStr = new Date().toLocaleString();
-      const tableRows = rows
-        .map(
-          (r, i) =>
-            `<tr>
-          <td>${i + 1}</td>
-          <td>${r.faculty}</td>
-          <td>${r.course}</td>
-          <td>${r.unit}</td>
-          <td>${r.year}</td>
-          <td>${r.semester}</td>
-          <td>${r.venue}</td>
-          <td>${r.dateTime}</td>
-          <td>${r.lecturer}</td>
-          <td>${r.students}</td>
-          <td>${r.status}</td>
-        </tr>`
-        )
-        .join("");
+      const logoHtml = jooustLogoDataUrl ? `<img src="${jooustLogoDataUrl}" style="height:60px" />` : `<b>JOOUST</b>`;
 
-      const logoHtml = jooustLogoDataUrl
-        ? `<img src="${jooustLogoDataUrl}" style="height:60px;" />`
-        : "<strong>JOOUST</strong>";
+      const tableRows = rows.map((r,i)=>`
+        <tr>
+          <td>${i+1}</td><td>${escapeHtml(r.faculty)}</td><td>${escapeHtml(r.course)}</td><td>${escapeHtml(r.unit)}</td>
+          <td>${escapeHtml(r.year)}</td><td>${escapeHtml(r.semester)}</td><td>${escapeHtml(r.venue)}</td>
+          <td>${escapeHtml(r.dateTime)}</td><td>${escapeHtml(r.lecturer)}</td><td>${r.students}</td><td>${escapeHtml(r.status)}</td>
+        </tr>
+      `).join("");
 
       const html = `
-        <html>
-        <head><meta charset="UTF-8"></head>
-        <body>
+        <html><head><meta charset="UTF-8"></head><body>
           <div style="display:flex;align-items:center;gap:16px;">
             ${logoHtml}
             <div>
               <h2 style="margin:0;color:#0052cc;">Jaramogi Oginga Odinga University of Science & Technology</h2>
-              <p style="margin:0;font-size:12px;color:#555;">${title}</p>
-              <p style="margin:0;font-size:11px;color:#777;">Generated: ${dateStr}</p>
+              <div style="margin:2px 0;color:#333;font-size:12px;">${escapeHtml(title)}</div>
+              <div style="margin:0;color:#666;font-size:11px;">Generated: ${escapeHtml(dateStr)}</div>
             </div>
           </div>
           <hr/>
-          <table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;width:100%;font-size:11px;">
+          <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
             <thead>
               <tr style="background:#eff6ff;color:#1d4ed8;">
                 <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th>
                 <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th>
               </tr>
             </thead>
-            <tbody>
-              ${tableRows || "<tr><td colspan='11'>No records.</td></tr>"}
-            </tbody>
+            <tbody>${tableRows || `<tr><td colspan="11">No records.</td></tr>`}</tbody>
           </table>
-          <p style="margin-top:16px;font-size:11px;color:#555;">
-            System developed by <strong>Gerotech</strong> (Dan Otieno).
+          <p style="margin-top:10px;font-size:11px;color:#444;">
+            System created by <b>Gerotech</b> under <b>Dan Otieno</b>.
           </p>
-        </body>
-        </html>
+        </body></html>
       `;
 
-      const blob = new Blob(["\ufeff", html], {
-        type: "application/msword",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "jooust-attendance-report.doc";
-      a.click();
-      URL.revokeObjectURL(url);
+      const blob = new Blob(["\ufeff", html], {type:"application/msword"});
+      downloadBlob(blob, "jooust-attendance-report.doc");
     }
 
-    function exportToExcel(rows) {
-      if (typeof XLSX === "undefined") {
-        alert("Excel library not loaded. Check your internet connection.");
-        return;
-      }
-      if (!rows.length) {
-        alert("No data to export.");
-        return;
-      }
-      const wsData = [
-        [
-          "#",
-          "Faculty",
-          "Course",
-          "Unit",
-          "Year",
-          "Sem",
-          "Venue",
-          "Date/Time",
-          "Lecturer",
-          "Students",
-          "Status",
-        ],
-      ];
-      rows.forEach((r, i) => {
-        wsData.push([
-          i + 1,
-          r.faculty,
-          r.course,
-          r.unit,
-          r.year,
-          r.semester,
-          r.venue,
-          r.dateTime,
-          r.lecturer,
-          r.students,
-          r.status,
-        ]);
-      });
-
-      // Add footer row
-      wsData.push([]);
-      wsData.push([
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "System developed by Gerotech (Dan Otieno).",
+    // Excel fallback (NO external library): download .xls (HTML table) or .csv
+    function exportToExcel(rows){
+      // create an HTML table that Excel opens
+      const header = ["#","Faculty","Course","Unit","Year","Sem","Venue","Date/Time","Lecturer","Students","Status"];
+      const body = rows.map((r,i)=>[
+        i+1,r.faculty,r.course,r.unit,r.year,r.semester,r.venue,r.dateTime,r.lecturer,r.students,r.status
       ]);
 
-      const wb = XLSX.utils.book_new();
-      wb.Props = {
-        Title: "JOOUST Attendance Report",
-        Subject: "Attendance",
-        Author: "JOOUST Attendance Web App",
-      };
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(wb, ws, "Report");
-      XLSX.writeFile(wb, "jooust-attendance-report.xlsx");
+      const table = `
+        <table border="1">
+          <tr>${header.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr>
+          ${body.map(row=>`<tr>${row.map(c=>`<td>${escapeHtml(String(c ?? ""))}</td>`).join("")}</tr>`).join("")}
+        </table>
+      `;
+
+      const html = `
+        <html><head><meta charset="UTF-8" /></head><body>
+          ${table}
+          <br/><div>System created by Gerotech under Dan Otieno.</div>
+        </body></html>
+      `;
+
+      const blob = new Blob([html], {type:"application/vnd.ms-excel"});
+      downloadBlob(blob, "jooust-attendance-report.xls");
     }
 
-    function exportToCsv(rawRows, filename) {
-      if (!rawRows.length) {
-        alert("No raw attendance to export.");
-        return;
-      }
-      const header = Object.keys(rawRows[0]);
+    function exportToCSVFromReportRows(rows, filename){
+      const header = ["classId","#","Faculty","Course","Unit","Year","Semester","Venue","DateTime","Lecturer","Students","Status"];
       const lines = [header.join(",")];
-      rawRows.forEach((row) => {
-        const line = header
-          .map((key) =>
-            String(row[key] ?? "")
-              .replace(/"/g, '""')
-              .replace(/\n/g, " ")
-          )
-          .map((v) => `"${v}"`)
-          .join(",");
+      rows.forEach((r,i)=>{
+        const line = [
+          r.classId, i+1, r.faculty, r.course, r.unit, r.year, r.semester, r.venue, r.dateTime, r.lecturer, r.students, r.status
+        ].map(csvCell).join(",");
         lines.push(line);
       });
-      const blob = new Blob([lines.join("\n")], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBlob(new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8;"}), filename);
     }
 
-    $("exportPdfBtn").addEventListener("click", () => {
+    $("exportPdfBtn").addEventListener("click", ()=>{
       const rows = JSON.parse($("reportTable").dataset.rows || "[]");
       exportToPdf(rows, "Attendance Report (All Faculties)");
     });
-    $("exportWordBtn").addEventListener("click", () => {
+    $("exportWordBtn").addEventListener("click", ()=>{
       const rows = JSON.parse($("reportTable").dataset.rows || "[]");
       exportToWord(rows, "Attendance Report (All Faculties)");
     });
-    $("exportExcelBtn").addEventListener("click", () => {
+    $("exportExcelBtn").addEventListener("click", ()=>{
       const rows = JSON.parse($("reportTable").dataset.rows || "[]");
       exportToExcel(rows);
     });
-    $("exportCsvBtn").addEventListener("click", () => {
-      const rawRows = buildRawAttendanceRows({
-        faculty: getSelectValue("repFaculty"),
-        course: getSelectValue("repCourse"),
-        unit: getSelectValue("repUnit"),
-        year: getSelectValue("repYear"),
-        semester: getSelectValue("repSemester"),
-      });
-      exportToCsv(rawRows, "jooust-attendance-raw.csv");
+    $("exportRawCsvBtn").addEventListener("click", ()=>{
+      const rows = JSON.parse($("reportTable").dataset.rows || "[]");
+      // raw attendance for the matched classes
+      downloadRawAttendanceCSVForClasses(rows.map(r=>r.classId), "jooust-raw-attendance.csv");
     });
 
-    $("exportPdfBtnL").addEventListener("click", () => {
+    $("exportPdfBtnL").addEventListener("click", ()=>{
       const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
       exportToPdf(rows, "Attendance Report (My Classes)");
     });
-    $("exportWordBtnL").addEventListener("click", () => {
+    $("exportWordBtnL").addEventListener("click", ()=>{
       const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
       exportToWord(rows, "Attendance Report (My Classes)");
     });
-    $("exportExcelBtnL").addEventListener("click", () => {
+    $("exportExcelBtnL").addEventListener("click", ()=>{
       const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
       exportToExcel(rows);
     });
-    $("exportCsvBtnL").addEventListener("click", () => {
-      if (!currentUser || currentUser.role !== "lecturer") return;
-      const rawRows = buildRawAttendanceRows({
-        faculty: getSelectValue("repFacultyL"),
-        course: getSelectValue("repCourseL"),
-        unit: getSelectValue("repUnitL"),
-        year: getSelectValue("repYearL"),
-        semester: getSelectValue("repSemesterL"),
-        lecturerOnlyId: currentUser.id,
-      });
-      exportToCsv(rawRows, "jooust-attendance-raw-myclasses.csv");
+    $("exportRawCsvBtnL").addEventListener("click", ()=>{
+      const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
+      downloadRawAttendanceCSVForClasses(rows.map(r=>r.classId), "jooust-raw-attendance-my-classes.csv");
     });
 
-    // ========================== ADMIN TABS ==========================
-    document.querySelectorAll("[data-admin-tab]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.getAttribute("data-admin-tab");
-        document.querySelectorAll(".admin-tab").forEach((sec) => {
-          sec.classList.toggle("hidden", sec.id !== target);
+    // ========================== RAW ATTENDANCE CSV (names + signatures) ==========================
+    function downloadRawAttendanceCSV(classId, filename){
+      downloadRawAttendanceCSVForClasses([classId], filename);
+    }
+
+    function downloadRawAttendanceCSVForClasses(classIds, filename){
+      DATA = loadData();
+      const header = [
+        "ClassId","Unit","Course","Faculty","Year","Semester","Venue","ClassDateTime",
+        "Admission","Surname","Middle","First","SignedAt","SignatureDataURL"
+      ];
+      const lines = [header.join(",")];
+
+      const classesMap = new Map(DATA.classes.map(c=>[c.id,c]));
+      DATA.attendance
+        .filter(a=>classIds.includes(a.classId))
+        .forEach(a=>{
+          const cls = classesMap.get(a.classId);
+          const row = [
+            a.classId,
+            cls?.unit||"", cls?.course||"", cls?.faculty||"", cls?.year||"", cls?.semester||"",
+            cls?.venue||"", formatDateTime(cls?.dateTime||""),
+            a.admission, a.surname, a.middle||"", a.first,
+            formatDateTime(a.createdAt),
+            a.signature || ""
+          ].map(csvCell).join(",");
+          lines.push(row);
         });
-        document
-          .querySelectorAll(".tab[data-admin-tab]")
-          .forEach((tb) => tb.classList.remove("active"));
+
+      downloadBlob(new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8;"}), filename);
+    }
+
+    function downloadExcelFromRawAttendance(classId, filename){
+      // HTML table Excel export (works without any library)
+      DATA = loadData();
+      const cls = DATA.classes.find(c=>c.id===classId);
+      const att = DATA.attendance.filter(a=>a.classId===classId);
+
+      const html = `
+        <html><head><meta charset="UTF-8"></head><body>
+          <h3>JOOUST Raw Attendance</h3>
+          <div><b>Unit:</b> ${escapeHtml(cls?.unit||"")}</div>
+          <div><b>Course:</b> ${escapeHtml(cls?.course||"")}</div>
+          <div><b>Faculty:</b> ${escapeHtml(cls?.faculty||"")}</div>
+          <div><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls?.dateTime||""))}</div>
+          <br/>
+          <table border="1" cellspacing="0" cellpadding="5">
+            <tr>
+              <th>#</th><th>Admission</th><th>Surname</th><th>Middle</th><th>First</th><th>SignedAt</th><th>SignatureDataURL</th>
+            </tr>
+            ${att.map((a,i)=>`
+              <tr>
+                <td>${i+1}</td>
+                <td>${escapeHtml(a.admission)}</td>
+                <td>${escapeHtml(a.surname)}</td>
+                <td>${escapeHtml(a.middle||"")}</td>
+                <td>${escapeHtml(a.first)}</td>
+                <td>${escapeHtml(formatDateTime(a.createdAt))}</td>
+                <td>${escapeHtml(a.signature||"")}</td>
+              </tr>
+            `).join("")}
+          </table>
+          <p>System created by <b>Gerotech</b> under <b>Dan Otieno</b>.</p>
+        </body></html>
+      `;
+      downloadBlob(new Blob([html], {type:"application/vnd.ms-excel"}), filename);
+    }
+
+    // ========================== DROPDOWNS (Reports + Sorting) ==========================
+    function pickSelVal(id){
+      const el = $(id);
+      if(!el) return "";
+      const v = el.value;
+      return v === "__ALL__" ? "" : v;
+    }
+
+    function refreshAllDropdowns(){
+      refreshAdminDropdowns();
+      refreshLecturerDropdowns();
+    }
+
+    function refreshAdminDropdowns(){
+      buildCascadingDropdowns("repFaculty","repCourse","repUnit","repYear","repSemester", null);
+      refreshAdminClassFilters();
+      renderAdminClasses();
+    }
+
+    function refreshLecturerDropdowns(){
+      if(!currentUser || currentUser.role!=="lecturer"){
+        // still build empty defaults
+        buildCascadingDropdowns("repFacultyL","repCourseL","repUnitL","repYearL","repSemesterL", null);
+        return;
+      }
+      buildCascadingDropdowns("repFacultyL","repCourseL","repUnitL","repYearL","repSemesterL", currentUser.id);
+    }
+
+    function getConfigOrDerived(lecturerOnlyId=null){
+      DATA = loadData();
+      const cfg = DATA.facultyConfig || [];
+      if(cfg.length) return cfg;
+
+      // derive from classes if no CSV uploaded
+      const classes = lecturerOnlyId ? DATA.classes.filter(c=>c.lecturerId===lecturerOnlyId) : DATA.classes;
+      return classes.map(c=>({faculty:c.faculty, course:c.course, unit:c.unit, year:c.year, semester:c.semester}));
+    }
+
+    function buildCascadingDropdowns(fId,cId,uId,yId,sId, lecturerOnlyId=null){
+      const cfg = getConfigOrDerived(lecturerOnlyId);
+
+      const fSel=$(fId), cSel=$(cId), uSel=$(uId), ySel=$(yId), sSel=$(sId);
+      if(!fSel||!cSel||!uSel||!ySel||!sSel) return;
+
+      const state = {f:fSel.value, c:cSel.value, u:uSel.value, y:ySel.value, s:sSel.value};
+
+      const faculties = uniq(cfg.map(r=>r.faculty)).sort(alpha);
+      setSelectOptions(fSel, faculties, state.f);
+
+      const fVal = pickSelVal(fId);
+      const courses = uniq(cfg.filter(r=>!fVal || r.faculty===fVal).map(r=>r.course)).sort(alpha);
+      setSelectOptions(cSel, courses, state.c);
+
+      const cVal = pickSelVal(cId);
+      const units = uniq(cfg.filter(r=>(!fVal || r.faculty===fVal) && (!cVal || r.course===cVal)).map(r=>r.unit)).sort(alpha);
+      setSelectOptions(uSel, units, state.u);
+
+      const uVal = pickSelVal(uId);
+      const years = uniq(cfg.filter(r=>(!fVal || r.faculty===fVal) && (!cVal || r.course===cVal) && (!uVal || r.unit===uVal)).map(r=>r.year)).sort(alpha);
+      setSelectOptions(ySel, years, state.y);
+
+      const yVal = pickSelVal(yId);
+      const sems = uniq(cfg.filter(r=>(!fVal || r.faculty===fVal) && (!cVal || r.course===cVal) && (!uVal || r.unit===uVal) && (!yVal || r.year===yVal)).map(r=>r.semester)).sort(alpha);
+      setSelectOptions(sSel, sems, state.s);
+
+      // cascading change hooks (rebuild)
+      [fSel,cSel,uSel,ySel].forEach(el=>{
+        if(el.dataset.bound==="1") return;
+        el.dataset.bound="1";
+        el.addEventListener("change", ()=>{
+          buildCascadingDropdowns(fId,cId,uId,yId,sId, lecturerOnlyId);
+        });
+      });
+    }
+
+    function setSelectOptions(sel, values, keepValue){
+      const allOpt = `<option value="__ALL__">All</option>`;
+      const options = values.map(v=>`<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join("");
+      sel.innerHTML = allOpt + options;
+
+      // restore if still exists
+      if(keepValue && [...sel.options].some(o=>o.value===keepValue)) sel.value = keepValue;
+      else sel.value = "__ALL__";
+    }
+
+    // ========================== ADMIN TABS ==========================
+    document.querySelectorAll("[data-admin-tab]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const target = btn.getAttribute("data-admin-tab");
+        document.querySelectorAll(".admin-tab").forEach(sec=>sec.classList.toggle("hidden", sec.id !== target));
+        document.querySelectorAll(".tab[data-admin-tab]").forEach(tb=>tb.classList.remove("active"));
         btn.classList.add("active");
       });
     });
 
-    // ========================== DROPDOWN FILTER POPULATION ==========================
-    function populateAdminReportDropdowns() {
-      const facSel = $("repFaculty");
-      const courseSel = $("repCourse");
-      const unitSel = $("repUnit");
-      const yearSel = $("repYear");
-      const semSel = $("repSemester");
-      if (!facSel) return;
+    // ========================== SIGNATURE PAD (pointer events + HiDPI) ==========================
+    function makeSignaturePad(canvas, existingDataUrl=null){
+      const ctx = canvas.getContext("2d");
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
 
-      const fromConfig = DATA.facultyConfig || [];
-      const fromClasses = DATA.classes || [];
+      function resize(){
+        // keep CSS size, set pixel size for crisp signature
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const old = canvas.toDataURL("image/png");
+        canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+        canvas.style.width = rect.width + "px";
+        canvas.style.height = rect.height + "px";
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        ctx.lineWidth = 2;
 
-      const faculties = new Set();
-      const courses = new Set();
-      const units = new Set();
-      const years = new Set();
-      const sems = new Set();
-
-      fromConfig.forEach((r) => {
-        faculties.add(r.faculty);
-        courses.add(r.course);
-        units.add(r.unit);
-        years.add(r.year);
-        sems.add(r.semester);
-      });
-      fromClasses.forEach((c) => {
-        faculties.add(c.faculty);
-        courses.add(c.course);
-        units.add(c.unit);
-        years.add(c.year);
-        sems.add(c.semester);
-      });
-
-      function fillSelect(sel, values, allLabel) {
-        const current = sel.value;
-        sel.innerHTML = "";
-        const optAll = document.createElement("option");
-        optAll.value = "";
-        optAll.textContent = allLabel;
-        sel.appendChild(optAll);
-        Array.from(values)
-          .filter((v) => v)
-          .sort()
-          .forEach((v) => {
-            const opt = document.createElement("option");
-            opt.value = v;
-            opt.textContent = v;
-            sel.appendChild(opt);
-          });
-        sel.value = current;
+        // restore image if any
+        const img = new Image();
+        img.onload = ()=>ctx.drawImage(img,0,0,rect.width,rect.height);
+        img.src = existingDataUrl || old;
       }
 
-      fillSelect(facSel, faculties, "All Faculties");
-      fillSelect(courseSel, courses, "All Courses");
-      fillSelect(unitSel, units, "All Units");
-      fillSelect(yearSel, years, "All Years");
-      fillSelect(semSel, sems, "All Semesters");
-    }
+      let drawing=false;
+      let last=null;
 
-    function populateLecturerReportDropdowns() {
-      if (!currentUser || currentUser.role !== "lecturer") return;
-      const facSel = $("repFacultyL");
-      if (!facSel) return;
-
-      const courseSel = $("repCourseL");
-      const unitSel = $("repUnitL");
-      const yearSel = $("repYearL");
-      const semSel = $("repSemesterL");
-
-      const myClasses = (DATA.classes || []).filter(
-        (c) => c.lecturerId === currentUser.id
-      );
-
-      const faculties = new Set();
-      const courses = new Set();
-      const units = new Set();
-      const years = new Set();
-      const sems = new Set();
-
-      myClasses.forEach((c) => {
-        faculties.add(c.faculty);
-        courses.add(c.course);
-        units.add(c.unit);
-        years.add(c.year);
-        sems.add(c.semester);
-      });
-
-      function fillSelect(sel, values, allLabel) {
-        const current = sel.value;
-        sel.innerHTML = "";
-        const optAll = document.createElement("option");
-        optAll.value = "";
-        optAll.textContent = allLabel;
-        sel.appendChild(optAll);
-        Array.from(values)
-          .filter((v) => v)
-          .sort()
-          .forEach((v) => {
-            const opt = document.createElement("option");
-            opt.value = v;
-            opt.textContent = v;
-            sel.appendChild(opt);
-          });
-        sel.value = current;
+      function pos(e){
+        const r = canvas.getBoundingClientRect();
+        return { x: (e.clientX - r.left), y: (e.clientY - r.top) };
       }
 
-      fillSelect(facSel, faculties, "All Faculties");
-      fillSelect(courseSel, courses, "All Courses");
-      fillSelect(unitSel, units, "All Units");
-      fillSelect(yearSel, years, "All Years");
-      fillSelect(semSel, sems, "All Semesters");
-    }
+      function start(e){
+        drawing=true;
+        last=pos(e);
+        ctx.beginPath();
+        ctx.moveTo(last.x,last.y);
+      }
+      function move(e){
+        if(!drawing) return;
+        const p = pos(e);
+        ctx.lineTo(p.x,p.y);
+        ctx.stroke();
+        last=p;
+      }
+      function end(){ drawing=false; last=null; }
 
-    function populateClassFilters() {
-      const adminSel = $("adminClassFilterUnit");
-      const lecSel = $("lecturerClassFilterUnit");
-      const allUnits = new Set((DATA.classes || []).map((c) => c.unit).filter(Boolean));
+      resize();
+      window.addEventListener("resize", ()=>resize(), {passive:true});
 
-      function fill(sel, allLabel) {
-        if (!sel) return;
-        const current = sel.value;
-        sel.innerHTML = "";
-        const optAll = document.createElement("option");
-        optAll.value = "";
-        optAll.textContent = allLabel;
-        sel.appendChild(optAll);
-        Array.from(allUnits)
-          .sort()
-          .forEach((u) => {
-            const opt = document.createElement("option");
-            opt.value = u;
-            opt.textContent = u;
-            sel.appendChild(opt);
-          });
-        sel.value = current;
+      canvas.addEventListener("pointerdown", (e)=>{ e.preventDefault(); canvas.setPointerCapture(e.pointerId); start(e); });
+      canvas.addEventListener("pointermove", (e)=>{ e.preventDefault(); move(e); });
+      canvas.addEventListener("pointerup", (e)=>{ e.preventDefault(); end(); });
+      canvas.addEventListener("pointercancel", (e)=>{ e.preventDefault(); end(); });
+
+      // load existing image (if provided)
+      if(existingDataUrl){
+        const img = new Image();
+        img.onload = ()=>ctx.drawImage(img,0,0,canvas.getBoundingClientRect().width,canvas.getBoundingClientRect().height);
+        img.src = existingDataUrl;
       }
 
-      fill(adminSel, "All Units");
-      fill(lecSel, "All Units");
+      return {
+        clear: ()=>ctx.clearRect(0,0,canvas.width,canvas.height),
+        getDataUrl: ()=>canvas.toDataURL("image/png")
+      };
     }
 
-    if ($("adminClassFilterUnit")) {
-      $("adminClassFilterUnit").addEventListener("change", renderAdminClasses);
+    // ========================== UTIL: download + escaping ==========================
+    function downloadBlob(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 500);
     }
-    if ($("lecturerClassFilterUnit")) {
-      $("lecturerClassFilterUnit").addEventListener(
-        "change",
-        renderLecturerClasses
-      );
+
+    function csvCell(v){
+      const s = String(v ?? "");
+      if(/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+      return s;
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+    }
+    function escapeAttr(str){ return escapeHtml(str).replace(/"/g,"&quot;"); }
+
+    function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
+    function alpha(a,b){ return String(a).localeCompare(String(b)); }
+
+    function safeFileDate(dt){
+      const d = new Date(dt);
+      if(isNaN(d)) return "date";
+      const pad = (n)=>String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+    }
+
+    // ========================== ADMIN INIT REFRESH ==========================
+    function refreshAllAdminUI(){
+      renderAdminLecturers();
+      renderFacultySummary();
+      refreshAdminClassFilters();
+      renderAdminClasses();
+      refreshAllDropdowns();
     }
 
     // ========================== INIT ==========================
-    window.addEventListener("load", () => {
+    window.addEventListener("load", ()=>{
       loadLogoAsDataUrl();
       setupStudentView();
-      $("footerYear").textContent = new Date().getFullYear();
-      DATA = loadData();
-      populateAdminReportDropdowns();
-      populateClassFilters();
+
+      // build dropdowns once on load (works even before login)
+      refreshAllDropdowns();
+      showSection("loginSection");
     });
   </script>
 </body>
