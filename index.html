@@ -1,225 +1,2527 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>JOOUST Smart Attendance Management System</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>JOOUST Attendance Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<!-- ================= JOOUST BRANDING ================= -->
-<style>
-:root{
-  --blue:#003b8c;
-  --blue2:#0052cc;
-  --green:#24a148;
-  --gold:#f2c94c;
-  --bg:#f4f7fb;
-  --card:#ffffff;
-  --text:#1f2933;
-  --muted:#6b7280;
-  --danger:#e11d48;
-}
-*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
-body{margin:0;background:var(--bg);color:var(--text)}
+  <!-- JOOUST theme -->
+  <style>
+    :root{
+      --jooust-blue:#0052cc;
+      --jooust-blue-dark:#003b8c;
+      --jooust-green:#24a148;
+      --jooust-gold:#f2c94c;
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#1f2933;
+      --muted:#6b7280;
+      --danger:#e11d48;
+      --shadow: 0 10px 28px rgba(15,23,42,.10);
+      --shadow2: 0 18px 40px rgba(15,23,42,.14);
+      --radius: 16px;
+    }
 
-header{
-  background:linear-gradient(135deg,var(--blue),var(--blue2));
-  color:#fff;padding:1rem 1.5rem;
-  display:flex;justify-content:space-between;align-items:center;
-  box-shadow:0 6px 20px rgba(0,0,0,.25);
-}
-header .brand{display:flex;gap:1rem;align-items:center}
-header img{height:54px;background:#fff;border-radius:6px;padding:4px}
+    *{ box-sizing:border-box; font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    body{ margin:0; background: var(--bg); color: var(--text); }
 
-main{max-width:1200px;margin:1.5rem auto;padding:0 1rem}
-.card{background:var(--card);border-radius:16px;padding:1.6rem;margin-bottom:1.2rem;
-box-shadow:0 12px 30px rgba(15,23,42,.08)}
+    /* Header */
+    header{
+      background: linear-gradient(135deg, var(--jooust-blue-dark), var(--jooust-blue));
+      color:#fff;
+      padding: 0.9rem 1.2rem;
+      position: sticky;
+      top:0;
+      z-index:50;
+      box-shadow: 0 6px 22px rgba(0,0,0,.25);
+    }
+    .header-inner{
+      max-width: 1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex; align-items:center; gap:0.85rem;
+    }
+    .brand img{
+      height: 52px;
+      width:auto;
+      background:#fff;
+      padding:6px;
+      border-radius: 10px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.20);
+    }
+    .brand h1{
+      margin:0;
+      font-size: 1.15rem;
+      letter-spacing: .2px;
+      line-height:1.25;
+    }
+    .brand h1 span{
+      display:block;
+      font-size: .82rem;
+      opacity:.92;
+      font-weight: 400;
+    }
 
-h2,h3{margin-top:0;color:var(--blue)}
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap: .5rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .user-pill{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.35rem .7rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.22);
+      font-size:.86rem;
+      white-space:nowrap;
+    }
+    .user-pill b{ font-weight: 700; }
 
-label{font-size:.85rem;color:var(--muted)}
-input,select{width:100%;padding:.6rem;border-radius:8px;border:1px solid #d1d5db}
+    main{
+      max-width: 1200px;
+      margin: 1.2rem auto 2.5rem;
+      padding: 0 1rem;
+    }
 
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:1rem;margin-bottom:1rem}
+    /* Hero */
+    .hero{
+      border-radius: var(--radius);
+      background:
+        radial-gradient(1200px 400px at 15% 10%, rgba(242,201,76,.25), transparent 55%),
+        radial-gradient(1200px 400px at 85% 20%, rgba(36,161,72,.18), transparent 55%),
+        linear-gradient(135deg, rgba(0,82,204,.10), rgba(0,59,140,.05));
+      padding: 1rem 1.1rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+      border: 1px solid rgba(0,82,204,.12);
+    }
+    .hero h2{
+      margin:.1rem 0 .35rem;
+      font-size: 1.1rem;
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+    }
+    .hero h2::before{
+      content:"";
+      width: 7px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--jooust-green), var(--jooust-gold));
+      display:inline-block;
+    }
+    .hero p{ margin:0; color: var(--muted); font-size: .92rem; }
 
-.btn{border:none;border-radius:999px;padding:.65rem 1.4rem;font-weight:600;cursor:pointer}
-.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
-.btn-success{background:linear-gradient(135deg,var(--green),#15803d);color:#fff}
-.btn-secondary{background:#e5e7eb}
-.btn-danger{background:var(--danger);color:#fff}
+    .card{
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(15,23,42,.06);
+    }
 
-.hidden{display:none}
+    .hidden{ display:none !important; }
 
-.signature-pad{
-  border:2px dashed var(--blue2);
-  border-radius:12px;
-  height:140px;
-  width:100%;
-  background:#fff;
-}
+    label{
+      font-size:.85rem;
+      color: var(--muted);
+      display:block;
+      margin-bottom:.25rem;
+    }
+    input, select, textarea{
+      width:100%;
+      padding:.62rem .7rem;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      font-size:.92rem;
+      outline:none;
+      transition: .15s ease;
+      background:#f9fafb;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: var(--jooust-blue);
+      box-shadow: 0 0 0 3px rgba(0,82,204,.14);
+      background:#fff;
+    }
 
-table{width:100%;border-collapse:collapse;font-size:.85rem}
-th,td{border:1px solid #e5e7eb;padding:.55rem}
-th{background:#eff6ff;color:#1d4ed8}
+    .row{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: .75rem 1rem;
+      margin-bottom: .8rem;
+    }
 
-footer{
-  margin-top:2rem;
-  text-align:center;
-  padding:1.5rem;
-  background:linear-gradient(135deg,var(--blue),var(--blue2));
-  color:#fff;
-}
-footer strong{color:var(--gold)}
-</style>
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.45rem;
+      padding:.62rem 1rem;
+      border-radius: 999px;
+      border:none;
+      cursor:pointer;
+      font-size:.92rem;
+      font-weight:700;
+      transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
+      white-space:nowrap;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); box-shadow:none; }
+    .btn-primary{
+      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
+      color:#fff;
+      box-shadow: 0 10px 18px rgba(0,82,204,.28);
+    }
+    .btn-success{
+      background: linear-gradient(135deg, var(--jooust-green), #16a34a);
+      color:#fff;
+      box-shadow: 0 10px 18px rgba(22,163,74,.25);
+    }
+    .btn-secondary{
+      background:#e5e7eb;
+      color:#111827;
+    }
+    .btn-danger{
+      background: var(--danger);
+      color:#fff;
+      box-shadow: 0 10px 18px rgba(225,29,72,.18);
+    }
+    .btn-outline{
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.35);
+      color:#fff;
+    }
+    .btn:hover{ filter: brightness(1.03); }
 
-<!-- ================= LIBRARIES ================= -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
+    .btn-group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.5rem;
+      margin-top:.5rem;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.22rem .65rem;
+      border-radius:999px;
+      font-size:.78rem;
+      background:#e5f5ff;
+      color:#075985;
+      border: 1px solid rgba(7,89,133,.12);
+    }
+    .chip.green{ background:#dcfce7; color:#166534; border-color: rgba(22,101,52,.12); }
+    .chip.red{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.12); }
+
+    .tabs{
+      display:flex;
+      gap:.5rem;
+      flex-wrap:wrap;
+      margin-top:.5rem;
+    }
+    .tab{
+      padding:.45rem .95rem;
+      border-radius: 999px;
+      font-size:.9rem;
+      border: 1px solid #d1d5db;
+      background:#f3f4f6;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .tab.active{
+      background: var(--jooust-blue);
+      border-color: var(--jooust-blue-dark);
+      color:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+      margin-top:.6rem;
+      overflow:hidden;
+      border-radius: 14px;
+    }
+    th, td{
+      border: 1px solid #e5e7eb;
+      padding:.55rem .5rem;
+      text-align:left;
+      vertical-align: top;
+    }
+    th{
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:800;
+    }
+    tr:nth-child(even) td{ background:#f9fafb; }
+
+    .badge{
+      padding:.1rem .55rem;
+      border-radius:999px;
+      font-size:.72rem;
+      font-weight:800;
+      background:#e5e7eb;
+    }
+    .badge.open{ background:#dcfce7; color:#166534; }
+    .badge.closed{ background:#fee2e2; color:#b91c1c; }
+
+    .muted{ color: var(--muted); font-size:.9rem; }
+    .small{ font-size:.82rem; color: var(--muted); }
+
+    .alert{
+      padding:.7rem .85rem;
+      border-radius: 14px;
+      font-size:.9rem;
+      margin-bottom:.75rem;
+      border: 1px solid rgba(15,23,42,.06);
+    }
+    .alert-info{ background:#e0f2fe; color:#0b5394; border-color: rgba(11,83,148,.15); }
+    .alert-danger{ background:#fee2e2; color:#991b1b; border-color: rgba(153,27,27,.14); }
+    .alert-success{ background:#dcfce7; color:#166534; border-color: rgba(22,101,52,.14); }
+
+    .signature-pad{
+      border: 2px dashed rgba(0,82,204,.35);
+      border-radius: 14px;
+      background:#fff;
+      width:100%;
+      height: 150px;
+      cursor: crosshair;
+      box-shadow: inset 0 2px 10px rgba(15,23,42,.05);
+      touch-action: none; /* important for phone drawing */
+    }
+    .signature-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:.4rem;
+      margin-top:.35rem;
+    }
+
+    .footer{
+      margin-top: 1.2rem;
+      padding: .9rem 1rem;
+      text-align:center;
+      color: rgba(31,41,51,.75);
+      font-size:.86rem;
+    }
+    .footer b{
+      color: var(--jooust-blue-dark);
+    }
+
+    @media (max-width:640px){
+      .brand img{ height:46px; }
+      .brand h1{ font-size: 1.05rem; }
+      .signature-pad{ height: 170px; }
+    }
+  </style>
+
+  <!-- Exports -->
+  <!-- jsPDF + AutoTable -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- SheetJS for Excel -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
 </head>
-<body>
 
-<header>
-  <div class="brand">
-    <img src="logo.jpg">
-    <div>
-      <h2>JOOUST Smart Attendance System</h2>
-      <small>Secure • Geo-Fenced • Digital Signatures • Smart Reports</small>
+<body>
+<header id="mainHeader">
+  <div class="header-inner">
+    <div class="brand">
+      <img src="logo.jpg" alt="JOOUST Logo" />
+      <h1>
+        JOOUST Attendance System
+        <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
+      </h1>
+    </div>
+
+    <div class="top-actions">
+      <div id="userSummary" class="user-pill hidden"></div>
+      <button id="openChangePwdBtn" class="btn btn-outline hidden" title="Change Password">Change Password</button>
+      <button id="logoutBtn" class="btn btn-outline hidden" title="Logout">Logout</button>
     </div>
   </div>
-  <div id="topUser"></div>
 </header>
 
 <main>
+  <div class="hero">
+    <h2>Smart Attendance for Lectures & Meetings</h2>
+    <p>
+      Fast sign-in, digital signatures, class links, and official exports (PDF/Word/Excel/CSV).
+      Students can sign using mobile phones (finger signature supported).
+    </p>
+  </div>
 
-<!-- LOGIN -->
-<section id="loginSection" class="card">
-  <h2>System Login</h2>
-  <div class="row">
-    <div>
-      <label>Role</label>
-      <select id="loginRole">
-        <option value="admin">Admin</option>
-        <option value="lecturer">Lecturer</option>
-      </select>
+  <!-- LOGIN -->
+  <section id="loginSection" class="card">
+    <h2 style="margin:0 0 .6rem;display:flex;align-items:center;gap:.55rem;">
+      <span style="width:10px;height:10px;border-radius:999px;background:linear-gradient(135deg,var(--jooust-green),var(--jooust-gold));display:inline-block;"></span>
+      Login
+    </h2>
+
+    <div class="row">
+      <div>
+        <label>Login as</label>
+        <div style="display:flex;gap:.9rem;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:.45rem;color:var(--text);">
+            <input type="radio" name="loginRole" value="admin" checked />
+            Admin
+          </label>
+          <label style="display:flex;align-items:center;gap:.45rem;color:var(--text);">
+            <input type="radio" name="loginRole" value="lecturer" />
+            Lecturer
+          </label>
+        </div>
+      </div>
     </div>
-    <div><label>Username</label><input id="loginUser"></div>
-    <div><label>Password</label><input id="loginPass" type="password"></div>
-  </div>
-  <button class="btn btn-primary" onclick="login()">Login</button>
-  <button class="btn btn-secondary" onclick="showRegister()">Register Lecturer</button>
-  <p id="loginMsg"></p>
-</section>
 
-<!-- STUDENT -->
-<section id="studentSection" class="card hidden">
-  <h2>Student Attendance</h2>
-  <p id="classInfo"></p>
-  <div class="row">
-    <div><label>Surname</label><input id="stSurname"></div>
-    <div><label>First Name</label><input id="stFirst"></div>
-    <div><label>Admission No</label><input id="stAdm"></div>
-  </div>
-  <label>Signature</label>
-  <canvas id="stSig" class="signature-pad"></canvas>
-  <button class="btn btn-success" onclick="submitAttendance()">Submit Attendance</button>
-  <p id="stMsg"></p>
-</section>
+    <div class="row">
+      <div>
+        <label for="loginUsername">Username</label>
+        <input id="loginUsername" type="text" placeholder="Enter username" autocomplete="username" />
+      </div>
+      <div>
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password" />
+      </div>
+    </div>
 
+    <div class="btn-group">
+      <button class="btn btn-primary" id="loginBtn">Login</button>
+      <button class="btn btn-secondary" id="showLecturerRegistration">Register as Lecturer</button>
+    </div>
+
+    <div id="loginMessage" class="alert hidden"></div>
+  </section>
+
+  <!-- LECTURER REGISTRATION (assignment removed) -->
+  <section id="lecturerRegistrationSection" class="card hidden">
+    <h2 style="margin:0 0 .6rem;">Lecturer Registration</h2>
+    <div class="alert alert-info">
+      Your account will be <b>pending</b> until approved by the Admin.
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="regSalutation">Salutation</label>
+        <select id="regSalutation">
+          <option value="Dr.">Dr.</option>
+          <option value="Mr.">Mr.</option>
+          <option value="Mrs.">Mrs.</option>
+          <option value="Ms.">Ms.</option>
+          <option value="Prof.">Prof.</option>
+        </select>
+      </div>
+      <div>
+        <label for="regFullName">Full Name</label>
+        <input id="regFullName" type="text" placeholder="e.g. Dr. Jane Doe" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="regPF">PF No / ID</label>
+        <input id="regPF" type="text" />
+      </div>
+      <div>
+        <label for="regUsername">Preferred Username</label>
+        <input id="regUsername" type="text" placeholder="e.g. jdoe" />
+      </div>
+      <div>
+        <label for="regPassword">Password</label>
+        <input id="regPassword" type="password" />
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" id="submitLecturerRegistration">Submit Registration</button>
+      <button class="btn btn-secondary" id="backToLogin">Back to Login</button>
+    </div>
+
+    <div id="lecturerRegMessage" class="alert hidden"></div>
+  </section>
+
+  <!-- STUDENT VIEW -->
+  <section id="studentSection" class="card hidden">
+    <h2 style="margin:0 0 .6rem;">Class Attendance – Student Sign-In</h2>
+    <div id="studentClassInfo" class="alert alert-info"></div>
+
+    <div id="studentGeoInfo" class="alert alert-info hidden"></div>
+
+    <div id="studentAlreadySubmitted" class="alert alert-success hidden">
+      You have already submitted attendance for this class on this device.
+    </div>
+
+    <div id="studentFormWrapper">
+      <div class="row">
+        <div>
+          <label for="stSurname">Surname</label>
+          <input id="stSurname" type="text" />
+        </div>
+        <div>
+          <label for="stMiddleName">Middle Name</label>
+          <input id="stMiddleName" type="text" />
+        </div>
+        <div>
+          <label for="stFirstName">First Name</label>
+          <input id="stFirstName" type="text" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="stAdmission">Admission Number</label>
+          <input id="stAdmission" type="text" />
+        </div>
+      </div>
+
+      <label>Digital Signature (use finger or mouse)</label>
+      <canvas id="stSignaturePad" class="signature-pad"></canvas>
+      <div class="signature-actions">
+        <button class="btn btn-secondary" id="stClearSignature">Clear</button>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-success" id="stSubmit">Submit Attendance</button>
+      </div>
+
+      <div id="studentSubmitMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+    </div>
+
+    <div class="small" style="margin-top:.8rem;">
+      Note: You may be asked to allow location access (GPS) to confirm you are within JOOUST (1km radius).
+    </div>
+  </section>
+
+  <!-- ADMIN DASHBOARD -->
+  <section id="adminDashboard" class="hidden">
+    <div class="card">
+      <h2 style="margin:0;">Admin Dashboard</h2>
+      <div class="tabs">
+        <button class="tab active" data-admin-tab="lecturersTab">Lecturers</button>
+        <button class="tab" data-admin-tab="facultyTab">Faculty / Course / Unit Upload</button>
+        <button class="tab" data-admin-tab="classesTab">Classes</button>
+        <button class="tab" data-admin-tab="reportsTab">Reports</button>
+        <button class="tab" data-admin-tab="exportsTab">Raw Exports</button>
+      </div>
+    </div>
+
+    <!-- Lecturers -->
+    <section id="lecturersTab" class="card admin-tab">
+      <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <h3 style="margin:.1rem 0;">Lecturer Accounts</h3>
+          <div class="small">Approve new registrations & manage accounts.</div>
+        </div>
+      </div>
+      <div id="lecturersTableWrapper" class="muted">No lecturers yet.</div>
+    </section>
+
+    <!-- Faculty CSV -->
+    <section id="facultyTab" class="card admin-tab hidden">
+      <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <h3 style="margin:.1rem 0;">Faculty / Course / Unit Mapping</h3>
+          <div class="small">Upload CSV to populate dropdown lists (Faculty, Course, Unit, Year, Semester).</div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        CSV Structure: <code>Faculty,Course,Unit,Year,Semester</code><br />
+        Each row represents one unit/class option.
+      </div>
+
+      <input type="file" id="facultyCsvInput" accept=".csv" />
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="uploadFacultyCsvBtn">Upload & Save</button>
+        <button class="btn btn-secondary" id="clearFacultyDataBtn">Clear All Mappings</button>
+      </div>
+
+      <div id="facultyUploadMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+
+      <h4 style="margin-top:1rem;margin-bottom:.4rem;">Current Records</h4>
+      <div id="facultySummary" class="muted"></div>
+    </section>
+
+    <!-- Classes -->
+    <section id="classesTab" class="card admin-tab hidden">
+      <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <h3 style="margin:.1rem 0;">All Classes</h3>
+          <div class="small">Monitor all sessions and view attendance + signatures.</div>
+        </div>
+
+        <div style="min-width:260px;">
+          <label for="adminClassFilter">Quick Filter (Unit / Lecturer / Course)</label>
+          <select id="adminClassFilter"></select>
+        </div>
+      </div>
+
+      <div id="adminClassesTableWrapper" class="muted">No classes created yet.</div>
+    </section>
+
+    <!-- Reports -->
+    <section id="reportsTab" class="card admin-tab hidden">
+      <h3 style="margin:.1rem 0 .25rem;">Reports</h3>
+      <div class="muted" style="margin-bottom:.8rem;">
+        Filter using dropdowns and export as PDF/Word/Excel.
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="repFaculty">Faculty</label>
+          <select id="repFaculty"></select>
+        </div>
+        <div>
+          <label for="repCourse">Course</label>
+          <select id="repCourse"></select>
+        </div>
+        <div>
+          <label for="repUnit">Unit</label>
+          <select id="repUnit"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="repYear">Year</label>
+          <select id="repYear"></select>
+        </div>
+        <div>
+          <label for="repSemester">Semester</label>
+          <select id="repSemester"></select>
+        </div>
+        <div>
+          <label for="repStatus">Status</label>
+          <select id="repStatus">
+            <option value="">All</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="generateReportBtn">Generate Report</button>
+      </div>
+
+      <div id="reportArea" class="hidden" style="margin-top:1rem;">
+        <div class="btn-group">
+          <button class="btn btn-primary" id="exportPdfBtn">Download PDF</button>
+          <button class="btn btn-secondary" id="exportWordBtn">Download Word</button>
+          <button class="btn btn-secondary" id="exportExcelBtn">Download Excel</button>
+        </div>
+
+        <div id="reportMeta" class="muted" style="margin-top:.6rem;"></div>
+        <table id="reportTable"></table>
+      </div>
+    </section>
+
+    <!-- Raw exports -->
+    <section id="exportsTab" class="card admin-tab hidden">
+      <h3 style="margin:.1rem 0 .25rem;">Raw Attendance Export</h3>
+      <div class="muted" style="margin-bottom:.8rem;">
+        Export student attendance (names + admission + timestamps + signatures data).
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="rawClassPick">Pick Class</label>
+          <select id="rawClassPick"></select>
+        </div>
+        <div>
+          <label>Export Format</label>
+          <div class="btn-group" style="margin-top:.2rem;">
+            <button class="btn btn-primary" id="rawExportCsvBtn">Download CSV</button>
+            <button class="btn btn-secondary" id="rawExportExcelBtn">Download Excel</button>
+          </div>
+        </div>
+      </div>
+      <div id="rawExportMsg" class="alert hidden"></div>
+
+      <div class="small" style="margin-top:.6rem;">
+        Note: Signature is exported as a <b>data URL</b> (base64). This is best for archiving/verification.
+      </div>
+    </section>
+  </section>
+
+  <!-- LECTURER DASHBOARD -->
+  <section id="lecturerDashboard" class="hidden">
+    <section class="card">
+      <h2 style="margin:0;">Lecturer Dashboard</h2>
+      <p class="muted" style="margin:.4rem 0 0;">
+        Create classes, share student link, view attendance & export official reports.
+      </p>
+    </section>
+
+    <!-- Create class -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <h3 style="margin:.1rem 0;">Create / Start Class</h3>
+          <div class="small">Select Faculty/Course/Unit/Year/Semester from uploaded mappings.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="lcFaculty">Faculty</label>
+          <select id="lcFaculty"></select>
+        </div>
+        <div>
+          <label for="lcCourse">Course</label>
+          <select id="lcCourse"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="lcUnit">Unit</label>
+          <select id="lcUnit"></select>
+        </div>
+        <div>
+          <label for="lcYear">Year</label>
+          <select id="lcYear"></select>
+        </div>
+        <div>
+          <label for="lcSemester">Semester</label>
+          <select id="lcSemester"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="lcVenue">Venue</label>
+          <input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" />
+        </div>
+        <div>
+          <label for="lcDateTime">Date & Time</label>
+          <input id="lcDateTime" type="datetime-local" />
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-success" id="createClassBtn">Create / Start Class</button>
+      </div>
+      <div id="createClassMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+    </section>
+
+    <!-- My classes -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <h3 style="margin:.1rem 0;">My Classes</h3>
+          <div class="small">Copy link, close/open class, view attendance & export.</div>
+        </div>
+        <div style="min-width:260px;">
+          <label for="lecClassFilter">Quick Filter (Unit / Course / Status)</label>
+          <select id="lecClassFilter"></select>
+        </div>
+      </div>
+      <div id="lecturerClassesTableWrapper" class="muted">No classes yet.</div>
+    </section>
+
+    <!-- Lecturer reports -->
+    <section class="card">
+      <h3 style="margin:.1rem 0 .25rem;">Quick Reports (My Classes)</h3>
+      <p class="muted" style="margin:.35rem 0 .9rem;">
+        Filter using dropdown menus and export official reports.
+      </p>
+
+      <div class="row">
+        <div><label for="repFacultyL">Faculty</label><select id="repFacultyL"></select></div>
+        <div><label for="repCourseL">Course</label><select id="repCourseL"></select></div>
+        <div><label for="repUnitL">Unit</label><select id="repUnitL"></select></div>
+      </div>
+      <div class="row">
+        <div><label for="repYearL">Year</label><select id="repYearL"></select></div>
+        <div><label for="repSemesterL">Semester</label><select id="repSemesterL"></select></div>
+        <div>
+          <label for="repStatusL">Status</label>
+          <select id="repStatusL">
+            <option value="">All</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="generateReportLecturerBtn">Generate My Report</button>
+      </div>
+
+      <div id="reportAreaLecturer" class="hidden" style="margin-top:1rem;">
+        <div class="btn-group">
+          <button class="btn btn-primary" id="exportPdfBtnL">Download PDF</button>
+          <button class="btn btn-secondary" id="exportWordBtnL">Download Word</button>
+          <button class="btn btn-secondary" id="exportExcelBtnL">Download Excel</button>
+        </div>
+
+        <div id="reportMetaL" class="muted" style="margin-top:.6rem;"></div>
+        <table id="reportTableL"></table>
+      </div>
+    </section>
+  </section>
+
+  <div class="footer">
+    System created by <b>Gerotech</b> — <b>Dan Otieno</b>.
+  </div>
 </main>
 
-<footer>
-  © JOOUST Smart Attendance System  
-  <br>Created by <strong>Gerotech</strong> under <strong>Dan Otieno</strong>
-</footer>
+<!-- Change Password Modal -->
+<div id="pwdModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+  <div class="card" style="width:min(520px,96%);box-shadow:var(--shadow2);">
+    <h3 style="margin:.1rem 0 .6rem;">Change Password</h3>
+    <div class="row">
+      <div>
+        <label for="pwdOld">Current Password</label>
+        <input id="pwdOld" type="password" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="pwdNew">New Password</label>
+        <input id="pwdNew" type="password" />
+      </div>
+      <div>
+        <label for="pwdNew2">Confirm New Password</label>
+        <input id="pwdNew2" type="password" />
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" id="pwdSaveBtn">Save</button>
+      <button class="btn btn-secondary" id="pwdCloseBtn">Close</button>
+    </div>
+    <div id="pwdMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+  </div>
+</div>
 
 <script>
-/* ================= CONFIG ================= */
-const JOOUST_LAT = -0.0917;
-const JOOUST_LON = 34.7680;
+/* ===========================
+   STORAGE + BASE DATA
+=========================== */
+const STORAGE_KEY = "jooust_attendance_data_v2";
 
-/* ================= DATA ================= */
-const KEY="jooust_final_prod";
-let DB=JSON.parse(localStorage.getItem(KEY))||{
-  admins:[{u:"admin",p:"admin123"}],
-  classes:[],
-  attendance:[]
-};
-function save(){localStorage.setItem(KEY,JSON.stringify(DB))}
+/* JOOUST Center (Approx). You can refine coordinates if needed. */
+const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 }; // approx Bondo/JOOUST
+const GEOFENCE_RADIUS_KM = 1.0;
 
-/* ================= LOGIN ================= */
-function login(){
-  if(loginRole.value==="admin"){
-    const a=DB.admins.find(x=>x.u===loginUser.value&&x.p===loginPass.value);
-    if(!a){loginMsg.textContent="Invalid admin credentials";return}
-    topUser.textContent="Admin logged in";
-    loginSection.classList.add("hidden");
+function baseData(){
+  return {
+    admins: [{ username:"admin", password:"admin123" }], /* default exists but is NOT displayed */
+    lecturers: [],
+    facultyConfig: [], /* CSV mapping */
+    classes: [],
+    attendance: []
+  };
+}
+function loadData(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw){
+    const b = baseData();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(b));
+    return b;
+  }
+  try{ return JSON.parse(raw); }
+  catch(e){
+    const b = baseData();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(b));
+    return b;
   }
 }
+function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+let DATA = loadData();
 
-/* ================= STUDENT ================= */
-const url=new URLSearchParams(location.search);
-const classId=url.get("student");
-if(classId){
-  loginSection.classList.add("hidden");
-  studentSection.classList.remove("hidden");
-  classInfo.textContent="Attendance for Class ID: "+classId;
+/* Session */
+let currentUser = null; // {role:'admin'|'lecturer', username/id}
+let jooustLogoDataUrl = null;
+
+/* ===========================
+   DOM helpers
+=========================== */
+function $(id){ return document.getElementById(id); }
+function showSection(id){
+  ["loginSection","lecturerRegistrationSection","adminDashboard","lecturerDashboard","studentSection"].forEach(sid=>{
+    const el = $(sid);
+    if(!el) return;
+    el.classList.toggle("hidden", sid !== id);
+  });
+}
+function uuid(){
+  return Date.now().toString(36) + "-" + Math.random().toString(36).substring(2,10);
+}
+function setAlert(el, msg, type="info"){
+  el.textContent = msg;
+  el.classList.remove("hidden","alert-info","alert-danger","alert-success");
+  if(type==="danger") el.classList.add("alert-danger");
+  else if(type==="success") el.classList.add("alert-success");
+  else el.classList.add("alert-info");
+}
+function clearAlert(el){ el.classList.add("hidden"); }
+
+function formatDateTime(dt){
+  if(!dt) return "";
+  const d = new Date(dt);
+  if(isNaN(d)) return dt;
+  return d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+}
+function getQueryParam(name){
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name);
 }
 
-const canvas=document.getElementById("stSig");
-const ctx=canvas.getContext("2d");
-ctx.lineWidth=2;ctx.lineCap="round";
-let draw=false;
+/* ===========================
+   Load logo as DataURL for PDF/Word
+=========================== */
+function loadLogoAsDataUrl(){
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = "logo.jpg";
+  img.onload = ()=>{
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img,0,0);
+    jooustLogoDataUrl = canvas.toDataURL("image/jpeg");
+  };
+  img.onerror = ()=> console.warn("logo.jpg not found or blocked. Put logo.jpg next to this HTML.");
+}
 
-canvas.onmousedown=e=>{draw=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY)};
-canvas.onmousemove=e=>{if(draw){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke()}};
-window.onmouseup=()=>draw=false;
+/* ===========================
+   Canvas signature (mobile + laptop)
+=========================== */
+function setupSignaturePad(canvas, opts={}){
+  const ctx = canvas.getContext("2d");
+  ctx.lineWidth = opts.lineWidth || 2.2;
+  ctx.lineCap = "round";
 
-canvas.ontouchstart=e=>{
-  e.preventDefault();
-  draw=true;
-  const t=e.touches[0];
-  const r=canvas.getBoundingClientRect();
-  ctx.beginPath();
-  ctx.moveTo(t.clientX-r.left,t.clientY-r.top);
-};
-canvas.ontouchmove=e=>{
-  e.preventDefault();
-  if(draw){
-    const t=e.touches[0];
-    const r=canvas.getBoundingClientRect();
-    ctx.lineTo(t.clientX-r.left,t.clientY-r.top);
+  function resize(){
+    // keep drawing crisp on mobile
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.floor(rect.width * ratio);
+    canvas.height = Math.floor(rect.height * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    // do not clear automatically (caller may load existing)
+  }
+
+  function getPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    return { x: point.clientX - rect.left, y: point.clientY - rect.top };
+  }
+
+  let drawing = false;
+
+  function start(e){
+    e.preventDefault();
+    drawing = true;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+  function move(e){
+    if(!drawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
     ctx.stroke();
   }
-};
-canvas.ontouchend=()=>draw=false;
+  function end(){ drawing = false; }
 
-function submitAttendance(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const d=distance(pos.coords.latitude,pos.coords.longitude,JOOUST_LAT,JOOUST_LON);
-    if(d>1){stMsg.textContent="You must be within JOOUST (1km)";return}
-    DB.attendance.push({
-      classId,
-      surname:stSurname.value,
-      first:stFirst.value,
-      adm:stAdm.value,
-      time:new Date().toLocaleString()
+  canvas.addEventListener("mousedown", start);
+  canvas.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", end);
+
+  canvas.addEventListener("touchstart", start, {passive:false});
+  canvas.addEventListener("touchmove", move, {passive:false});
+  window.addEventListener("touchend", end);
+
+  window.addEventListener("resize", ()=>{
+    // Preserve drawing on resize: snapshot -> resize -> redraw
+    const data = canvas.toDataURL("image/png");
+    resize();
+    if(data && data.length > 50){
+      const img = new Image();
+      img.onload = ()=> ctx.drawImage(img, 0, 0, canvas.width/(window.devicePixelRatio||1), canvas.height/(window.devicePixelRatio||1));
+      img.src = data;
+    }
+  });
+
+  resize();
+
+  return {
+    clear: ()=> ctx.clearRect(0,0, canvas.width, canvas.height),
+    toDataUrl: ()=> canvas.toDataURL("image/png"),
+    loadDataUrl: (dataUrl)=>{
+      if(!dataUrl) return;
+      const img = new Image();
+      img.onload = ()=> ctx.drawImage(img, 0, 0, canvas.width/(window.devicePixelRatio||1), canvas.height/(window.devicePixelRatio||1));
+      img.src = dataUrl;
+    },
+    resize
+  };
+}
+
+/* ===========================
+   USER summary + top buttons
+=========================== */
+function updateTopBar(){
+  const summary = $("userSummary");
+  const logoutBtn = $("logoutBtn");
+  const changeBtn = $("openChangePwdBtn");
+
+  if(!currentUser){
+    summary.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+    changeBtn.classList.add("hidden");
+    summary.textContent = "";
+    return;
+  }
+  summary.classList.remove("hidden");
+  logoutBtn.classList.remove("hidden");
+  changeBtn.classList.remove("hidden");
+
+  if(currentUser.role==="admin"){
+    summary.innerHTML = `Logged in as <b>Admin</b> · <b>${currentUser.username}</b>`;
+  } else {
+    const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
+    const name = lec ? `${lec.salutation} ${lec.fullName}` : currentUser.username;
+    summary.innerHTML = `Logged in as <b>Lecturer</b> · <b>${name}</b>`;
+  }
+}
+
+$("logoutBtn").addEventListener("click", ()=>{
+  currentUser = null;
+  updateTopBar();
+  showSection("loginSection");
+  // cleanup hash/search state for safety
+});
+
+$("openChangePwdBtn").addEventListener("click", ()=>{
+  clearAlert($("pwdMsg"));
+  $("pwdOld").value = "";
+  $("pwdNew").value = "";
+  $("pwdNew2").value = "";
+  $("pwdModal").classList.remove("hidden");
+});
+$("pwdCloseBtn").addEventListener("click", ()=> $("pwdModal").classList.add("hidden"));
+
+$("pwdSaveBtn").addEventListener("click", ()=>{
+  const oldP = $("pwdOld").value;
+  const newP = $("pwdNew").value;
+  const newP2 = $("pwdNew2").value;
+  const msgEl = $("pwdMsg");
+
+  if(!currentUser){ setAlert(msgEl,"Not logged in.","danger"); return; }
+  if(!oldP || !newP || !newP2){ setAlert(msgEl,"Fill all fields.","danger"); return; }
+  if(newP.length < 4){ setAlert(msgEl,"New password too short (min 4).","danger"); return; }
+  if(newP !== newP2){ setAlert(msgEl,"New passwords do not match.","danger"); return; }
+
+  DATA = loadData();
+
+  if(currentUser.role==="admin"){
+    const adm = DATA.admins.find(a=>a.username===currentUser.username);
+    if(!adm || adm.password !== oldP){ setAlert(msgEl,"Current password is wrong.","danger"); return; }
+    adm.password = newP;
+    saveData(DATA);
+    setAlert(msgEl,"Password updated successfully.","success");
+  } else {
+    const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
+    if(!lec || lec.password !== oldP){ setAlert(msgEl,"Current password is wrong.","danger"); return; }
+    lec.password = newP;
+    saveData(DATA);
+    setAlert(msgEl,"Password updated successfully.","success");
+  }
+});
+
+/* ===========================
+   Lecturer Registration + Login
+=========================== */
+$("showLecturerRegistration").addEventListener("click", ()=>{
+  showSection("lecturerRegistrationSection");
+  clearAlert($("loginMessage"));
+});
+$("backToLogin").addEventListener("click", ()=>{
+  showSection("loginSection");
+  clearAlert($("lecturerRegMessage"));
+});
+
+$("submitLecturerRegistration").addEventListener("click", ()=>{
+  const salutation = $("regSalutation").value;
+  const fullName = $("regFullName").value.trim();
+  const pf = $("regPF").value.trim();
+  const username = $("regUsername").value.trim();
+  const password = $("regPassword").value;
+  const msgEl = $("lecturerRegMessage");
+
+  if(!fullName || !pf || !username || !password){
+    setAlert(msgEl,"Please fill all required fields.","danger");
+    return;
+  }
+
+  DATA = loadData();
+  if(DATA.lecturers.some(l=>l.username===username) || DATA.admins.some(a=>a.username===username)){
+    setAlert(msgEl,"Username already exists.","danger");
+    return;
+  }
+
+  const lecturer = {
+    id: uuid(),
+    salutation, fullName, pf,
+    username, password,
+    approved: false
+  };
+  DATA.lecturers.push(lecturer);
+  saveData(DATA);
+
+  setAlert(msgEl,"Registration submitted. Wait for Admin approval.","success");
+  $("regFullName").value = $("regPF").value = $("regUsername").value = $("regPassword").value = "";
+});
+
+$("loginBtn").addEventListener("click", ()=>{
+  const username = $("loginUsername").value.trim();
+  const password = $("loginPassword").value;
+  const role = document.querySelector('input[name="loginRole"]:checked').value;
+  const msgEl = $("loginMessage");
+
+  if(!username || !password){
+    setAlert(msgEl,"Please enter username and password.","danger");
+    return;
+  }
+
+  DATA = loadData();
+
+  if(role==="admin"){
+    const found = DATA.admins.find(a=>a.username===username && a.password===password);
+    if(!found){ setAlert(msgEl,"Invalid admin credentials.","danger"); return; }
+    currentUser = { role:"admin", username };
+    clearAlert(msgEl);
+    updateTopBar();
+    showSection("adminDashboard");
+    renderAdminLecturers();
+    renderFacultySummary();
+    renderAdminClasses();
+    refreshAllDropdowns(); // mapping-based dropdowns
+    refreshClassPickers();
+  } else {
+    const lec = DATA.lecturers.find(l=>l.username===username && l.password===password);
+    if(!lec){ setAlert(msgEl,"Lecturer not found or wrong password.","danger"); return; }
+    if(!lec.approved){ setAlert(msgEl,"Your account is pending approval by Admin.","danger"); return; }
+
+    currentUser = { role:"lecturer", id: lec.id, username: lec.username };
+    clearAlert(msgEl);
+    updateTopBar();
+    showSection("lecturerDashboard");
+    refreshAllDropdowns();
+    renderLecturerClasses();
+  }
+});
+
+/* ===========================
+   ADMIN: Lecturers approve + reset password
+=========================== */
+function renderAdminLecturers(){
+  const wrapper = $("lecturersTableWrapper");
+  DATA = loadData();
+
+  if(!DATA.lecturers.length){
+    wrapper.textContent = "No lecturers registered yet.";
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Lecturer</th>
+    <th>PF/ID</th>
+    <th>Username</th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr></thead><tbody>`;
+
+  DATA.lecturers.forEach(lec=>{
+    const status = lec.approved ? `<span class="chip green">Approved</span>` : `<span class="chip red">Pending</span>`;
+    html += `<tr>
+      <td><b>${lec.salutation} ${lec.fullName}</b></td>
+      <td>${lec.pf}</td>
+      <td>${lec.username}</td>
+      <td>${status}</td>
+      <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="btn ${lec.approved ? "btn-secondary":"btn-success"}" data-action="toggle" data-id="${lec.id}">
+          ${lec.approved ? "Revoke":"Approve"}
+        </button>
+        <button class="btn btn-danger" data-action="resetpwd" data-id="${lec.id}">
+          Reset Password
+        </button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  wrapper.innerHTML = html;
+
+  wrapper.querySelectorAll("button[data-action]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+      DATA = loadData();
+      const lec = DATA.lecturers.find(l=>l.id===id);
+      if(!lec) return;
+
+      if(action==="toggle"){
+        lec.approved = !lec.approved;
+        saveData(DATA);
+        renderAdminLecturers();
+      }
+      if(action==="resetpwd"){
+        const np = prompt("Enter new password for lecturer:", "1234");
+        if(!np) return;
+        lec.password = np;
+        saveData(DATA);
+        alert("Password reset successfully.");
+      }
     });
-    save();
-    stMsg.textContent="Attendance submitted successfully";
-  },()=>stMsg.textContent="Location permission required");
+  });
 }
 
-function distance(lat1,lon1,lat2,lon2){
-  const R=6371;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+
-  Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
-  Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+/* ===========================
+   FACULTY CSV upload + dropdown builders
+=========================== */
+$("uploadFacultyCsvBtn").addEventListener("click", ()=>{
+  const file = $("facultyCsvInput").files[0];
+  const msgEl = $("facultyUploadMsg");
+  if(!file){ setAlert(msgEl,"Select a CSV file first.","danger"); return; }
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const text = e.target.result || "";
+    const lines = text.split(/\r?\n/).filter(l=>l.trim());
+    const records = [];
+    for(const line of lines){
+      const parts = line.split(",").map(p=>p.trim());
+      if(parts.length < 5) continue;
+      const [faculty, course, unit, year, semester] = parts;
+      if(!faculty || !course || !unit || !year || !semester) continue;
+      records.push({ faculty, course, unit, year, semester });
+    }
+    DATA = loadData();
+    DATA.facultyConfig = records;
+    saveData(DATA);
+    setAlert(msgEl, `Uploaded ${records.length} entries successfully.`, "success");
+    renderFacultySummary();
+    refreshAllDropdowns();
+  };
+  reader.readAsText(file);
+});
+
+$("clearFacultyDataBtn").addEventListener("click", ()=>{
+  const msgEl = $("facultyUploadMsg");
+  if(!confirm("Clear all existing faculty/course/unit mappings?")) return;
+  DATA = loadData();
+  DATA.facultyConfig = [];
+  saveData(DATA);
+  setAlert(msgEl,"All mappings cleared.","success");
+  renderFacultySummary();
+  refreshAllDropdowns();
+});
+
+function renderFacultySummary(){
+  const wrap = $("facultySummary");
+  DATA = loadData();
+  if(!DATA.facultyConfig.length){
+    wrap.textContent = "No mappings uploaded yet.";
+    return;
+  }
+  const total = DATA.facultyConfig.length;
+  const faculties = [...new Set(DATA.facultyConfig.map(r=>r.faculty))];
+  wrap.innerHTML = `<p class="muted" style="margin:.2rem 0 0;">
+    Total entries: <b>${total}</b><br/>
+    Faculties: ${faculties.join(", ")}
+  </p>`;
 }
+
+/* Cascading dropdown support */
+function unique(arr){ return [...new Set(arr)].sort((a,b)=>a.localeCompare(b)); }
+function setOptions(selectEl, values, placeholder="All / Select"){
+  if(!selectEl) return;
+  const cur = selectEl.value;
+  selectEl.innerHTML = "";
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = placeholder;
+  selectEl.appendChild(opt0);
+
+  values.forEach(v=>{
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = v;
+    selectEl.appendChild(o);
+  });
+
+  // try restore selection if still exists
+  if(cur && values.includes(cur)) selectEl.value = cur;
+}
+
+function getMapping(){
+  DATA = loadData();
+  return DATA.facultyConfig || [];
+}
+
+function refreshAllDropdowns(){
+  const m = getMapping();
+
+  // Admin reports dropdowns
+  setOptions($("repFaculty"), unique(m.map(x=>x.faculty)), "All Faculties");
+  setOptions($("repCourse"), unique(m.map(x=>x.course)), "All Courses");
+  setOptions($("repUnit"), unique(m.map(x=>x.unit)), "All Units");
+  setOptions($("repYear"), unique(m.map(x=>x.year)), "All Years");
+  setOptions($("repSemester"), unique(m.map(x=>x.semester)), "All Semesters");
+
+  // Lecturer create class + lecturer reports dropdowns
+  setOptions($("lcFaculty"), unique(m.map(x=>x.faculty)), "Select Faculty");
+  setOptions($("lcCourse"), unique(m.map(x=>x.course)), "Select Course");
+  setOptions($("lcUnit"), unique(m.map(x=>x.unit)), "Select Unit");
+  setOptions($("lcYear"), unique(m.map(x=>x.year)), "Select Year");
+  setOptions($("lcSemester"), unique(m.map(x=>x.semester)), "Select Semester");
+
+  setOptions($("repFacultyL"), unique(m.map(x=>x.faculty)), "All Faculties");
+  setOptions($("repCourseL"), unique(m.map(x=>x.course)), "All Courses");
+  setOptions($("repUnitL"), unique(m.map(x=>x.unit)), "All Units");
+  setOptions($("repYearL"), unique(m.map(x=>x.year)), "All Years");
+  setOptions($("repSemesterL"), unique(m.map(x=>x.semester)), "All Semesters");
+
+  // cascading for lecturer create class (better UX)
+  hookupCascadingCreateClass();
+  hookupCascadingReports();
+}
+
+function hookupCascadingCreateClass(){
+  const m = getMapping();
+  const f = $("lcFaculty"), c = $("lcCourse"), u = $("lcUnit"), y = $("lcYear"), s = $("lcSemester");
+  if(!f || !c || !u || !y || !s) return;
+
+  function apply(){
+    const fv = f.value, cv = c.value, uv = u.value, yv = y.value, sv = s.value;
+
+    const m1 = fv ? m.filter(r=>r.faculty===fv) : m;
+    setOptions(c, unique(m1.map(r=>r.course)), "Select Course");
+
+    const m2 = (fv && c.value) ? m.filter(r=>r.faculty===fv && r.course===c.value) : (c.value ? m.filter(r=>r.course===c.value) : m1);
+    setOptions(u, unique(m2.map(r=>r.unit)), "Select Unit");
+
+    const m3 = (fv && c.value && u.value) ? m.filter(r=>r.faculty===fv && r.course===c.value && r.unit===u.value) : m2;
+    setOptions(y, unique(m3.map(r=>r.year)), "Select Year");
+
+    const m4 = (fv && c.value && u.value && y.value) ? m.filter(r=>r.faculty===fv && r.course===c.value && r.unit===u.value && r.year===y.value) : m3;
+    setOptions(s, unique(m4.map(r=>r.semester)), "Select Semester");
+
+    // try restore previous picks if they remain
+    if(fv) f.value = fv;
+    if(cv && [...c.options].some(o=>o.value===cv)) c.value = cv;
+    if(uv && [...u.options].some(o=>o.value===uv)) u.value = uv;
+    if(yv && [...y.options].some(o=>o.value===yv)) y.value = yv;
+    if(sv && [...s.options].some(o=>o.value===sv)) s.value = sv;
+  }
+
+  f.onchange = apply;
+  c.onchange = apply;
+  u.onchange = apply;
+  y.onchange = apply;
+
+  apply();
+}
+
+function hookupCascadingReports(){
+  // simple: keep all lists wide; user can filter any combination
+  // (already populated). If you want strict cascading, we can add.
+}
+
+/* ===========================
+   CLASSES: Lecturer create + view table
+=========================== */
+$("createClassBtn").addEventListener("click", ()=>{
+  const f = $("lcFaculty").value.trim();
+  const c = $("lcCourse").value.trim();
+  const u = $("lcUnit").value.trim();
+  const y = $("lcYear").value.trim();
+  const s = $("lcSemester").value.trim();
+  const v = $("lcVenue").value.trim();
+  const dt = $("lcDateTime").value;
+  const msgEl = $("createClassMsg");
+
+  if(!currentUser || currentUser.role!=="lecturer"){
+    setAlert(msgEl,"You must be logged in as lecturer to create classes.","danger");
+    return;
+  }
+  if(!f || !c || !u || !y || !s || !v || !dt){
+    setAlert(msgEl,"Please fill all class details.","danger");
+    return;
+  }
+
+  DATA = loadData();
+  const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
+  if(!lec){ setAlert(msgEl,"Lecturer not found.","danger"); return; }
+
+  const classId = uuid();
+  const cls = {
+    id: classId,
+    lecturerId: lec.id,
+    faculty:f, course:c, unit:u, year:y, semester:s,
+    venue:v, dateTime:dt,
+    status:"open",
+    lecturerName: lec.salutation + " " + lec.fullName,
+    lecturerSignature:null,
+    hodName:"",
+    hodSignature:null
+  };
+
+  DATA.classes.push(cls);
+  saveData(DATA);
+
+  renderLecturerClasses();
+  refreshClassPickers();
+
+  const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
+
+  setAlert(msgEl, "Class created. Share this link with students:\n" + link, "success");
+});
+
+function renderLecturerClasses(){
+  const wrap = $("lecturerClassesTableWrapper");
+  DATA = loadData();
+  if(!currentUser || currentUser.role!=="lecturer"){
+    wrap.textContent = "Not logged in.";
+    return;
+  }
+
+  const my = DATA.classes.filter(c=>c.lecturerId===currentUser.id);
+  if(!my.length){
+    wrap.textContent = "No classes created yet.";
+    setClassFilterOptions("lecClassFilter", my, true);
+    return;
+  }
+
+  setClassFilterOptions("lecClassFilter", my, true);
+
+  const filterValue = $("lecClassFilter").value || "";
+  const filtered = filterValue ? my.filter(cls=> classFilterMatch(cls, filterValue)) : my;
+
+  let html = `<table><thead><tr>
+    <th>Class</th>
+    <th>Venue / Date</th>
+    <th>Status</th>
+    <th>Attendance</th>
+    <th>Links & Actions</th>
+  </tr></thead><tbody>`;
+
+  filtered.forEach(cls=>{
+    const att = DATA.attendance.filter(a=>a.classId===cls.id);
+    const statusBadge = cls.status==="open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`;
+    html += `<tr>
+      <td>
+        <b>${cls.unit}</b><br>
+        <span class="small">${cls.course}</span><br>
+        <span class="small">${cls.faculty}</span><br>
+        <span class="small">${cls.year}, ${cls.semester}</span>
+      </td>
+      <td>
+        ${cls.venue}<br>
+        <span class="small">${formatDateTime(cls.dateTime)}</span>
+      </td>
+      <td>${statusBadge}</td>
+      <td><b>${att.length}</b> student(s)</td>
+      <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="btn btn-secondary" data-action="copy-link" data-id="${cls.id}">Copy Link</button>
+        ${cls.status==="open"
+          ? `<button class="btn btn-danger" data-action="close" data-id="${cls.id}">End Class</button>`
+          : `<button class="btn btn-success" data-action="open" data-id="${cls.id}">Re-open</button>`
+        }
+        <button class="btn btn-primary" data-action="details" data-id="${cls.id}">View & Export</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll("button[data-action]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const action = btn.getAttribute("data-action");
+      const id = btn.getAttribute("data-id");
+
+      if(action==="copy-link"){
+        const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(id);
+        navigator.clipboard?.writeText(link)
+          .then(()=>alert("Link copied:\n"+link))
+          .catch(()=>alert("Copy this link:\n"+link));
+      }
+
+      if(action==="close" || action==="open"){
+        DATA = loadData();
+        const cls = DATA.classes.find(c=>c.id===id);
+        if(!cls) return;
+        cls.status = (action==="close") ? "closed" : "open";
+        saveData(DATA);
+        renderLecturerClasses();
+        refreshClassPickers();
+      }
+
+      if(action==="details"){
+        openClassDetailDialog(id, "lecturer");
+      }
+    });
+  });
+}
+
+/* ===========================
+   ADMIN: classes table + filter + dialog
+=========================== */
+function renderAdminClasses(){
+  const wrap = $("adminClassesTableWrapper");
+  DATA = loadData();
+
+  if(!DATA.classes.length){
+    wrap.textContent = "No classes created yet.";
+    setClassFilterOptions("adminClassFilter", DATA.classes, false);
+    return;
+  }
+
+  setClassFilterOptions("adminClassFilter", DATA.classes, false);
+
+  const filterValue = $("adminClassFilter").value || "";
+  const filtered = filterValue ? DATA.classes.filter(cls=> classFilterMatch(cls, filterValue)) : DATA.classes;
+
+  let html = `<table><thead><tr>
+    <th>Class</th>
+    <th>Lecturer</th>
+    <th>Venue / Date</th>
+    <th>Status</th>
+    <th>Attendance</th>
+    <th>Actions</th>
+  </tr></thead><tbody>`;
+
+  filtered.forEach(cls=>{
+    const att = DATA.attendance.filter(a=>a.classId===cls.id);
+    const statusBadge = cls.status==="open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`;
+    const lec = DATA.lecturers.find(l=>l.id===cls.lecturerId) || {};
+    html += `<tr>
+      <td>
+        <b>${cls.unit}</b><br>
+        <span class="small">${cls.course}</span><br>
+        <span class="small">${cls.faculty}</span><br>
+        <span class="small">${cls.year}, ${cls.semester}</span>
+      </td>
+      <td>${(lec.salutation||"") + " " + (lec.fullName||"")}</td>
+      <td>${cls.venue}<br><span class="small">${formatDateTime(cls.dateTime)}</span></td>
+      <td>${statusBadge}</td>
+      <td><b>${att.length}</b></td>
+      <td>
+        <button class="btn btn-primary" data-action="details" data-id="${cls.id}">View & Export</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll("button[data-action='details']").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      openClassDetailDialog(id, "admin");
+    });
+  });
+}
+
+function classFilterMatch(cls, filterValue){
+  const v = filterValue.toLowerCase();
+  return (
+    (cls.unit||"").toLowerCase().includes(v) ||
+    (cls.course||"").toLowerCase().includes(v) ||
+    (cls.faculty||"").toLowerCase().includes(v) ||
+    (cls.status||"").toLowerCase().includes(v) ||
+    (cls.lecturerName||"").toLowerCase().includes(v)
+  );
+}
+
+function setClassFilterOptions(selectId, classes, includeStatusHint){
+  const sel = $(selectId);
+  if(!sel) return;
+  const old = sel.value;
+
+  const opts = [""]; // first = all
+  // include “smart” filter presets
+  const units = unique(classes.map(c=>c.unit).filter(Boolean));
+  const courses = unique(classes.map(c=>c.course).filter(Boolean));
+  const statuses = unique(classes.map(c=>c.status).filter(Boolean));
+
+  sel.innerHTML = "";
+  const o0 = document.createElement("option");
+  o0.value = "";
+  o0.textContent = "All Classes";
+  sel.appendChild(o0);
+
+  const grp1 = document.createElement("optgroup");
+  grp1.label = "By Unit";
+  units.forEach(u=>{
+    const o = document.createElement("option");
+    o.value = u;
+    o.textContent = u;
+    grp1.appendChild(o);
+  });
+  sel.appendChild(grp1);
+
+  const grp2 = document.createElement("optgroup");
+  grp2.label = "By Course";
+  courses.forEach(c=>{
+    const o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    grp2.appendChild(o);
+  });
+  sel.appendChild(grp2);
+
+  if(includeStatusHint){
+    const grp3 = document.createElement("optgroup");
+    grp3.label = "By Status";
+    statuses.forEach(s=>{
+      const o = document.createElement("option");
+      o.value = s;
+      o.textContent = s.toUpperCase();
+      grp3.appendChild(o);
+    });
+    sel.appendChild(grp3);
+  }
+
+  // restore
+  if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
+
+  sel.onchange = ()=>{
+    if(selectId==="lecClassFilter") renderLecturerClasses();
+    if(selectId==="adminClassFilter") renderAdminClasses();
+  };
+}
+
+/* ===========================
+   Class Detail Dialog (attendance + exports + signatures)
+=========================== */
+function openClassDetailDialog(classId, callerRole){
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls){ alert("Class not found."); return; }
+  const att = DATA.attendance.filter(a=>a.classId===cls.id);
+
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.inset = "0";
+  overlay.style.background = "rgba(15,23,42,.62)";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.zIndex = "9999";
+  overlay.style.padding = "1rem";
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.style.maxWidth = "980px";
+  card.style.width = "min(980px, 96vw)";
+  card.style.maxHeight = "90vh";
+  card.style.overflow = "auto";
+  card.style.boxShadow = "var(--shadow2)";
+
+  const signThumbs = att.slice(0,12).map(a=>{
+    const img = a.signature ? `<img src="${a.signature}" style="height:34px;border-radius:8px;border:1px solid rgba(0,0,0,.12);" />` : "";
+    return `<div style="display:flex;align-items:center;gap:.6rem;padding:.35rem .4rem;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#fff;">
+      ${img}
+      <div>
+        <div style="font-weight:800;font-size:.88rem;">${a.admission}</div>
+        <div class="small">${a.surname} ${a.first}</div>
+      </div>
+    </div>`;
+  }).join("");
+
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <h2 style="margin:.1rem 0 .35rem;">Class Details & Attendance</h2>
+        <div class="muted">
+          <b>${cls.unit}</b> — ${cls.course}<br/>
+          Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>
+          Venue: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
+          Lecturer: <b>${cls.lecturerName || ""}</b> · Status: <b>${cls.status.toUpperCase()}</b>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="btn btn-primary" id="dlgExportPdf">PDF</button>
+        <button class="btn btn-secondary" id="dlgExportWord">Word</button>
+        <button class="btn btn-secondary" id="dlgExportExcel">Excel</button>
+        <button class="btn btn-primary" id="dlgExportCsv">CSV (Raw)</button>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid rgba(0,0,0,.08);margin:1rem 0;" />
+
+    <h3 style="margin:.2rem 0 .5rem;">Attendance List (${att.length})</h3>
+    ${
+      att.length ? `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Admission No</th>
+            <th>Surname</th>
+            <th>Middle</th>
+            <th>First</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${att.map((a,i)=>`
+            <tr>
+              <td>${i+1}</td>
+              <td>${a.admission}</td>
+              <td>${a.surname}</td>
+              <td>${a.middle||""}</td>
+              <td>${a.first}</td>
+              <td>${formatDateTime(a.createdAt)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      ` : `<p class="muted">No students have signed yet.</p>`
+    }
+
+    <div style="margin-top:1rem;">
+      <h3 style="margin:.2rem 0 .5rem;">Signature Preview (first ${Math.min(att.length,12)})</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.6rem;">
+        ${signThumbs || `<div class="muted">No signatures yet.</div>`}
+      </div>
+    </div>
+
+    <div style="margin-top:1.1rem;">
+      <h3 style="margin:.2rem 0 .5rem;">Signatures (Lecturer / HOD)</h3>
+
+      <div class="row">
+        <div>
+          <label>Lecturer Name</label>
+          <input id="dlgLecturerName" type="text" value="${cls.lecturerName || ""}" />
+        </div>
+      </div>
+      <label>Lecturer Signature</label>
+      <canvas id="dlgLecturerSig" class="signature-pad"></canvas>
+      <div class="signature-actions">
+        <button class="btn btn-secondary" id="dlgLecturerClear">Clear</button>
+      </div>
+
+      <div class="row" style="margin-top:.6rem;">
+        <div>
+          <label>HOD Name</label>
+          <input id="dlgHodName" type="text" value="${cls.hodName || ""}" />
+        </div>
+      </div>
+      <label>HOD Signature</label>
+      <canvas id="dlgHodSig" class="signature-pad"></canvas>
+      <div class="signature-actions">
+        <button class="btn btn-secondary" id="dlgHodClear">Clear</button>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-success" id="dlgSave">Save</button>
+        <button class="btn btn-secondary" id="dlgClose">Close</button>
+      </div>
+    </div>
+  `;
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  // Signature pads
+  const lecPad = setupSignaturePad(card.querySelector("#dlgLecturerSig"));
+  const hodPad = setupSignaturePad(card.querySelector("#dlgHodSig"));
+  lecPad.loadDataUrl(cls.lecturerSignature);
+  hodPad.loadDataUrl(cls.hodSignature);
+
+  card.querySelector("#dlgLecturerClear").onclick = ()=> lecPad.clear();
+  card.querySelector("#dlgHodClear").onclick = ()=> hodPad.clear();
+
+  card.querySelector("#dlgSave").onclick = ()=>{
+    DATA = loadData();
+    const cls2 = DATA.classes.find(c=>c.id===classId);
+    if(!cls2) return;
+
+    cls2.lecturerName = card.querySelector("#dlgLecturerName").value.trim();
+    cls2.hodName = card.querySelector("#dlgHodName").value.trim();
+
+    // lecturer can save own signature; admin can save both; lecturer can also capture HOD if present
+    cls2.lecturerSignature = lecPad.toDataUrl();
+    if(callerRole==="admin" || (callerRole==="lecturer" && cls2.hodName)){
+      cls2.hodSignature = hodPad.toDataUrl();
+    }
+
+    saveData(DATA);
+    alert("Saved.");
+    renderLecturerClasses();
+    renderAdminClasses();
+    overlay.remove();
+  };
+  card.querySelector("#dlgClose").onclick = ()=> overlay.remove();
+
+  // Exports for this class attendance
+  card.querySelector("#dlgExportPdf").onclick = ()=>{
+    const rows = buildRawAttendanceRowsForClass(classId);
+    exportClassAttendancePdf(cls, rows);
+  };
+  card.querySelector("#dlgExportWord").onclick = ()=>{
+    const rows = buildRawAttendanceRowsForClass(classId);
+    exportClassAttendanceWord(cls, rows);
+  };
+  card.querySelector("#dlgExportExcel").onclick = ()=>{
+    const rows = buildRawAttendanceRowsForClass(classId);
+    exportClassAttendanceExcel(cls, rows);
+  };
+  card.querySelector("#dlgExportCsv").onclick = ()=>{
+    const rows = buildRawAttendanceRowsForClass(classId);
+    exportRawAttendanceCsv(cls, rows);
+  };
+}
+
+/* ===========================
+   Student view + Geofence 1km
+=========================== */
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const toRad = x=> x*Math.PI/180;
+  const dLat = toRad(lat2-lat1);
+  const dLon = toRad(lon2-lon1);
+  const a =
+    Math.sin(dLat/2)**2 +
+    Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+async function checkGeofence(){
+  return new Promise((resolve)=>{
+    if(!navigator.geolocation){
+      resolve({ ok:false, reason:"Geolocation not supported on this device." });
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos)=>{
+        const { latitude, longitude } = pos.coords;
+        const dist = haversineKm(latitude, longitude, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
+        resolve({ ok: dist <= GEOFENCE_RADIUS_KM, distKm: dist, lat: latitude, lon: longitude });
+      },
+      (err)=>{
+        resolve({ ok:false, reason: "Location access denied or unavailable. Please allow GPS permission." });
+      },
+      { enableHighAccuracy:true, timeout: 12000, maximumAge: 0 }
+    );
+  });
+}
+
+function setupStudentView(){
+  const mode = getQueryParam("mode");
+  const classId = getQueryParam("classId");
+  if(mode !== "student" || !classId) return;
+
+  showSection("studentSection");
+  updateTopBar(); // should be hidden anyway
+
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  const infoEl = $("studentClassInfo");
+
+  if(!cls){
+    infoEl.textContent = "Class not found. Check the link.";
+    return;
+  }
+
+  infoEl.innerHTML = `
+    <b>${cls.unit}</b> — ${cls.course}<br/>
+    Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>
+    Venue: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
+    Lecturer: <b>${cls.lecturerName || "N/A"}</b>
+  `;
+
+  if(cls.status !== "open"){
+    setAlert($("studentSubmitMsg"), "This class has been closed. Attendance link is no longer active.", "danger");
+    $("studentFormWrapper").classList.add("hidden");
+    return;
+  }
+
+  const deviceKey = "cls_submitted_" + classId;
+  if(localStorage.getItem(deviceKey)){
+    $("studentAlreadySubmitted").classList.remove("hidden");
+  }
+
+  // Signature pad
+  const canvas = $("stSignaturePad");
+  const stPad = setupSignaturePad(canvas);
+
+  $("stClearSignature").addEventListener("click", ()=> stPad.clear());
+
+  $("stSubmit").addEventListener("click", async ()=>{
+    const surname = $("stSurname").value.trim();
+    const middle = $("stMiddleName").value.trim();
+    const first = $("stFirstName").value.trim();
+    const adm = $("stAdmission").value.trim();
+    const msgEl = $("studentSubmitMsg");
+
+    if(!surname || !first || !adm){
+      setAlert(msgEl,"Surname, First Name and Admission are required.","danger");
+      return;
+    }
+
+    // geofence check
+    $("studentGeoInfo").classList.add("hidden");
+    const geo = await checkGeofence();
+
+    if(!geo.ok){
+      const geoEl = $("studentGeoInfo");
+      geoEl.classList.remove("hidden");
+      if(geo.distKm != null){
+        setAlert(geoEl, `You are ${geo.distKm.toFixed(2)} km away. You must be within ${GEOFENCE_RADIUS_KM} km of JOOUST to sign attendance.`, "danger");
+      } else {
+        setAlert(geoEl, geo.reason || "Location check failed.", "danger");
+      }
+      setAlert(msgEl,"Attendance blocked by location rule (1km).","danger");
+      return;
+    } else {
+      const geoEl = $("studentGeoInfo");
+      geoEl.classList.remove("hidden");
+      setAlert(geoEl, `Location verified: ${geo.distKm.toFixed(2)} km from JOOUST (Allowed).`, "success");
+    }
+
+    DATA = loadData();
+    const clsNow = DATA.classes.find(c=>c.id===classId);
+    if(!clsNow || clsNow.status!=="open"){
+      setAlert(msgEl,"Class is not open.","danger");
+      return;
+    }
+
+    // unique admission per class
+    const existing = DATA.attendance.find(a=>a.classId===classId && a.admission===adm);
+    if(existing){
+      setAlert(msgEl,"Attendance for this admission number already exists.","danger");
+      return;
+    }
+
+    const sigDataUrl = stPad.toDataUrl();
+
+    const rec = {
+      id: uuid(),
+      classId,
+      surname, middle, first,
+      admission: adm,
+      signature: sigDataUrl,
+      createdAt: new Date().toISOString()
+    };
+
+    DATA.attendance.push(rec);
+    saveData(DATA);
+    localStorage.setItem(deviceKey, adm);
+
+    setAlert(msgEl,"Attendance submitted successfully.","success");
+    $("studentFormWrapper").classList.add("hidden");
+    $("studentAlreadySubmitted").classList.remove("hidden");
+  });
+}
+
+/* ===========================
+   REPORTING (Admin + Lecturer)
+=========================== */
+function buildReportRows({ faculty, course, unit, year, semester, status, lecturerOnlyId=null }){
+  DATA = loadData();
+
+  const filteredClasses = DATA.classes.filter(cls=>{
+    if(lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return false;
+    if(faculty && cls.faculty !== faculty) return false;
+    if(course && cls.course !== course) return false;
+    if(unit && cls.unit !== unit) return false;
+    if(year && cls.year !== year) return false;
+    if(semester && cls.semester !== semester) return false;
+    if(status && cls.status !== status) return false;
+    return true;
+  });
+
+  const rows = [];
+  filteredClasses.forEach(cls=>{
+    const att = DATA.attendance.filter(a=>a.classId===cls.id);
+    rows.push({
+      classId: cls.id,
+      faculty: cls.faculty,
+      course: cls.course,
+      unit: cls.unit,
+      year: cls.year,
+      semester: cls.semester,
+      venue: cls.venue,
+      dateTime: formatDateTime(cls.dateTime),
+      lecturer: cls.lecturerName || "",
+      students: att.length,
+      status: cls.status
+    });
+  });
+
+  // sort by dateTime (recent first)
+  rows.sort((a,b)=> (b.dateTime||"").localeCompare(a.dateTime||""));
+  return rows;
+}
+
+function renderReportTable(rows, tableEl){
+  if(!rows.length){
+    tableEl.innerHTML = "<tbody><tr><td>No records found.</td></tr></tbody>";
+    return;
+  }
+  let html = `
+    <thead>
+      <tr>
+        <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th>
+        <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+  rows.forEach((r,i)=>{
+    html += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.faculty}</td>
+        <td>${r.course}</td>
+        <td>${r.unit}</td>
+        <td>${r.year}</td>
+        <td>${r.semester}</td>
+        <td>${r.venue}</td>
+        <td>${r.dateTime}</td>
+        <td>${r.lecturer}</td>
+        <td>${r.students}</td>
+        <td>${r.status}</td>
+      </tr>
+    `;
+  });
+  html += "</tbody>";
+  tableEl.innerHTML = html;
+}
+
+$("generateReportBtn").addEventListener("click", ()=>{
+  const rows = buildReportRows({
+    faculty: $("repFaculty").value,
+    course: $("repCourse").value,
+    unit: $("repUnit").value,
+    year: $("repYear").value,
+    semester: $("repSemester").value,
+    status: $("repStatus").value
+  });
+  renderReportTable(rows, $("reportTable"));
+  $("reportArea").classList.remove("hidden");
+  $("reportMeta").textContent = `Total classes found: ${rows.length}`;
+  $("reportTable").dataset.rows = JSON.stringify(rows);
+});
+
+$("generateReportLecturerBtn").addEventListener("click", ()=>{
+  if(!currentUser || currentUser.role!=="lecturer") return;
+  const rows = buildReportRows({
+    faculty: $("repFacultyL").value,
+    course: $("repCourseL").value,
+    unit: $("repUnitL").value,
+    year: $("repYearL").value,
+    semester: $("repSemesterL").value,
+    status: $("repStatusL").value,
+    lecturerOnlyId: currentUser.id
+  });
+  renderReportTable(rows, $("reportTableL"));
+  $("reportAreaLecturer").classList.remove("hidden");
+  $("reportMetaL").textContent = `Total classes found: ${rows.length}`;
+  $("reportTableL").dataset.rows = JSON.stringify(rows);
+});
+
+/* ===========================
+   EXPORTS (PDF / Word / Excel)
+=========================== */
+function libsReady(){
+  const okPdf = !!(window.jspdf && window.jspdf.jsPDF);
+  const okXlsx = !!window.XLSX;
+  return { okPdf, okXlsx };
+}
+
+function exportToPdfReport(rows, title){
+  const { okPdf } = libsReady();
+  if(!okPdf){
+    alert("PDF library not loaded. Ensure internet is available and refresh the page.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("l","pt","a4");
+  const margin = 40;
+
+  if(jooustLogoDataUrl){
+    doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 72, 54);
+  }
+  doc.setFontSize(15);
+  doc.setTextColor(0,82,204);
+  doc.text("Jaramogi Oginga Odinga University of Science & Technology", 130, 38);
+  doc.setFontSize(11);
+  doc.setTextColor(31,41,55);
+  doc.text(title, 130, 58);
+  doc.setFontSize(9);
+  doc.setTextColor(100,116,139);
+  doc.text("Generated: " + new Date().toLocaleString(), 130, 74);
+
+  const body = rows.map((r,i)=>[
+    i+1, r.faculty, r.course, r.unit, r.year, r.semester, r.venue, r.dateTime, r.lecturer, r.students, r.status
+  ]);
+
+  doc.autoTable({
+    startY: 92,
+    head:[["#","Faculty","Course","Unit","Year","Sem","Venue","Date/Time","Lecturer","Students","Status"]],
+    body,
+    styles:{ fontSize: 8, cellPadding: 3 },
+    headStyles:{ fillColor:[0,82,204], textColor:255 }
+  });
+
+  doc.setFontSize(9);
+  doc.setTextColor(100,116,139);
+  doc.text("System created by Gerotech — Dan Otieno.", margin, doc.internal.pageSize.getHeight()-18);
+
+  doc.save("jooust-attendance-report.pdf");
+}
+
+function exportToWordReport(rows, title){
+  const dateStr = new Date().toLocaleString();
+  const tableRows = rows.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${r.faculty}</td>
+      <td>${r.course}</td>
+      <td>${r.unit}</td>
+      <td>${r.year}</td>
+      <td>${r.semester}</td>
+      <td>${r.venue}</td>
+      <td>${r.dateTime}</td>
+      <td>${r.lecturer}</td>
+      <td>${r.students}</td>
+      <td>${r.status}</td>
+    </tr>
+  `).join("");
+
+  const logoHtml = jooustLogoDataUrl
+    ? `<img src="${jooustLogoDataUrl}" style="height:60px;border-radius:10px;" />`
+    : `<div style="font-weight:800;color:#003b8c;">JOOUST</div>`;
+
+  const html = `
+  <html><head><meta charset="UTF-8"></head>
+  <body style="font-family:Calibri,Arial,sans-serif;">
+    <div style="display:flex;gap:16px;align-items:center;">
+      ${logoHtml}
+      <div>
+        <h2 style="margin:0;color:#0052cc;">Jaramogi Oginga Odinga University of Science & Technology</h2>
+        <div style="margin:0;font-size:12px;color:#555;">${title}</div>
+        <div style="margin:0;font-size:11px;color:#777;">Generated: ${dateStr}</div>
+      </div>
+    </div>
+    <hr/>
+    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
+      <thead>
+        <tr style="background:#eff6ff;color:#1d4ed8;font-weight:700;">
+          <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th>
+          <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>${tableRows || "<tr><td colspan='11'>No records.</td></tr>"}</tbody>
+    </table>
+    <p style="margin-top:14px;font-size:11px;color:#555;">
+      System created by <b>Gerotech</b> — <b>Dan Otieno</b>.
+    </p>
+  </body></html>`;
+
+  const blob = new Blob(["\ufeff", html], { type:"application/msword" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "jooust-attendance-report.doc";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportToExcelReport(rows, filename="jooust-attendance-report.xlsx"){
+  const { okXlsx } = libsReady();
+  if(!okXlsx){
+    alert("Excel library not loaded. Ensure internet is available and refresh the page.");
+    return;
+  }
+  const wsData = [[
+    "#","Faculty","Course","Unit","Year","Semester","Venue","Date/Time","Lecturer","Students","Status"
+  ]];
+  rows.forEach((r,i)=>{
+    wsData.push([i+1,r.faculty,r.course,r.unit,r.year,r.semester,r.venue,r.dateTime,r.lecturer,r.students,r.status]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  wb.Props = { Title:"JOOUST Attendance Report", Subject:"Attendance", Author:"JOOUST Attendance System" };
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+  XLSX.writeFile(wb, filename);
+}
+
+/* Hooks for report exports */
+$("exportPdfBtn").addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTable").dataset.rows || "[]");
+  exportToPdfReport(rows, "Attendance Report (All Classes)");
+});
+$("exportWordBtn").addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTable").dataset.rows || "[]");
+  exportToWordReport(rows, "Attendance Report (All Classes)");
+});
+$("exportExcelBtn").addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTable").dataset.rows || "[]");
+  exportToExcelReport(rows, "jooust-attendance-report.xlsx");
+});
+
+$("exportPdfBtnL").addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
+  exportToPdfReport(rows, "Attendance Report (My Classes)");
+});
+$("exportWordBtnL").addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
+  exportToWordReport(rows, "Attendance Report (My Classes)");
+});
+$("exportExcelBtnL").addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
+  exportToExcelReport(rows, "jooust-attendance-my-report.xlsx");
+});
+
+/* ===========================
+   RAW attendance export (names + signatures)
+=========================== */
+function buildRawAttendanceRowsForClass(classId){
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls) return [];
+  const rows = DATA.attendance
+    .filter(a=>a.classId===classId)
+    .map((a,i)=>({
+      "#": i+1,
+      Admission: a.admission,
+      Surname: a.surname,
+      Middle: a.middle || "",
+      First: a.first,
+      Timestamp: formatDateTime(a.createdAt),
+      SignatureDataURL: a.signature || ""
+    }));
+  return rows;
+}
+
+function exportRawAttendanceCsv(cls, rows){
+  if(!rows.length){
+    alert("No attendance to export.");
+    return;
+  }
+  const header = Object.keys(rows[0]);
+  const csv = [
+    ["JOOUST Attendance (Raw)", `${cls.unit}`, `${cls.course}`, `${cls.faculty}`, `${cls.year}`, `${cls.semester}`].join(","),
+    "",
+    header.join(","),
+    ...rows.map(r=> header.map(h=>{
+      const val = (r[h] ?? "").toString().replaceAll('"','""');
+      return `"${val}"`;
+    }).join(","))
+  ].join("\n");
+
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `jooust-raw-attendance-${cls.unit.replace(/\s+/g,"_")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportClassAttendanceExcel(cls, rows){
+  const { okXlsx } = libsReady();
+  if(!okXlsx){
+    alert("Excel library not loaded. Ensure internet is available and refresh the page.");
+    return;
+  }
+  const wb = XLSX.utils.book_new();
+  wb.Props = { Title:"JOOUST Class Attendance", Subject:"Attendance", Author:"JOOUST Attendance System" };
+
+  // Summary sheet
+  const summary = [
+    ["Jaramogi Oginga Odinga University of Science & Technology"],
+    ["Class Attendance Export"],
+    [""],
+    ["Faculty", cls.faculty],
+    ["Course", cls.course],
+    ["Unit", cls.unit],
+    ["Year", cls.year],
+    ["Semester", cls.semester],
+    ["Venue", cls.venue],
+    ["Date/Time", formatDateTime(cls.dateTime)],
+    ["Lecturer", cls.lecturerName || ""],
+    ["Status", cls.status],
+    [""],
+    ["System created by Gerotech — Dan Otieno."]
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
+
+  // Attendance sheet (includes signature data)
+  const header = ["#","Admission","Surname","Middle","First","Timestamp","SignatureDataURL"];
+  const wsData = [header];
+  rows.forEach(r=>{
+    wsData.push([r["#"], r.Admission, r.Surname, r.Middle, r.First, r.Timestamp, r.SignatureDataURL]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Attendance");
+
+  XLSX.writeFile(wb, `jooust-class-attendance-${cls.unit.replace(/\s+/g,"_")}.xlsx`);
+}
+
+function exportClassAttendancePdf(cls, rows){
+  const { okPdf } = libsReady();
+  if(!okPdf){
+    alert("PDF library not loaded. Ensure internet is available and refresh the page.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p","pt","a4");
+  const margin = 40;
+
+  if(jooustLogoDataUrl){
+    doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 70, 52);
+  }
+  doc.setFontSize(14);
+  doc.setTextColor(0,82,204);
+  doc.text("Jaramogi Oginga Odinga University of Science & Technology", 120, 38);
+  doc.setFontSize(11);
+  doc.setTextColor(31,41,55);
+  doc.text("Class Attendance Sheet", 120, 56);
+
+  doc.setFontSize(10);
+  doc.setTextColor(71,85,105);
+  const metaY = 82;
+  doc.text(`Faculty: ${cls.faculty}`, margin, metaY);
+  doc.text(`Course: ${cls.course}`, margin, metaY+14);
+  doc.text(`Unit: ${cls.unit}`, margin, metaY+28);
+  doc.text(`Year/Sem: ${cls.year} / ${cls.semester}`, margin, metaY+42);
+  doc.text(`Venue: ${cls.venue}`, margin, metaY+56);
+  doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+70);
+  doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin, metaY+84);
+
+  const body = rows.map(r=>[
+    r["#"], r.Admission, r.Surname, r.Middle, r.First, r.Timestamp
+  ]);
+
+  doc.autoTable({
+    startY: metaY + 105,
+    head: [["#","Admission","Surname","Middle","First","Timestamp"]],
+    body,
+    styles:{ fontSize: 9, cellPadding: 3 },
+    headStyles:{ fillColor:[0,82,204], textColor:255 }
+  });
+
+  // Lecturer & HOD signatures
+  let y = doc.lastAutoTable.finalY + 24;
+  doc.setFontSize(10);
+  doc.setTextColor(31,41,55);
+  doc.text("Lecturer Signature:", margin, y);
+  if(cls.lecturerSignature){
+    try{
+      doc.addImage(cls.lecturerSignature, "PNG", margin, y+8, 160, 55);
+    } catch(e){}
+  }
+  doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin+180, y+24);
+
+  y += 85;
+  doc.text("HOD Signature:", margin, y);
+  if(cls.hodSignature){
+    try{
+      doc.addImage(cls.hodSignature, "PNG", margin, y+8, 160, 55);
+    } catch(e){}
+  }
+  doc.text(`HOD: ${cls.hodName || ""}`, margin+180, y+24);
+
+  doc.setFontSize(9);
+  doc.setTextColor(100,116,139);
+  doc.text("System created by Gerotech — Dan Otieno.", margin, doc.internal.pageSize.getHeight()-18);
+
+  doc.save(`jooust-class-attendance-${cls.unit.replace(/\s+/g,"_")}.pdf`);
+}
+
+function exportClassAttendanceWord(cls, rows){
+  const dateStr = new Date().toLocaleString();
+  const logoHtml = jooustLogoDataUrl
+    ? `<img src="${jooustLogoDataUrl}" style="height:58px;border-radius:10px;" />`
+    : `<div style="font-weight:800;color:#003b8c;">JOOUST</div>`;
+
+  const bodyRows = rows.map(r=>`
+    <tr>
+      <td>${r["#"]}</td>
+      <td>${r.Admission}</td>
+      <td>${r.Surname}</td>
+      <td>${r.Middle}</td>
+      <td>${r.First}</td>
+      <td>${r.Timestamp}</td>
+    </tr>
+  `).join("");
+
+  const lecSig = cls.lecturerSignature ? `<img src="${cls.lecturerSignature}" style="height:70px;border:1px solid #ddd;border-radius:10px;" />` : `<i>Not provided</i>`;
+  const hodSig = cls.hodSignature ? `<img src="${cls.hodSignature}" style="height:70px;border:1px solid #ddd;border-radius:10px;" />` : `<i>Not provided</i>`;
+
+  const html = `
+  <html><head><meta charset="UTF-8"></head>
+  <body style="font-family:Calibri,Arial,sans-serif;">
+    <div style="display:flex;gap:16px;align-items:center;">
+      ${logoHtml}
+      <div>
+        <h2 style="margin:0;color:#0052cc;">Jaramogi Oginga Odinga University of Science & Technology</h2>
+        <div style="margin:0;font-size:12px;color:#555;">Class Attendance Sheet</div>
+        <div style="margin:0;font-size:11px;color:#777;">Generated: ${dateStr}</div>
+      </div>
+    </div>
+    <hr/>
+
+    <table border="0" cellspacing="0" cellpadding="4" style="width:100%;font-size:11px;">
+      <tr><td><b>Faculty:</b> ${cls.faculty}</td><td><b>Course:</b> ${cls.course}</td></tr>
+      <tr><td><b>Unit:</b> ${cls.unit}</td><td><b>Year/Sem:</b> ${cls.year} / ${cls.semester}</td></tr>
+      <tr><td><b>Venue:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
+      <tr><td colspan="2"><b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
+    </table>
+
+    <br/>
+
+    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
+      <thead>
+        <tr style="background:#eff6ff;color:#1d4ed8;font-weight:700;">
+          <th>#</th><th>Admission</th><th>Surname</th><th>Middle</th><th>First</th><th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bodyRows || "<tr><td colspan='6'>No attendance.</td></tr>"}
+      </tbody>
+    </table>
+
+    <br/>
+    <table border="0" cellspacing="0" cellpadding="6" style="width:100%;font-size:11px;">
+      <tr>
+        <td style="width:50%;vertical-align:top;">
+          <b>Lecturer Signature</b><br/>${lecSig}<br/>
+          <b>Lecturer:</b> ${cls.lecturerName || ""}
+        </td>
+        <td style="width:50%;vertical-align:top;">
+          <b>HOD Signature</b><br/>${hodSig}<br/>
+          <b>HOD:</b> ${cls.hodName || ""}
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin-top:14px;font-size:11px;color:#555;">
+      System created by <b>Gerotech</b> — <b>Dan Otieno</b>.
+    </p>
+  </body></html>`;
+
+  const blob = new Blob(["\ufeff", html], { type:"application/msword" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `jooust-class-attendance-${cls.unit.replace(/\s+/g,"_")}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ===========================
+   Admin raw export tab pickers
+=========================== */
+function refreshClassPickers(){
+  // admin raw export class picker
+  if($("rawClassPick")){
+    DATA = loadData();
+    const all = DATA.classes.slice().sort((a,b)=> (b.dateTime||"").localeCompare(a.dateTime||""));
+    const sel = $("rawClassPick");
+    const old = sel.value;
+
+    sel.innerHTML = "";
+    if(!all.length){
+      const o = document.createElement("option");
+      o.value = "";
+      o.textContent = "No classes available";
+      sel.appendChild(o);
+    } else {
+      all.forEach(cls=>{
+        const o = document.createElement("option");
+        o.value = cls.id;
+        o.textContent = `${cls.unit} · ${cls.course} · ${formatDateTime(cls.dateTime)} · (${cls.status})`;
+        sel.appendChild(o);
+      });
+      if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
+    }
+  }
+}
+
+/* Raw export buttons */
+$("rawExportCsvBtn").addEventListener("click", ()=>{
+  const id = $("rawClassPick").value;
+  if(!id){ setAlert($("rawExportMsg"), "Select a class first.", "danger"); return; }
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===id);
+  const rows = buildRawAttendanceRowsForClass(id);
+  exportRawAttendanceCsv(cls, rows);
+  setAlert($("rawExportMsg"), "CSV downloaded successfully.", "success");
+});
+$("rawExportExcelBtn").addEventListener("click", ()=>{
+  const id = $("rawClassPick").value;
+  if(!id){ setAlert($("rawExportMsg"), "Select a class first.", "danger"); return; }
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===id);
+  const rows = buildRawAttendanceRowsForClass(id);
+  exportClassAttendanceExcel(cls, rows);
+  setAlert($("rawExportMsg"), "Excel downloaded successfully.", "success");
+});
+
+/* ===========================
+   Admin tabs
+=========================== */
+document.querySelectorAll("[data-admin-tab]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const target = btn.getAttribute("data-admin-tab");
+    document.querySelectorAll(".admin-tab").forEach(sec=>{
+      sec.classList.toggle("hidden", sec.id !== target);
+    });
+    document.querySelectorAll(".tab[data-admin-tab]").forEach(tb=>tb.classList.remove("active"));
+    btn.classList.add("active");
+
+    // refresh on tab switch
+    if(target==="classesTab") renderAdminClasses();
+    if(target==="exportsTab") refreshClassPickers();
+    if(target==="facultyTab") renderFacultySummary();
+  });
+});
+
+/* ===========================
+   INIT
+=========================== */
+window.addEventListener("load", ()=>{
+  loadLogoAsDataUrl();
+  setupStudentView();
+
+  // ensure dropdown placeholders even before CSV
+  refreshAllDropdowns();
+  refreshClassPickers();
+
+  // create default class filter placeholders
+  if($("lecClassFilter")) setClassFilterOptions("lecClassFilter", [], true);
+  if($("adminClassFilter")) setClassFilterOptions("adminClassFilter", [], false);
+});
 </script>
-
 </body>
 </html>
