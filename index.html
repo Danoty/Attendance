@@ -25,7 +25,6 @@
     *{ box-sizing:border-box; font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     body{ margin:0; background: var(--bg); color: var(--text); }
 
-    /* Header */
     header{
       background: linear-gradient(135deg, var(--jooust-blue-dark), var(--jooust-blue));
       color:#fff;
@@ -94,7 +93,6 @@
       padding: 0 1rem;
     }
 
-    /* Hero */
     .hero{
       border-radius: var(--radius);
       background:
@@ -287,6 +285,7 @@
       font-size:.9rem;
       margin-bottom:.75rem;
       border: 1px solid rgba(15,23,42,.06);
+      white-space: pre-wrap;
     }
     .alert-info{ background:#e0f2fe; color:#0b5394; border-color: rgba(11,83,148,.15); }
     .alert-danger{ background:#fee2e2; color:#991b1b; border-color: rgba(153,27,27,.14); }
@@ -320,6 +319,22 @@
       color: var(--jooust-blue-dark);
     }
 
+    .kpi-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap:.75rem;
+      margin-top:.9rem;
+    }
+    .kpi{
+      border:1px solid rgba(0,82,204,.12);
+      background: linear-gradient(135deg, rgba(0,82,204,.08), rgba(36,161,72,.05));
+      border-radius:14px;
+      padding:.8rem .9rem;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    }
+    .kpi .v{ font-size:1.35rem; font-weight:900; color: var(--jooust-blue-dark); }
+    .kpi .t{ font-size:.82rem; color: var(--muted); margin-top:.1rem; }
+
     @media (max-width:640px){
       .brand img{ height:46px; }
       .brand h1{ font-size: 1.05rem; }
@@ -327,11 +342,10 @@
     }
   </style>
 
-  <!-- Exports -->
-  <!-- jsPDF + AutoTable -->
+  <!-- CDN libs (with runtime fallback loader in JS) -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <!-- SheetJS for Excel -->
+
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
 </head>
 
@@ -358,9 +372,16 @@
   <div class="hero">
     <h2>Smart Attendance for Lectures & Meetings</h2>
     <p>
-      Fast sign-in, digital signatures, class links, and official exports (PDF/Word/Excel/CSV).
+      Fast sign-in, digital signatures, class links (QR supported), and official exports (PDF/Word/Excel/CSV).
       Students can sign using mobile phones (finger signature supported).
     </p>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Students must be within 1km of JOOUST to sign</div></div>
+      <div class="kpi"><div class="v">One-Tap Exports</div><div class="t">PDF / Word / Excel / CSV with JOOUST logo</div></div>
+      <div class="kpi"><div class="v">Signatures</div><div class="t">Finger or mouse on phone/laptop</div></div>
+      <div class="kpi"><div class="v">Secure Roles</div><div class="t">Admin approval + change password + logout</div></div>
+    </div>
   </div>
 
   <!-- LOGIN -->
@@ -425,7 +446,7 @@
       </div>
       <div>
         <label for="regFullName">Full Name</label>
-        <input id="regFullName" type="text" placeholder="e.g. Dr. Jane Doe" />
+        <input id="regFullName" type="text" placeholder="e.g. Jane Doe" />
       </div>
     </div>
 
@@ -662,7 +683,7 @@
     <section class="card">
       <h2 style="margin:0;">Lecturer Dashboard</h2>
       <p class="muted" style="margin:.4rem 0 0;">
-        Create classes, share student link, view attendance & export official reports.
+        Create classes, share student link (QR), view attendance & export official reports.
       </p>
     </section>
 
@@ -723,7 +744,7 @@
       <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
         <div>
           <h3 style="margin:.1rem 0;">My Classes</h3>
-          <div class="small">Copy link, close/open class, view attendance & export.</div>
+          <div class="small">Copy link/QR, close/open class, view attendance & export.</div>
         </div>
         <div style="min-width:260px;">
           <label for="lecClassFilter">Quick Filter (Unit / Course / Status)</label>
@@ -813,17 +834,17 @@
 /* ===========================
    STORAGE + BASE DATA
 =========================== */
-const STORAGE_KEY = "jooust_attendance_data_v2";
+const STORAGE_KEY = "jooust_attendance_data_v3";
 
-/* JOOUST Center (Approx). You can refine coordinates if needed. */
-const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 }; // approx Bondo/JOOUST
+/* JOOUST Center (Approx) - update to exact JOOUST coordinates if you want. */
+const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 };
 const GEOFENCE_RADIUS_KM = 1.0;
 
 function baseData(){
   return {
-    admins: [{ username:"admin", password:"admin123" }], /* default exists but is NOT displayed */
+    admins: [{ username:"admin", password:"admin123" }], // NOT displayed anywhere
     lecturers: [],
-    facultyConfig: [], /* CSV mapping */
+    facultyConfig: [],
     classes: [],
     attendance: []
   };
@@ -845,8 +866,7 @@ function loadData(){
 function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 let DATA = loadData();
 
-/* Session */
-let currentUser = null; // {role:'admin'|'lecturer', username/id}
+let currentUser = null;
 let jooustLogoDataUrl = null;
 
 /* ===========================
@@ -884,6 +904,69 @@ function getQueryParam(name){
 }
 
 /* ===========================
+   Robust library loader (fixes "excel library not loaded" issues)
+=========================== */
+function loadScriptOnce(url){
+  return new Promise((resolve, reject)=>{
+    // already loaded?
+    const existing = [...document.scripts].find(s=>s.src===url);
+    if(existing) { resolve(true); return; }
+    const s = document.createElement("script");
+    s.src = url;
+    s.async = true;
+    s.onload = ()=> resolve(true);
+    s.onerror = ()=> reject(new Error("Failed: " + url));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureLibs(){
+  // If already OK, return quickly.
+  const okPdf = !!(window.jspdf && window.jspdf.jsPDF);
+  const okXlsx = !!window.XLSX;
+  const okQR = !!window.QRCode;
+
+  const tasks = [];
+
+  if(!okPdf){
+    // try multiple CDNs
+    tasks.push(
+      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
+        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"))
+    );
+    tasks.push(
+      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js")
+        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"))
+    );
+  }
+
+  if(!okXlsx){
+    tasks.push(
+      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js")
+        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"))
+    );
+  }
+
+  if(!okQR){
+    // QR code for class link
+    tasks.push(
+      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js")
+        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"))
+    );
+  }
+
+  if(tasks.length){
+    try{ await Promise.all(tasks); } catch(e){ /* ignore, will check below */ }
+  }
+
+  return {
+    okPdf: !!(window.jspdf && window.jspdf.jsPDF),
+    okXlsx: !!window.XLSX,
+    okQR: !!window.QRCode
+  };
+}
+
+/* ===========================
    Load logo as DataURL for PDF/Word
 =========================== */
 function loadLogoAsDataUrl(){
@@ -898,7 +981,6 @@ function loadLogoAsDataUrl(){
     ctx.drawImage(img,0,0);
     jooustLogoDataUrl = canvas.toDataURL("image/jpeg");
   };
-  img.onerror = ()=> console.warn("logo.jpg not found or blocked. Put logo.jpg next to this HTML.");
 }
 
 /* ===========================
@@ -910,13 +992,19 @@ function setupSignaturePad(canvas, opts={}){
   ctx.lineCap = "round";
 
   function resize(){
-    // keep drawing crisp on mobile
     const ratio = Math.max(window.devicePixelRatio || 1, 1);
     const rect = canvas.getBoundingClientRect();
+    const prev = canvas.toDataURL("image/png");
     canvas.width = Math.floor(rect.width * ratio);
     canvas.height = Math.floor(rect.height * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    // do not clear automatically (caller may load existing)
+
+    // restore previous drawing (if any)
+    if(prev && prev.length > 50){
+      const img = new Image();
+      img.onload = ()=> ctx.drawImage(img, 0, 0, rect.width, rect.height);
+      img.src = prev;
+    }
   }
 
   function getPos(e){
@@ -951,17 +1039,7 @@ function setupSignaturePad(canvas, opts={}){
   canvas.addEventListener("touchmove", move, {passive:false});
   window.addEventListener("touchend", end);
 
-  window.addEventListener("resize", ()=>{
-    // Preserve drawing on resize: snapshot -> resize -> redraw
-    const data = canvas.toDataURL("image/png");
-    resize();
-    if(data && data.length > 50){
-      const img = new Image();
-      img.onload = ()=> ctx.drawImage(img, 0, 0, canvas.width/(window.devicePixelRatio||1), canvas.height/(window.devicePixelRatio||1));
-      img.src = data;
-    }
-  });
-
+  window.addEventListener("resize", ()=> resize());
   resize();
 
   return {
@@ -969,11 +1047,11 @@ function setupSignaturePad(canvas, opts={}){
     toDataUrl: ()=> canvas.toDataURL("image/png"),
     loadDataUrl: (dataUrl)=>{
       if(!dataUrl) return;
+      const rect = canvas.getBoundingClientRect();
       const img = new Image();
-      img.onload = ()=> ctx.drawImage(img, 0, 0, canvas.width/(window.devicePixelRatio||1), canvas.height/(window.devicePixelRatio||1));
+      img.onload = ()=> ctx.drawImage(img, 0, 0, rect.width, rect.height);
       img.src = dataUrl;
-    },
-    resize
+    }
   };
 }
 
@@ -997,7 +1075,7 @@ function updateTopBar(){
   changeBtn.classList.remove("hidden");
 
   if(currentUser.role==="admin"){
-    summary.innerHTML = `Logged in as <b>Admin</b> · <b>${currentUser.username}</b>`;
+    summary.innerHTML = `Logged in as <b>Admin</b>`;
   } else {
     const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
     const name = lec ? `${lec.salutation} ${lec.fullName}` : currentUser.username;
@@ -1009,7 +1087,10 @@ $("logoutBtn").addEventListener("click", ()=>{
   currentUser = null;
   updateTopBar();
   showSection("loginSection");
-  // cleanup hash/search state for safety
+  // clear fields
+  $("loginUsername").value = "";
+  $("loginPassword").value = "";
+  clearAlert($("loginMessage"));
 });
 
 $("openChangePwdBtn").addEventListener("click", ()=>{
@@ -1116,7 +1197,7 @@ $("loginBtn").addEventListener("click", ()=>{
     renderAdminLecturers();
     renderFacultySummary();
     renderAdminClasses();
-    refreshAllDropdowns(); // mapping-based dropdowns
+    refreshAllDropdowns();
     refreshClassPickers();
   } else {
     const lec = DATA.lecturers.find(l=>l.username===username && l.password===password);
@@ -1191,7 +1272,7 @@ function renderAdminLecturers(){
         if(!np) return;
         lec.password = np;
         saveData(DATA);
-        alert("Password reset successfully.");
+        setAlert($("loginMessage"), "Lecturer password reset successfully (admin action).", "success");
       }
     });
   });
@@ -1253,7 +1334,6 @@ function renderFacultySummary(){
   </p>`;
 }
 
-/* Cascading dropdown support */
 function unique(arr){ return [...new Set(arr)].sort((a,b)=>a.localeCompare(b)); }
 function setOptions(selectEl, values, placeholder="All / Select"){
   if(!selectEl) return;
@@ -1271,7 +1351,6 @@ function setOptions(selectEl, values, placeholder="All / Select"){
     selectEl.appendChild(o);
   });
 
-  // try restore selection if still exists
   if(cur && values.includes(cur)) selectEl.value = cur;
 }
 
@@ -1283,14 +1362,12 @@ function getMapping(){
 function refreshAllDropdowns(){
   const m = getMapping();
 
-  // Admin reports dropdowns
   setOptions($("repFaculty"), unique(m.map(x=>x.faculty)), "All Faculties");
   setOptions($("repCourse"), unique(m.map(x=>x.course)), "All Courses");
   setOptions($("repUnit"), unique(m.map(x=>x.unit)), "All Units");
   setOptions($("repYear"), unique(m.map(x=>x.year)), "All Years");
   setOptions($("repSemester"), unique(m.map(x=>x.semester)), "All Semesters");
 
-  // Lecturer create class + lecturer reports dropdowns
   setOptions($("lcFaculty"), unique(m.map(x=>x.faculty)), "Select Faculty");
   setOptions($("lcCourse"), unique(m.map(x=>x.course)), "Select Course");
   setOptions($("lcUnit"), unique(m.map(x=>x.unit)), "Select Unit");
@@ -1303,9 +1380,7 @@ function refreshAllDropdowns(){
   setOptions($("repYearL"), unique(m.map(x=>x.year)), "All Years");
   setOptions($("repSemesterL"), unique(m.map(x=>x.semester)), "All Semesters");
 
-  // cascading for lecturer create class (better UX)
   hookupCascadingCreateClass();
-  hookupCascadingReports();
 }
 
 function hookupCascadingCreateClass(){
@@ -1328,7 +1403,6 @@ function hookupCascadingCreateClass(){
     const m4 = (fv && c.value && u.value && y.value) ? m.filter(r=>r.faculty===fv && r.course===c.value && r.unit===u.value && r.year===y.value) : m3;
     setOptions(s, unique(m4.map(r=>r.semester)), "Select Semester");
 
-    // try restore previous picks if they remain
     if(fv) f.value = fv;
     if(cv && [...c.options].some(o=>o.value===cv)) c.value = cv;
     if(uv && [...u.options].some(o=>o.value===uv)) u.value = uv;
@@ -1340,17 +1414,11 @@ function hookupCascadingCreateClass(){
   c.onchange = apply;
   u.onchange = apply;
   y.onchange = apply;
-
   apply();
 }
 
-function hookupCascadingReports(){
-  // simple: keep all lists wide; user can filter any combination
-  // (already populated). If you want strict cascading, we can add.
-}
-
 /* ===========================
-   CLASSES: Lecturer create + view table
+   CLASSES: Lecturer create + view
 =========================== */
 $("createClassBtn").addEventListener("click", ()=>{
   const f = $("lcFaculty").value.trim();
@@ -1399,6 +1467,72 @@ $("createClassBtn").addEventListener("click", ()=>{
   setAlert(msgEl, "Class created. Share this link with students:\n" + link, "success");
 });
 
+function classFilterMatch(cls, filterValue){
+  const v = filterValue.toLowerCase();
+  return (
+    (cls.unit||"").toLowerCase().includes(v) ||
+    (cls.course||"").toLowerCase().includes(v) ||
+    (cls.faculty||"").toLowerCase().includes(v) ||
+    (cls.status||"").toLowerCase().includes(v) ||
+    (cls.lecturerName||"").toLowerCase().includes(v)
+  );
+}
+
+function setClassFilterOptions(selectId, classes, includeStatusHint){
+  const sel = $(selectId);
+  if(!sel) return;
+  const old = sel.value;
+
+  const units = unique(classes.map(c=>c.unit).filter(Boolean));
+  const courses = unique(classes.map(c=>c.course).filter(Boolean));
+  const statuses = unique(classes.map(c=>c.status).filter(Boolean));
+
+  sel.innerHTML = "";
+  const o0 = document.createElement("option");
+  o0.value = "";
+  o0.textContent = "All Classes";
+  sel.appendChild(o0);
+
+  const grp1 = document.createElement("optgroup");
+  grp1.label = "By Unit";
+  units.forEach(u=>{
+    const o = document.createElement("option");
+    o.value = u;
+    o.textContent = u;
+    grp1.appendChild(o);
+  });
+  sel.appendChild(grp1);
+
+  const grp2 = document.createElement("optgroup");
+  grp2.label = "By Course";
+  courses.forEach(c=>{
+    const o = document.createElement("option");
+    o.value = c;
+    o.textContent = c;
+    grp2.appendChild(o);
+  });
+  sel.appendChild(grp2);
+
+  if(includeStatusHint){
+    const grp3 = document.createElement("optgroup");
+    grp3.label = "By Status";
+    statuses.forEach(s=>{
+      const o = document.createElement("option");
+      o.value = s;
+      o.textContent = s.toUpperCase();
+      grp3.appendChild(o);
+    });
+    sel.appendChild(grp3);
+  }
+
+  if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
+
+  sel.onchange = ()=>{
+    if(selectId==="lecClassFilter") renderLecturerClasses();
+    if(selectId==="adminClassFilter") renderAdminClasses();
+  };
+}
+
 function renderLecturerClasses(){
   const wrap = $("lecturerClassesTableWrapper");
   DATA = loadData();
@@ -1408,13 +1542,12 @@ function renderLecturerClasses(){
   }
 
   const my = DATA.classes.filter(c=>c.lecturerId===currentUser.id);
+  setClassFilterOptions("lecClassFilter", my, true);
+
   if(!my.length){
     wrap.textContent = "No classes created yet.";
-    setClassFilterOptions("lecClassFilter", my, true);
     return;
   }
-
-  setClassFilterOptions("lecClassFilter", my, true);
 
   const filterValue = $("lecClassFilter").value || "";
   const filtered = filterValue ? my.filter(cls=> classFilterMatch(cls, filterValue)) : my;
@@ -1424,7 +1557,7 @@ function renderLecturerClasses(){
     <th>Venue / Date</th>
     <th>Status</th>
     <th>Attendance</th>
-    <th>Links & Actions</th>
+    <th>Actions</th>
   </tr></thead><tbody>`;
 
   filtered.forEach(cls=>{
@@ -1445,6 +1578,7 @@ function renderLecturerClasses(){
       <td><b>${att.length}</b> student(s)</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn btn-secondary" data-action="copy-link" data-id="${cls.id}">Copy Link</button>
+        <button class="btn btn-secondary" data-action="show-qr" data-id="${cls.id}">QR</button>
         ${cls.status==="open"
           ? `<button class="btn btn-danger" data-action="close" data-id="${cls.id}">End Class</button>`
           : `<button class="btn btn-success" data-action="open" data-id="${cls.id}">Re-open</button>`
@@ -1458,15 +1592,22 @@ function renderLecturerClasses(){
   wrap.innerHTML = html;
 
   wrap.querySelectorAll("button[data-action]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
+    btn.addEventListener("click", async ()=>{
       const action = btn.getAttribute("data-action");
       const id = btn.getAttribute("data-id");
 
+      const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(id);
+
       if(action==="copy-link"){
-        const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(id);
         navigator.clipboard?.writeText(link)
-          .then(()=>alert("Link copied:\n"+link))
-          .catch(()=>alert("Copy this link:\n"+link));
+          .then(()=>{ /* silent */ })
+          .catch(()=>{});
+        alert("Share this student sign-in link:\n" + link);
+      }
+
+      if(action==="show-qr"){
+        await ensureLibs();
+        showQrDialog(link);
       }
 
       if(action==="close" || action==="open"){
@@ -1493,13 +1634,12 @@ function renderAdminClasses(){
   const wrap = $("adminClassesTableWrapper");
   DATA = loadData();
 
+  setClassFilterOptions("adminClassFilter", DATA.classes, false);
+
   if(!DATA.classes.length){
     wrap.textContent = "No classes created yet.";
-    setClassFilterOptions("adminClassFilter", DATA.classes, false);
     return;
   }
-
-  setClassFilterOptions("adminClassFilter", DATA.classes, false);
 
   const filterValue = $("adminClassFilter").value || "";
   const filtered = filterValue ? DATA.classes.filter(cls=> classFilterMatch(cls, filterValue)) : DATA.classes;
@@ -1545,83 +1685,65 @@ function renderAdminClasses(){
   });
 }
 
-function classFilterMatch(cls, filterValue){
-  const v = filterValue.toLowerCase();
-  return (
-    (cls.unit||"").toLowerCase().includes(v) ||
-    (cls.course||"").toLowerCase().includes(v) ||
-    (cls.faculty||"").toLowerCase().includes(v) ||
-    (cls.status||"").toLowerCase().includes(v) ||
-    (cls.lecturerName||"").toLowerCase().includes(v)
-  );
-}
+/* ===========================
+   Simple QR dialog
+=========================== */
+function showQrDialog(text){
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.inset = "0";
+  overlay.style.background = "rgba(15,23,42,.62)";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.zIndex = "9999";
+  overlay.style.padding = "1rem";
 
-function setClassFilterOptions(selectId, classes, includeStatusHint){
-  const sel = $(selectId);
-  if(!sel) return;
-  const old = sel.value;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.style.width = "min(520px,96%)";
+  card.style.boxShadow = "var(--shadow2)";
 
-  const opts = [""]; // first = all
-  // include “smart” filter presets
-  const units = unique(classes.map(c=>c.unit).filter(Boolean));
-  const courses = unique(classes.map(c=>c.course).filter(Boolean));
-  const statuses = unique(classes.map(c=>c.status).filter(Boolean));
+  card.innerHTML = `
+    <h3 style="margin:.1rem 0 .4rem;">Student Link QR Code</h3>
+    <div class="muted small" style="margin-bottom:.6rem;">Students can scan and sign using a phone.</div>
+    <div style="display:grid;place-items:center;">
+      <div id="qrBox" style="background:#fff;padding:12px;border-radius:14px;border:1px solid rgba(0,0,0,.08);"></div>
+    </div>
+    <div class="alert alert-info" style="margin-top:.8rem;">${text}</div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="qrCopy">Copy Link</button>
+      <button class="btn btn-secondary" id="qrClose">Close</button>
+    </div>
+  `;
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
 
-  sel.innerHTML = "";
-  const o0 = document.createElement("option");
-  o0.value = "";
-  o0.textContent = "All Classes";
-  sel.appendChild(o0);
-
-  const grp1 = document.createElement("optgroup");
-  grp1.label = "By Unit";
-  units.forEach(u=>{
-    const o = document.createElement("option");
-    o.value = u;
-    o.textContent = u;
-    grp1.appendChild(o);
-  });
-  sel.appendChild(grp1);
-
-  const grp2 = document.createElement("optgroup");
-  grp2.label = "By Course";
-  courses.forEach(c=>{
-    const o = document.createElement("option");
-    o.value = c;
-    o.textContent = c;
-    grp2.appendChild(o);
-  });
-  sel.appendChild(grp2);
-
-  if(includeStatusHint){
-    const grp3 = document.createElement("optgroup");
-    grp3.label = "By Status";
-    statuses.forEach(s=>{
-      const o = document.createElement("option");
-      o.value = s;
-      o.textContent = s.toUpperCase();
-      grp3.appendChild(o);
-    });
-    sel.appendChild(grp3);
+  const qrBox = card.querySelector("#qrBox");
+  if(window.QRCode){
+    qrBox.innerHTML = "";
+    new QRCode(qrBox, { text, width: 220, height: 220 });
+  }else{
+    qrBox.innerHTML = `<div class="muted">QR library not loaded. Use the link above.</div>`;
   }
 
-  // restore
-  if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
-
-  sel.onchange = ()=>{
-    if(selectId==="lecClassFilter") renderLecturerClasses();
-    if(selectId==="adminClassFilter") renderAdminClasses();
+  card.querySelector("#qrCopy").onclick = ()=>{
+    navigator.clipboard?.writeText(text).catch(()=>{});
+    alert("Link copied.");
   };
+  card.querySelector("#qrClose").onclick = ()=> overlay.remove();
 }
 
 /* ===========================
-   Class Detail Dialog (attendance + exports + signatures)
+   Class Detail Dialog (attendance + exports + signatures + QR)
 =========================== */
 function openClassDetailDialog(classId, callerRole){
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===classId);
   if(!cls){ alert("Class not found."); return; }
   const att = DATA.attendance.filter(a=>a.classId===cls.id);
+
+  const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
 
   const overlay = document.createElement("div");
   overlay.style.position = "fixed";
@@ -1665,12 +1787,16 @@ function openClassDetailDialog(classId, callerRole){
       </div>
 
       <div style="display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="btn btn-secondary" id="dlgCopyLink">Copy Link</button>
+        <button class="btn btn-secondary" id="dlgShowQR">QR</button>
         <button class="btn btn-primary" id="dlgExportPdf">PDF</button>
         <button class="btn btn-secondary" id="dlgExportWord">Word</button>
         <button class="btn btn-secondary" id="dlgExportExcel">Excel</button>
         <button class="btn btn-primary" id="dlgExportCsv">CSV (Raw)</button>
       </div>
     </div>
+
+    <div class="alert alert-info" style="margin-top:.75rem;">Student Link: ${link}</div>
 
     <hr style="border:none;border-top:1px solid rgba(0,0,0,.08);margin:1rem 0;" />
 
@@ -1748,7 +1874,6 @@ function openClassDetailDialog(classId, callerRole){
   overlay.appendChild(card);
   document.body.appendChild(overlay);
 
-  // Signature pads
   const lecPad = setupSignaturePad(card.querySelector("#dlgLecturerSig"));
   const hodPad = setupSignaturePad(card.querySelector("#dlgHodSig"));
   lecPad.loadDataUrl(cls.lecturerSignature);
@@ -1765,32 +1890,38 @@ function openClassDetailDialog(classId, callerRole){
     cls2.lecturerName = card.querySelector("#dlgLecturerName").value.trim();
     cls2.hodName = card.querySelector("#dlgHodName").value.trim();
 
-    // lecturer can save own signature; admin can save both; lecturer can also capture HOD if present
     cls2.lecturerSignature = lecPad.toDataUrl();
     if(callerRole==="admin" || (callerRole==="lecturer" && cls2.hodName)){
       cls2.hodSignature = hodPad.toDataUrl();
     }
 
     saveData(DATA);
-    alert("Saved.");
     renderLecturerClasses();
     renderAdminClasses();
     overlay.remove();
   };
   card.querySelector("#dlgClose").onclick = ()=> overlay.remove();
 
-  // Exports for this class attendance
-  card.querySelector("#dlgExportPdf").onclick = ()=>{
-    const rows = buildRawAttendanceRowsForClass(classId);
-    exportClassAttendancePdf(cls, rows);
+  card.querySelector("#dlgCopyLink").onclick = ()=>{
+    navigator.clipboard?.writeText(link).catch(()=>{});
+    alert("Student link copied.");
   };
-  card.querySelector("#dlgExportWord").onclick = ()=>{
-    const rows = buildRawAttendanceRowsForClass(classId);
-    exportClassAttendanceWord(cls, rows);
+  card.querySelector("#dlgShowQR").onclick = async ()=>{
+    await ensureLibs();
+    showQrDialog(link);
   };
-  card.querySelector("#dlgExportExcel").onclick = ()=>{
+
+  card.querySelector("#dlgExportPdf").onclick = async ()=>{
     const rows = buildRawAttendanceRowsForClass(classId);
-    exportClassAttendanceExcel(cls, rows);
+    await exportClassAttendancePdf(cls, rows);
+  };
+  card.querySelector("#dlgExportWord").onclick = async ()=>{
+    const rows = buildRawAttendanceRowsForClass(classId);
+    await exportClassAttendanceWord(cls, rows);
+  };
+  card.querySelector("#dlgExportExcel").onclick = async ()=>{
+    const rows = buildRawAttendanceRowsForClass(classId);
+    await exportClassAttendanceExcel(cls, rows);
   };
   card.querySelector("#dlgExportCsv").onclick = ()=>{
     const rows = buildRawAttendanceRowsForClass(classId);
@@ -1822,10 +1953,10 @@ async function checkGeofence(){
       (pos)=>{
         const { latitude, longitude } = pos.coords;
         const dist = haversineKm(latitude, longitude, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
-        resolve({ ok: dist <= GEOFENCE_RADIUS_KM, distKm: dist, lat: latitude, lon: longitude });
+        resolve({ ok: dist <= GEOFENCE_RADIUS_KM, distKm: dist });
       },
-      (err)=>{
-        resolve({ ok:false, reason: "Location access denied or unavailable. Please allow GPS permission." });
+      ()=>{
+        resolve({ ok:false, reason: "Location access denied/unavailable. Please allow GPS permission." });
       },
       { enableHighAccuracy:true, timeout: 12000, maximumAge: 0 }
     );
@@ -1837,8 +1968,12 @@ function setupStudentView(){
   const classId = getQueryParam("classId");
   if(mode !== "student" || !classId) return;
 
+  // hide top pills/buttons completely for students
+  $("userSummary").classList.add("hidden");
+  $("logoutBtn").classList.add("hidden");
+  $("openChangePwdBtn").classList.add("hidden");
+
   showSection("studentSection");
-  updateTopBar(); // should be hidden anyway
 
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===classId);
@@ -1867,10 +2002,7 @@ function setupStudentView(){
     $("studentAlreadySubmitted").classList.remove("hidden");
   }
 
-  // Signature pad
-  const canvas = $("stSignaturePad");
-  const stPad = setupSignaturePad(canvas);
-
+  const stPad = setupSignaturePad($("stSignaturePad"));
   $("stClearSignature").addEventListener("click", ()=> stPad.clear());
 
   $("stSubmit").addEventListener("click", async ()=>{
@@ -1885,23 +2017,17 @@ function setupStudentView(){
       return;
     }
 
-    // geofence check
-    $("studentGeoInfo").classList.add("hidden");
     const geo = await checkGeofence();
+    const geoEl = $("studentGeoInfo");
+    geoEl.classList.remove("hidden");
 
     if(!geo.ok){
-      const geoEl = $("studentGeoInfo");
-      geoEl.classList.remove("hidden");
-      if(geo.distKm != null){
-        setAlert(geoEl, `You are ${geo.distKm.toFixed(2)} km away. You must be within ${GEOFENCE_RADIUS_KM} km of JOOUST to sign attendance.`, "danger");
-      } else {
-        setAlert(geoEl, geo.reason || "Location check failed.", "danger");
-      }
+      setAlert(geoEl, geo.distKm != null
+        ? `You are ${geo.distKm.toFixed(2)} km away. You must be within ${GEOFENCE_RADIUS_KM} km of JOOUST to sign attendance.`
+        : (geo.reason || "Location check failed."), "danger");
       setAlert(msgEl,"Attendance blocked by location rule (1km).","danger");
       return;
     } else {
-      const geoEl = $("studentGeoInfo");
-      geoEl.classList.remove("hidden");
       setAlert(geoEl, `Location verified: ${geo.distKm.toFixed(2)} km from JOOUST (Allowed).`, "success");
     }
 
@@ -1912,7 +2038,6 @@ function setupStudentView(){
       return;
     }
 
-    // unique admission per class
     const existing = DATA.attendance.find(a=>a.classId===classId && a.admission===adm);
     if(existing){
       setAlert(msgEl,"Attendance for this admission number already exists.","danger");
@@ -1975,7 +2100,6 @@ function buildReportRows({ faculty, course, unit, year, semester, status, lectur
     });
   });
 
-  // sort by dateTime (recent first)
   rows.sort((a,b)=> (b.dateTime||"").localeCompare(a.dateTime||""));
   return rows;
 }
@@ -2050,16 +2174,10 @@ $("generateReportLecturerBtn").addEventListener("click", ()=>{
 /* ===========================
    EXPORTS (PDF / Word / Excel)
 =========================== */
-function libsReady(){
-  const okPdf = !!(window.jspdf && window.jspdf.jsPDF);
-  const okXlsx = !!window.XLSX;
-  return { okPdf, okXlsx };
-}
-
-function exportToPdfReport(rows, title){
-  const { okPdf } = libsReady();
+async function exportToPdfReport(rows, title){
+  const { okPdf } = await ensureLibs();
   if(!okPdf){
-    alert("PDF library not loaded. Ensure internet is available and refresh the page.");
+    alert("PDF library not loaded. Ensure internet is available, then refresh.");
     return;
   }
   const { jsPDF } = window.jspdf;
@@ -2155,12 +2273,13 @@ function exportToWordReport(rows, title){
   URL.revokeObjectURL(url);
 }
 
-function exportToExcelReport(rows, filename="jooust-attendance-report.xlsx"){
-  const { okXlsx } = libsReady();
+async function exportToExcelReport(rows, filename="jooust-attendance-report.xlsx"){
+  const { okXlsx } = await ensureLibs();
   if(!okXlsx){
-    alert("Excel library not loaded. Ensure internet is available and refresh the page.");
+    alert("Excel library not loaded. Ensure internet is available, then refresh.");
     return;
   }
+
   const wsData = [[
     "#","Faculty","Course","Unit","Year","Semester","Venue","Date/Time","Lecturer","Students","Status"
   ]];
@@ -2175,31 +2294,30 @@ function exportToExcelReport(rows, filename="jooust-attendance-report.xlsx"){
   XLSX.writeFile(wb, filename);
 }
 
-/* Hooks for report exports */
-$("exportPdfBtn").addEventListener("click", ()=>{
+$("exportPdfBtn").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTable").dataset.rows || "[]");
-  exportToPdfReport(rows, "Attendance Report (All Classes)");
+  await exportToPdfReport(rows, "Attendance Report (All Classes)");
 });
 $("exportWordBtn").addEventListener("click", ()=>{
   const rows = JSON.parse($("reportTable").dataset.rows || "[]");
   exportToWordReport(rows, "Attendance Report (All Classes)");
 });
-$("exportExcelBtn").addEventListener("click", ()=>{
+$("exportExcelBtn").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTable").dataset.rows || "[]");
-  exportToExcelReport(rows, "jooust-attendance-report.xlsx");
+  await exportToExcelReport(rows, "jooust-attendance-report.xlsx");
 });
 
-$("exportPdfBtnL").addEventListener("click", ()=>{
+$("exportPdfBtnL").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
-  exportToPdfReport(rows, "Attendance Report (My Classes)");
+  await exportToPdfReport(rows, "Attendance Report (My Classes)");
 });
 $("exportWordBtnL").addEventListener("click", ()=>{
   const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
   exportToWordReport(rows, "Attendance Report (My Classes)");
 });
-$("exportExcelBtnL").addEventListener("click", ()=>{
+$("exportExcelBtnL").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
-  exportToExcelReport(rows, "jooust-attendance-my-report.xlsx");
+  await exportToExcelReport(rows, "jooust-attendance-my-report.xlsx");
 });
 
 /* ===========================
@@ -2207,8 +2325,6 @@ $("exportExcelBtnL").addEventListener("click", ()=>{
 =========================== */
 function buildRawAttendanceRowsForClass(classId){
   DATA = loadData();
-  const cls = DATA.classes.find(c=>c.id===classId);
-  if(!cls) return [];
   const rows = DATA.attendance
     .filter(a=>a.classId===classId)
     .map((a,i)=>({
@@ -2243,21 +2359,20 @@ function exportRawAttendanceCsv(cls, rows){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `jooust-raw-attendance-${cls.unit.replace(/\s+/g,"_")}.csv`;
+  a.download = `jooust-raw-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-function exportClassAttendanceExcel(cls, rows){
-  const { okXlsx } = libsReady();
+async function exportClassAttendanceExcel(cls, rows){
+  const { okXlsx } = await ensureLibs();
   if(!okXlsx){
-    alert("Excel library not loaded. Ensure internet is available and refresh the page.");
+    alert("Excel library not loaded. Ensure internet is available, then refresh.");
     return;
   }
   const wb = XLSX.utils.book_new();
   wb.Props = { Title:"JOOUST Class Attendance", Subject:"Attendance", Author:"JOOUST Attendance System" };
 
-  // Summary sheet
   const summary = [
     ["Jaramogi Oginga Odinga University of Science & Technology"],
     ["Class Attendance Export"],
@@ -2276,7 +2391,6 @@ function exportClassAttendanceExcel(cls, rows){
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
 
-  // Attendance sheet (includes signature data)
   const header = ["#","Admission","Surname","Middle","First","Timestamp","SignatureDataURL"];
   const wsData = [header];
   rows.forEach(r=>{
@@ -2284,13 +2398,13 @@ function exportClassAttendanceExcel(cls, rows){
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Attendance");
 
-  XLSX.writeFile(wb, `jooust-class-attendance-${cls.unit.replace(/\s+/g,"_")}.xlsx`);
+  XLSX.writeFile(wb, `jooust-class-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.xlsx`);
 }
 
-function exportClassAttendancePdf(cls, rows){
-  const { okPdf } = libsReady();
+async function exportClassAttendancePdf(cls, rows){
+  const { okPdf } = await ensureLibs();
   if(!okPdf){
-    alert("PDF library not loaded. Ensure internet is available and refresh the page.");
+    alert("PDF library not loaded. Ensure internet is available, then refresh.");
     return;
   }
   const { jsPDF } = window.jspdf;
@@ -2330,24 +2444,19 @@ function exportClassAttendancePdf(cls, rows){
     headStyles:{ fillColor:[0,82,204], textColor:255 }
   });
 
-  // Lecturer & HOD signatures
   let y = doc.lastAutoTable.finalY + 24;
   doc.setFontSize(10);
   doc.setTextColor(31,41,55);
   doc.text("Lecturer Signature:", margin, y);
   if(cls.lecturerSignature){
-    try{
-      doc.addImage(cls.lecturerSignature, "PNG", margin, y+8, 160, 55);
-    } catch(e){}
+    try{ doc.addImage(cls.lecturerSignature, "PNG", margin, y+8, 160, 55); } catch(e){}
   }
   doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin+180, y+24);
 
   y += 85;
   doc.text("HOD Signature:", margin, y);
   if(cls.hodSignature){
-    try{
-      doc.addImage(cls.hodSignature, "PNG", margin, y+8, 160, 55);
-    } catch(e){}
+    try{ doc.addImage(cls.hodSignature, "PNG", margin, y+8, 160, 55); } catch(e){}
   }
   doc.text(`HOD: ${cls.hodName || ""}`, margin+180, y+24);
 
@@ -2355,10 +2464,10 @@ function exportClassAttendancePdf(cls, rows){
   doc.setTextColor(100,116,139);
   doc.text("System created by Gerotech — Dan Otieno.", margin, doc.internal.pageSize.getHeight()-18);
 
-  doc.save(`jooust-class-attendance-${cls.unit.replace(/\s+/g,"_")}.pdf`);
+  doc.save(`jooust-class-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.pdf`);
 }
 
-function exportClassAttendanceWord(cls, rows){
+async function exportClassAttendanceWord(cls, rows){
   const dateStr = new Date().toLocaleString();
   const logoHtml = jooustLogoDataUrl
     ? `<img src="${jooustLogoDataUrl}" style="height:58px;border-radius:10px;" />`
@@ -2434,7 +2543,7 @@ function exportClassAttendanceWord(cls, rows){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `jooust-class-attendance-${cls.unit.replace(/\s+/g,"_")}.doc`;
+  a.download = `jooust-class-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.doc`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -2443,7 +2552,6 @@ function exportClassAttendanceWord(cls, rows){
    Admin raw export tab pickers
 =========================== */
 function refreshClassPickers(){
-  // admin raw export class picker
   if($("rawClassPick")){
     DATA = loadData();
     const all = DATA.classes.slice().sort((a,b)=> (b.dateTime||"").localeCompare(a.dateTime||""));
@@ -2468,7 +2576,6 @@ function refreshClassPickers(){
   }
 }
 
-/* Raw export buttons */
 $("rawExportCsvBtn").addEventListener("click", ()=>{
   const id = $("rawClassPick").value;
   if(!id){ setAlert($("rawExportMsg"), "Select a class first.", "danger"); return; }
@@ -2478,13 +2585,13 @@ $("rawExportCsvBtn").addEventListener("click", ()=>{
   exportRawAttendanceCsv(cls, rows);
   setAlert($("rawExportMsg"), "CSV downloaded successfully.", "success");
 });
-$("rawExportExcelBtn").addEventListener("click", ()=>{
+$("rawExportExcelBtn").addEventListener("click", async ()=>{
   const id = $("rawClassPick").value;
   if(!id){ setAlert($("rawExportMsg"), "Select a class first.", "danger"); return; }
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===id);
   const rows = buildRawAttendanceRowsForClass(id);
-  exportClassAttendanceExcel(cls, rows);
+  await exportClassAttendanceExcel(cls, rows);
   setAlert($("rawExportMsg"), "Excel downloaded successfully.", "success");
 });
 
@@ -2500,27 +2607,31 @@ document.querySelectorAll("[data-admin-tab]").forEach(btn=>{
     document.querySelectorAll(".tab[data-admin-tab]").forEach(tb=>tb.classList.remove("active"));
     btn.classList.add("active");
 
-    // refresh on tab switch
     if(target==="classesTab") renderAdminClasses();
     if(target==="exportsTab") refreshClassPickers();
     if(target==="facultyTab") renderFacultySummary();
+    if(target==="lecturersTab") renderAdminLecturers();
   });
 });
 
 /* ===========================
    INIT
 =========================== */
-window.addEventListener("load", ()=>{
+window.addEventListener("load", async ()=>{
+  // If student mode, go straight to student view
   loadLogoAsDataUrl();
   setupStudentView();
 
-  // ensure dropdown placeholders even before CSV
+  // Prepare dropdowns
   refreshAllDropdowns();
   refreshClassPickers();
 
-  // create default class filter placeholders
-  if($("lecClassFilter")) setClassFilterOptions("lecClassFilter", [], true);
-  if($("adminClassFilter")) setClassFilterOptions("adminClassFilter", [], false);
+  // Ensure library fallbacks (helps Excel/PDF issues)
+  await ensureLibs();
+
+  // Default placeholders for filters
+  setClassFilterOptions("lecClassFilter", [], true);
+  setClassFilterOptions("adminClassFilter", [], false);
 });
 </script>
 </body>
