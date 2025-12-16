@@ -5,101 +5,288 @@
   <title>JOOUST Attendance Management System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <!-- JOOUST theme -->
   <style>
     :root{
-      --jooust-blue:#0052cc; --jooust-blue-dark:#003b8c; --jooust-green:#24a148; --jooust-gold:#f2c94c;
-      --bg:#f4f7fb; --card:#ffffff; --text:#1f2933; --muted:#6b7280; --danger:#e11d48;
-      --shadow: 0 10px 28px rgba(15,23,42,.10); --shadow2: 0 18px 40px rgba(15,23,42,.14);
+      --jooust-blue:#0052cc;
+      --jooust-blue-dark:#003b8c;
+      --jooust-green:#24a148;
+      --jooust-gold:#f2c94c;
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#1f2933;
+      --muted:#6b7280;
+      --danger:#e11d48;
+      --shadow: 0 10px 28px rgba(15,23,42,.10);
+      --shadow2: 0 18px 40px rgba(15,23,42,.14);
       --radius: 16px;
     }
+
     *{ box-sizing:border-box; font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     body{ margin:0; background: var(--bg); color: var(--text); }
+
     header{
       background: linear-gradient(135deg, var(--jooust-blue-dark), var(--jooust-blue));
-      color:#fff; padding: .9rem 1.2rem; position: sticky; top:0; z-index:50;
+      color:#fff;
+      padding: 0.9rem 1.2rem;
+      position: sticky;
+      top:0;
+      z-index:50;
       box-shadow: 0 6px 22px rgba(0,0,0,.25);
     }
-    .header-inner{ max-width: 1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-    .brand{ display:flex; align-items:center; gap:.85rem; }
-    .brand img{ height: 52px; width:auto; background:#fff; padding:6px; border-radius:10px; box-shadow: 0 8px 18px rgba(0,0,0,.20); }
-    .brand h1{ margin:0; font-size:1.15rem; letter-spacing:.2px; line-height:1.25; }
-    .brand h1 span{ display:block; font-size:.82rem; opacity:.92; font-weight:400; }
-    .top-actions{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; justify-content:flex-end; }
-    .user-pill{ display:flex; align-items:center; gap:.5rem; padding:.35rem .7rem; border-radius:999px;
-      background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); font-size:.86rem; white-space:nowrap; }
-    .user-pill b{ font-weight:700; }
+    .header-inner{
+      max-width: 1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex; align-items:center; gap:0.85rem;
+    }
+    .brand img{
+      height: 52px;
+      width:auto;
+      background:#fff;
+      padding:6px;
+      border-radius: 10px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.20);
+    }
+    .brand h1{
+      margin:0;
+      font-size: 1.15rem;
+      letter-spacing: .2px;
+      line-height:1.25;
+    }
+    .brand h1 span{
+      display:block;
+      font-size: .82rem;
+      opacity:.92;
+      font-weight: 400;
+    }
 
-    main{ max-width:1200px; margin:1.2rem auto 2.5rem; padding:0 1rem; }
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap: .5rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .user-pill{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.35rem .7rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.22);
+      font-size:.86rem;
+      white-space:nowrap;
+    }
+    .user-pill b{ font-weight: 700; }
+
+    main{
+      max-width: 1200px;
+      margin: 1.2rem auto 2.5rem;
+      padding: 0 1rem;
+    }
+
     .hero{
       border-radius: var(--radius);
       background:
         radial-gradient(1200px 400px at 15% 10%, rgba(242,201,76,.25), transparent 55%),
         radial-gradient(1200px 400px at 85% 20%, rgba(36,161,72,.18), transparent 55%),
         linear-gradient(135deg, rgba(0,82,204,.10), rgba(0,59,140,.05));
-      padding: 1rem 1.1rem; box-shadow: var(--shadow); margin-bottom: 1rem;
+      padding: 1rem 1.1rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
       border: 1px solid rgba(0,82,204,.12);
     }
-    .hero h2{ margin:.1rem 0 .35rem; font-size: 1.1rem; display:flex; align-items:center; gap:.55rem; }
+    .hero h2{
+      margin:.1rem 0 .35rem;
+      font-size: 1.1rem;
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+    }
     .hero h2::before{
-      content:""; width:7px; height:22px; border-radius:999px;
-      background: linear-gradient(180deg, var(--jooust-green), var(--jooust-gold)); display:inline-block;
+      content:"";
+      width: 7px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--jooust-green), var(--jooust-gold));
+      display:inline-block;
     }
     .hero p{ margin:0; color: var(--muted); font-size: .92rem; }
 
-    .card{ background: var(--card); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
-      box-shadow: var(--shadow); border: 1px solid rgba(15,23,42,.06); }
+    .card{
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(15,23,42,.06);
+    }
+
     .hidden{ display:none !important; }
 
-    label{ font-size:.85rem; color: var(--muted); display:block; margin-bottom:.25rem; }
+    label{
+      font-size:.85rem;
+      color: var(--muted);
+      display:block;
+      margin-bottom:.25rem;
+    }
     input, select, textarea{
-      width:100%; padding:.62rem .7rem; border-radius: 12px; border: 1px solid #d1d5db;
-      font-size:.92rem; outline:none; transition: .15s ease; background:#f9fafb;
+      width:100%;
+      padding:.62rem .7rem;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      font-size:.92rem;
+      outline:none;
+      transition: .15s ease;
+      background:#f9fafb;
     }
     input:focus, select:focus, textarea:focus{
-      border-color: var(--jooust-blue); box-shadow: 0 0 0 3px rgba(0,82,204,.14); background:#fff;
+      border-color: var(--jooust-blue);
+      box-shadow: 0 0 0 3px rgba(0,82,204,.14);
+      background:#fff;
     }
-    .row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .75rem 1rem; margin-bottom: .8rem; }
+
+    .row{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: .75rem 1rem;
+      margin-bottom: .8rem;
+    }
 
     .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:.45rem;
-      padding:.62rem 1rem; border-radius: 999px; border:none; cursor:pointer;
-      font-size:.92rem; font-weight:700; transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
-      white-space:nowrap; user-select:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.45rem;
+      padding:.62rem 1rem;
+      border-radius: 999px;
+      border:none;
+      cursor:pointer;
+      font-size:.92rem;
+      font-weight:700;
+      transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
+      white-space:nowrap;
+      user-select:none;
     }
     .btn:active{ transform: translateY(1px); box-shadow:none; }
-    .btn-primary{ background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark)); color:#fff; box-shadow: 0 10px 18px rgba(0,82,204,.28); }
-    .btn-success{ background: linear-gradient(135deg, var(--jooust-green), #16a34a); color:#fff; box-shadow: 0 10px 18px rgba(22,163,74,.25); }
-    .btn-secondary{ background:#e5e7eb; color:#111827; }
-    .btn-danger{ background: var(--danger); color:#fff; box-shadow: 0 10px 18px rgba(225,29,72,.18); }
-    .btn-outline{ background: transparent; border: 1px solid rgba(255,255,255,.35); color:#fff; }
+    .btn-primary{
+      background: linear-gradient(135deg, var(--jooust-blue), var(--jooust-blue-dark));
+      color:#fff;
+      box-shadow: 0 10px 18px rgba(0,82,204,.28);
+    }
+    .btn-success{
+      background: linear-gradient(135deg, var(--jooust-green), #16a34a);
+      color:#fff;
+      box-shadow: 0 10px 18px rgba(22,163,74,.25);
+    }
+    .btn-secondary{
+      background:#e5e7eb;
+      color:#111827;
+    }
+    .btn-danger{
+      background: var(--danger);
+      color:#fff;
+      box-shadow: 0 10px 18px rgba(225,29,72,.18);
+    }
+    .btn-outline{
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.35);
+      color:#fff;
+    }
     .btn:hover{ filter: brightness(1.03); }
 
-    .btn-group{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.5rem; }
+    .btn-group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.5rem;
+      margin-top:.5rem;
+    }
 
-    .chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.22rem .65rem; border-radius:999px;
-      font-size:.78rem; background:#e5f5ff; color:#075985; border: 1px solid rgba(7,89,133,.12); }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.22rem .65rem;
+      border-radius:999px;
+      font-size:.78rem;
+      background:#e5f5ff;
+      color:#075985;
+      border: 1px solid rgba(7,89,133,.12);
+    }
     .chip.green{ background:#dcfce7; color:#166534; border-color: rgba(22,101,52,.12); }
     .chip.red{ background:#fee2e2; color:#b91c1c; border-color: rgba(185,28,28,.12); }
 
-    .tabs{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.5rem; }
-    .tab{ padding:.45rem .95rem; border-radius:999px; font-size:.9rem; border: 1px solid #d1d5db;
-      background:#f3f4f6; cursor:pointer; font-weight:700; }
-    .tab.active{ background: var(--jooust-blue); border-color: var(--jooust-blue-dark); color:#fff; }
+    .tabs{
+      display:flex;
+      gap:.5rem;
+      flex-wrap:wrap;
+      margin-top:.5rem;
+    }
+    .tab{
+      padding:.45rem .95rem;
+      border-radius: 999px;
+      font-size:.9rem;
+      border: 1px solid #d1d5db;
+      background:#f3f4f6;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .tab.active{
+      background: var(--jooust-blue);
+      border-color: var(--jooust-blue-dark);
+      color:#fff;
+    }
 
-    table{ width:100%; border-collapse: collapse; font-size: .85rem; margin-top:.6rem; overflow:hidden; border-radius: 14px; }
-    th, td{ border: 1px solid #e5e7eb; padding:.55rem .5rem; text-align:left; vertical-align: top; }
-    th{ background:#eff6ff; color:#1d4ed8; font-weight:800; }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+      margin-top:.6rem;
+      overflow:hidden;
+      border-radius: 14px;
+    }
+    th, td{
+      border: 1px solid #e5e7eb;
+      padding:.55rem .5rem;
+      text-align:left;
+      vertical-align: top;
+    }
+    th{
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:800;
+    }
     tr:nth-child(even) td{ background:#f9fafb; }
 
-    .badge{ padding:.1rem .55rem; border-radius:999px; font-size:.72rem; font-weight:800; background:#e5e7eb; }
+    .badge{
+      padding:.1rem .55rem;
+      border-radius:999px;
+      font-size:.72rem;
+      font-weight:800;
+      background:#e5e7eb;
+    }
     .badge.open{ background:#dcfce7; color:#166534; }
     .badge.closed{ background:#fee2e2; color:#b91c1c; }
 
     .muted{ color: var(--muted); font-size:.9rem; }
     .small{ font-size:.82rem; color: var(--muted); }
 
-    .alert{ padding:.7rem .85rem; border-radius: 14px; font-size:.9rem; margin-bottom:.75rem;
-      border: 1px solid rgba(15,23,42,.06); white-space: pre-wrap; }
+    .alert{
+      padding:.7rem .85rem;
+      border-radius: 14px;
+      font-size:.9rem;
+      margin-bottom:.75rem;
+      border: 1px solid rgba(15,23,42,.06);
+      white-space: pre-wrap;
+    }
     .alert-info{ background:#e0f2fe; color:#0b5394; border-color: rgba(11,83,148,.15); }
     .alert-danger{ background:#fee2e2; color:#991b1b; border-color: rgba(153,27,27,.14); }
     .alert-success{ background:#dcfce7; color:#166534; border-color: rgba(22,101,52,.14); }
@@ -112,18 +299,38 @@
       height: 150px;
       cursor: crosshair;
       box-shadow: inset 0 2px 10px rgba(15,23,42,.05);
-      touch-action: none;
+      touch-action: none; /* important for phone drawing */
     }
-    .signature-actions{ display:flex; justify-content:flex-end; gap:.4rem; margin-top:.35rem; }
+    .signature-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:.4rem;
+      margin-top:.35rem;
+    }
 
-    .footer{ margin-top: 1.2rem; padding: .9rem 1rem; text-align:center; color: rgba(31,41,51,.75); font-size:.86rem; }
-    .footer b{ color: var(--jooust-blue-dark); }
+    .footer{
+      margin-top: 1.2rem;
+      padding: .9rem 1rem;
+      text-align:center;
+      color: rgba(31,41,51,.75);
+      font-size:.86rem;
+    }
+    .footer b{
+      color: var(--jooust-blue-dark);
+    }
 
-    .kpi-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:.75rem; margin-top:.9rem; }
+    .kpi-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap:.75rem;
+      margin-top:.9rem;
+    }
     .kpi{
       border:1px solid rgba(0,82,204,.12);
       background: linear-gradient(135deg, rgba(0,82,204,.08), rgba(36,161,72,.05));
-      border-radius:14px; padding:.8rem .9rem; box-shadow: 0 10px 22px rgba(15,23,42,.06);
+      border-radius:14px;
+      padding:.8rem .9rem;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
     }
     .kpi .v{ font-size:1.35rem; font-weight:900; color: var(--jooust-blue-dark); }
     .kpi .t{ font-size:.82rem; color: var(--muted); margin-top:.1rem; }
@@ -135,8 +342,10 @@
     }
   </style>
 
+  <!-- CDN libs (with runtime fallback loader in JS) -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
 </head>
 
@@ -147,7 +356,7 @@
       <img src="logo.jpg" alt="JOOUST Logo" />
       <h1>
         JOOUST Attendance System
-        <span>Lectures · Staff Meetings · Digital Signatures · Smart Reports</span>
+        <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
       </h1>
     </div>
 
@@ -163,13 +372,13 @@
   <div class="hero">
     <h2>Smart Attendance for Lectures & Meetings</h2>
     <p>
-      Fast sign-in, digital signatures, class/meeting links (QR supported), and official exports (PDF/Word/Excel/CSV).
-      Participants can sign using mobile phones (finger signature supported).
+      Fast sign-in, digital signatures, class links (QR supported), and official exports (PDF/Word/Excel/CSV).
+      Students can sign using mobile phones (finger signature supported).
     </p>
 
     <div class="kpi-grid">
-      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions can enforce within 1km of JOOUST</div></div>
-      <div class="kpi"><div class="v">Online Meetings</div><div class="t">Staff can sign remotely for online meetings</div></div>
+      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Students must be within 1km of JOOUST to sign</div></div>
+      <div class="kpi"><div class="v">One-Tap Exports</div><div class="t">PDF / Word / Excel / CSV with JOOUST logo</div></div>
       <div class="kpi"><div class="v">Signatures</div><div class="t">Finger or mouse on phone/laptop</div></div>
       <div class="kpi"><div class="v">Secure Roles</div><div class="t">Admin approval + change password + logout</div></div>
     </div>
@@ -217,7 +426,7 @@
     <div id="loginMessage" class="alert hidden"></div>
   </section>
 
-  <!-- LECTURER REGISTRATION -->
+  <!-- LECTURER REGISTRATION (assignment removed) -->
   <section id="lecturerRegistrationSection" class="card hidden">
     <h2 style="margin:0 0 .6rem;">Lecturer Registration</h2>
     <div class="alert alert-info">
@@ -264,25 +473,18 @@
     <div id="lecturerRegMessage" class="alert hidden"></div>
   </section>
 
-  <!-- PARTICIPANT VIEW (Student / Staff) -->
+  <!-- STUDENT VIEW -->
   <section id="studentSection" class="card hidden">
-    <h2 id="participantTitle" style="margin:0 0 .6rem;">Attendance Sign-In</h2>
+    <h2 style="margin:0 0 .6rem;">Class Attendance – Student Sign-In</h2>
     <div id="studentClassInfo" class="alert alert-info"></div>
 
     <div id="studentGeoInfo" class="alert alert-info hidden"></div>
 
     <div id="studentAlreadySubmitted" class="alert alert-success hidden">
-      You have already submitted attendance for this session on this device.
+      You have already submitted attendance for this class on this device.
     </div>
 
     <div id="studentFormWrapper">
-      <div class="row" id="staffNoRow" class="hidden">
-        <div>
-          <label for="stStaffNo">Staff No / PF No</label>
-          <input id="stStaffNo" type="text" />
-        </div>
-      </div>
-
       <div class="row">
         <div>
           <label for="stSurname">Surname</label>
@@ -298,9 +500,9 @@
         </div>
       </div>
 
-      <div class="row" id="idRow">
+      <div class="row">
         <div>
-          <label id="idLabel" for="stAdmission">Admission Number</label>
+          <label for="stAdmission">Admission Number</label>
           <input id="stAdmission" type="text" />
         </div>
       </div>
@@ -318,8 +520,8 @@
       <div id="studentSubmitMsg" class="alert hidden" style="margin-top:.8rem;"></div>
     </div>
 
-    <div class="small" id="geoNote" style="margin-top:.8rem;">
-      Note: Physical sessions may ask for location access (GPS) to confirm you are within JOOUST (1km radius).
+    <div class="small" style="margin-top:.8rem;">
+      Note: You may be asked to allow location access (GPS) to confirm you are within JOOUST (1km radius).
     </div>
   </section>
 
@@ -330,7 +532,7 @@
       <div class="tabs">
         <button class="tab active" data-admin-tab="lecturersTab">Lecturers</button>
         <button class="tab" data-admin-tab="facultyTab">Faculty / Course / Unit Upload</button>
-        <button class="tab" data-admin-tab="classesTab">Sessions</button>
+        <button class="tab" data-admin-tab="classesTab">Classes</button>
         <button class="tab" data-admin-tab="reportsTab">Reports</button>
         <button class="tab" data-admin-tab="exportsTab">Raw Exports</button>
       </div>
@@ -374,28 +576,28 @@
       <div id="facultySummary" class="muted"></div>
     </section>
 
-    <!-- Sessions -->
+    <!-- Classes -->
     <section id="classesTab" class="card admin-tab hidden">
       <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
         <div>
-          <h3 style="margin:.1rem 0;">All Sessions</h3>
-          <div class="small">Monitor all lectures and staff meetings and view attendance + signatures.</div>
+          <h3 style="margin:.1rem 0;">All Classes</h3>
+          <div class="small">Monitor all sessions and view attendance + signatures.</div>
         </div>
 
         <div style="min-width:260px;">
-          <label for="adminClassFilter">Quick Filter (Unit / Lecturer / Course / Meeting)</label>
+          <label for="adminClassFilter">Quick Filter (Unit / Lecturer / Course)</label>
           <select id="adminClassFilter"></select>
         </div>
       </div>
 
-      <div id="adminClassesTableWrapper" class="muted">No sessions created yet.</div>
+      <div id="adminClassesTableWrapper" class="muted">No classes created yet.</div>
     </section>
 
     <!-- Reports -->
     <section id="reportsTab" class="card admin-tab hidden">
       <h3 style="margin:.1rem 0 .25rem;">Reports</h3>
       <div class="muted" style="margin-bottom:.8rem;">
-        Filter and export as PDF/Word/Excel.
+        Filter using dropdowns and export as PDF/Word/Excel.
       </div>
 
       <div class="row">
@@ -452,12 +654,12 @@
     <section id="exportsTab" class="card admin-tab hidden">
       <h3 style="margin:.1rem 0 .25rem;">Raw Attendance Export</h3>
       <div class="muted" style="margin-bottom:.8rem;">
-        Export attendance including signatures data.
+        Export student attendance (names + admission + timestamps + signatures data).
       </div>
 
       <div class="row">
         <div>
-          <label for="rawClassPick">Pick Session</label>
+          <label for="rawClassPick">Pick Class</label>
           <select id="rawClassPick"></select>
         </div>
         <div>
@@ -481,34 +683,16 @@
     <section class="card">
       <h2 style="margin:0;">Lecturer Dashboard</h2>
       <p class="muted" style="margin:.4rem 0 0;">
-        Create sessions (classes or staff meetings), share link (QR), view attendance & export official reports.
+        Create classes, share student link (QR), view attendance & export official reports.
       </p>
     </section>
 
-    <!-- Create session -->
+    <!-- Create class -->
     <section class="card">
       <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
         <div>
-          <h3 style="margin:.1rem 0;">Create / Start Session</h3>
-          <div class="small">For classes pick from mappings; for staff meetings, you can set mode physical/online.</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="lcType">Session Type</label>
-          <select id="lcType">
-            <option value="class">Lecture / Class</option>
-            <option value="meeting">Staff Meeting</option>
-          </select>
-        </div>
-
-        <div id="meetingModeWrap">
-          <label for="lcMeetingMode">Meeting Mode</label>
-          <select id="lcMeetingMode">
-            <option value="physical">Physical (Geo-fenced)</option>
-            <option value="online">Online (No Geo-fence)</option>
-          </select>
+          <h3 style="margin:.1rem 0;">Create / Start Class</h3>
+          <div class="small">Select Faculty/Course/Unit/Year/Semester from uploaded mappings.</div>
         </div>
       </div>
 
@@ -529,13 +713,6 @@
           <select id="lcUnit"></select>
         </div>
         <div>
-          <label for="lcUnitCode">Unit Code</label>
-          <input id="lcUnitCode" type="text" placeholder="e.g. CSC 210" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
           <label for="lcYear">Year</label>
           <select id="lcYear"></select>
         </div>
@@ -547,8 +724,8 @@
 
       <div class="row">
         <div>
-          <label for="lcVenue">Venue / Platform</label>
-          <input id="lcVenue" type="text" placeholder="e.g. LT1 / Zoom / Teams / Lab 3" />
+          <label for="lcVenue">Venue</label>
+          <input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" />
         </div>
         <div>
           <label for="lcDateTime">Date & Time</label>
@@ -557,31 +734,31 @@
       </div>
 
       <div class="btn-group">
-        <button class="btn btn-success" id="createClassBtn">Create / Start</button>
+        <button class="btn btn-success" id="createClassBtn">Create / Start Class</button>
       </div>
       <div id="createClassMsg" class="alert hidden" style="margin-top:.8rem;"></div>
     </section>
 
-    <!-- My sessions -->
+    <!-- My classes -->
     <section class="card">
       <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
         <div>
-          <h3 style="margin:.1rem 0;">My Sessions</h3>
-          <div class="small">Copy link/QR, close/open, view attendance & export.</div>
+          <h3 style="margin:.1rem 0;">My Classes</h3>
+          <div class="small">Copy link/QR, close/open class, view attendance & export.</div>
         </div>
         <div style="min-width:260px;">
-          <label for="lecClassFilter">Quick Filter</label>
+          <label for="lecClassFilter">Quick Filter (Unit / Course / Status)</label>
           <select id="lecClassFilter"></select>
         </div>
       </div>
-      <div id="lecturerClassesTableWrapper" class="muted">No sessions yet.</div>
+      <div id="lecturerClassesTableWrapper" class="muted">No classes yet.</div>
     </section>
 
     <!-- Lecturer reports -->
     <section class="card">
-      <h3 style="margin:.1rem 0 .25rem;">Quick Reports (My Sessions)</h3>
+      <h3 style="margin:.1rem 0 .25rem;">Quick Reports (My Classes)</h3>
       <p class="muted" style="margin:.35rem 0 .9rem;">
-        Filter and export official reports.
+        Filter using dropdown menus and export official reports.
       </p>
 
       <div class="row">
@@ -620,7 +797,7 @@
   </section>
 
   <div class="footer">
-    System created by <b>Gerotech</b> <b>Enterprises</b> <b>@2025</b>.
+    System created by <b>Gerotech</b>  <b>Enterprises</b>  <b>@2025</b>.
   </div>
 </main>
 
@@ -657,19 +834,19 @@
 /* ===========================
    STORAGE + BASE DATA
 =========================== */
-const STORAGE_KEY = "jooust_attendance_data_v4";
+const STORAGE_KEY = "jooust_attendance_data_v3";
 
-/* JOOUST Center (Approx) */
+/* JOOUST Center (Approx) - update to exact JOOUST coordinates if you want. */
 const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 };
 const GEOFENCE_RADIUS_KM = 1.0;
 
 function baseData(){
   return {
-    admins: [{ username:"admin", password:"admin123" }],
+    admins: [{ username:"admin", password:"admin123" }], // NOT displayed anywhere
     lecturers: [],
     facultyConfig: [],
-    classes: [],     // sessions: class or meeting
-    attendance: []   // mixed: student or staff
+    classes: [],
+    attendance: []
   };
 }
 function loadData(){
@@ -698,7 +875,8 @@ let jooustLogoDataUrl = null;
 function $(id){ return document.getElementById(id); }
 function showSection(id){
   ["loginSection","lecturerRegistrationSection","adminDashboard","lecturerDashboard","studentSection"].forEach(sid=>{
-    const el = $(sid); if(!el) return;
+    const el = $(sid);
+    if(!el) return;
     el.classList.toggle("hidden", sid !== id);
   });
 }
@@ -713,6 +891,7 @@ function setAlert(el, msg, type="info"){
   else el.classList.add("alert-info");
 }
 function clearAlert(el){ el.classList.add("hidden"); }
+
 function formatDateTime(dt){
   if(!dt) return "";
   const d = new Date(dt);
@@ -725,26 +904,32 @@ function getQueryParam(name){
 }
 
 /* ===========================
-   Robust library loader
+   Robust library loader (fixes "excel library not loaded" issues)
 =========================== */
 function loadScriptOnce(url){
   return new Promise((resolve, reject)=>{
+    // already loaded?
     const existing = [...document.scripts].find(s=>s.src===url);
     if(existing) { resolve(true); return; }
     const s = document.createElement("script");
-    s.src = url; s.async = true;
+    s.src = url;
+    s.async = true;
     s.onload = ()=> resolve(true);
     s.onerror = ()=> reject(new Error("Failed: " + url));
     document.head.appendChild(s);
   });
 }
+
 async function ensureLibs(){
+  // If already OK, return quickly.
   const okPdf = !!(window.jspdf && window.jspdf.jsPDF);
   const okXlsx = !!window.XLSX;
   const okQR = !!window.QRCode;
 
   const tasks = [];
+
   if(!okPdf){
+    // try multiple CDNs
     tasks.push(
       loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
         .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"))
@@ -754,44 +939,52 @@ async function ensureLibs(){
         .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"))
     );
   }
+
   if(!okXlsx){
     tasks.push(
       loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js")
         .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"))
     );
   }
+
   if(!okQR){
+    // QR code for class link
     tasks.push(
       loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js")
         .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"))
     );
   }
+
   if(tasks.length){
-    try{ await Promise.all(tasks); } catch(e){}
+    try{ await Promise.all(tasks); } catch(e){ /* ignore, will check below */ }
   }
-  return { okPdf: !!(window.jspdf && window.jspdf.jsPDF), okXlsx: !!window.XLSX, okQR: !!window.QRCode };
+
+  return {
+    okPdf: !!(window.jspdf && window.jspdf.jsPDF),
+    okXlsx: !!window.XLSX,
+    okQR: !!window.QRCode
+  };
 }
 
 /* ===========================
-   Load logo as DataURL
+   Load logo as DataURL for PDF/Word
 =========================== */
 function loadLogoAsDataUrl(){
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.src = "logo.jpg";
   img.onload = ()=>{
-    try{
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width; canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img,0,0);
-      jooustLogoDataUrl = canvas.toDataURL("image/jpeg");
-    }catch(e){ jooustLogoDataUrl = null; }
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img,0,0);
+    jooustLogoDataUrl = canvas.toDataURL("image/jpeg");
   };
 }
 
 /* ===========================
-   Canvas signature
+   Canvas signature (mobile + laptop)
 =========================== */
 function setupSignaturePad(canvas, opts={}){
   const ctx = canvas.getContext("2d");
@@ -805,18 +998,23 @@ function setupSignaturePad(canvas, opts={}){
     canvas.width = Math.floor(rect.width * ratio);
     canvas.height = Math.floor(rect.height * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    // restore previous drawing (if any)
     if(prev && prev.length > 50){
       const img = new Image();
       img.onload = ()=> ctx.drawImage(img, 0, 0, rect.width, rect.height);
       img.src = prev;
     }
   }
+
   function getPos(e){
     const rect = canvas.getBoundingClientRect();
     const point = e.touches ? e.touches[0] : e;
     return { x: point.clientX - rect.left, y: point.clientY - rect.top };
   }
+
   let drawing = false;
+
   function start(e){
     e.preventDefault();
     drawing = true;
@@ -836,9 +1034,11 @@ function setupSignaturePad(canvas, opts={}){
   canvas.addEventListener("mousedown", start);
   canvas.addEventListener("mousemove", move);
   window.addEventListener("mouseup", end);
+
   canvas.addEventListener("touchstart", start, {passive:false});
   canvas.addEventListener("touchmove", move, {passive:false});
   window.addEventListener("touchend", end);
+
   window.addEventListener("resize", ()=> resize());
   resize();
 
@@ -887,6 +1087,7 @@ $("logoutBtn").addEventListener("click", ()=>{
   currentUser = null;
   updateTopBar();
   showSection("loginSection");
+  // clear fields
   $("loginUsername").value = "";
   $("loginPassword").value = "";
   clearAlert($("loginMessage"));
@@ -960,7 +1161,12 @@ $("submitLecturerRegistration").addEventListener("click", ()=>{
     return;
   }
 
-  const lecturer = { id: uuid(), salutation, fullName, pf, username, password, approved:false };
+  const lecturer = {
+    id: uuid(),
+    salutation, fullName, pf,
+    username, password,
+    approved: false
+  };
   DATA.lecturers.push(lecturer);
   saveData(DATA);
 
@@ -1020,7 +1226,11 @@ function renderAdminLecturers(){
   }
 
   let html = `<table><thead><tr>
-    <th>Lecturer</th><th>PF/ID</th><th>Username</th><th>Status</th><th>Actions</th>
+    <th>Lecturer</th>
+    <th>PF/ID</th>
+    <th>Username</th>
+    <th>Status</th>
+    <th>Actions</th>
   </tr></thead><tbody>`;
 
   DATA.lecturers.forEach(lec=>{
@@ -1081,11 +1291,7 @@ $("uploadFacultyCsvBtn").addEventListener("click", ()=>{
     const text = e.target.result || "";
     const lines = text.split(/\r?\n/).filter(l=>l.trim());
     const records = [];
-    for(let i=0;i<lines.length;i++){
-      const line = lines[i].trim();
-      // skip header if present
-      if(i===0 && line.toLowerCase().includes("faculty") && line.toLowerCase().includes("course") && line.toLowerCase().includes("unit")) continue;
-
+    for(const line of lines){
       const parts = line.split(",").map(p=>p.trim());
       if(parts.length < 5) continue;
       const [faculty, course, unit, year, semester] = parts;
@@ -1147,7 +1353,11 @@ function setOptions(selectEl, values, placeholder="All / Select"){
 
   if(cur && values.includes(cur)) selectEl.value = cur;
 }
-function getMapping(){ DATA = loadData(); return DATA.facultyConfig || []; }
+
+function getMapping(){
+  DATA = loadData();
+  return DATA.facultyConfig || [];
+}
 
 function refreshAllDropdowns(){
   const m = getMapping();
@@ -1208,28 +1418,12 @@ function hookupCascadingCreateClass(){
 }
 
 /* ===========================
-   Session Type UI behavior
-=========================== */
-function updateCreateSessionUI(){
-  const type = $("lcType")?.value || "class";
-  const meetingWrap = $("meetingModeWrap");
-  if(meetingWrap) meetingWrap.classList.toggle("hidden", type !== "meeting");
-
-  // For meetings, mapping fields can still be used (optional), but we keep them.
-  // Unit Code still available (use it or leave blank for meetings).
-}
-$("lcType").addEventListener("change", updateCreateSessionUI);
-
-/* ===========================
-   CLASSES/MEETINGS: Lecturer create + view
+   CLASSES: Lecturer create + view
 =========================== */
 $("createClassBtn").addEventListener("click", ()=>{
-  const type = $("lcType").value;
-  const meetingMode = $("lcMeetingMode").value;
   const f = $("lcFaculty").value.trim();
   const c = $("lcCourse").value.trim();
   const u = $("lcUnit").value.trim();
-  const unitCode = $("lcUnitCode").value.trim();
   const y = $("lcYear").value.trim();
   const s = $("lcSemester").value.trim();
   const v = $("lcVenue").value.trim();
@@ -1237,24 +1431,12 @@ $("createClassBtn").addEventListener("click", ()=>{
   const msgEl = $("createClassMsg");
 
   if(!currentUser || currentUser.role!=="lecturer"){
-    setAlert(msgEl,"You must be logged in as lecturer to create sessions.","danger");
+    setAlert(msgEl,"You must be logged in as lecturer to create classes.","danger");
     return;
   }
-  if(!v || !dt){
-    setAlert(msgEl,"Please fill Venue/Platform and Date & Time.","danger");
+  if(!f || !c || !u || !y || !s || !v || !dt){
+    setAlert(msgEl,"Please fill all class details.","danger");
     return;
-  }
-
-  // For class: require mapping + unit code + academic fields
-  if(type==="class"){
-    if(!f || !c || !u || !y || !s){
-      setAlert(msgEl,"Please select Faculty/Course/Unit/Year/Semester for classes.","danger");
-      return;
-    }
-    if(!unitCode){
-      setAlert(msgEl,"Unit Code is required for classes.","danger");
-      return;
-    }
   }
 
   DATA = loadData();
@@ -1264,22 +1446,14 @@ $("createClassBtn").addEventListener("click", ()=>{
   const classId = uuid();
   const cls = {
     id: classId,
-    type, // "class" | "meeting"
-    meetingMode: type==="meeting" ? meetingMode : "physical",
-    unitCode: unitCode || "",
     lecturerId: lec.id,
-    faculty: f || "",
-    course: c || "",
-    unit: u || (type==="meeting" ? "Staff Meeting" : ""),
-    year: y || "",
-    semester: s || "",
-    venue: v,
-    dateTime: dt,
-    status: "open",
+    faculty:f, course:c, unit:u, year:y, semester:s,
+    venue:v, dateTime:dt,
+    status:"open",
     lecturerName: lec.salutation + " " + lec.fullName,
-    lecturerSignature: null,
-    hodName: "",
-    hodSignature: null
+    lecturerSignature:null,
+    hodName:"",
+    hodSignature:null
   };
 
   DATA.classes.push(cls);
@@ -1289,60 +1463,35 @@ $("createClassBtn").addEventListener("click", ()=>{
   refreshClassPickers();
 
   const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
-  setAlert(msgEl, "Session created. Share this sign-in link:\n" + link, "success");
+
+  setAlert(msgEl, "Class created. Share this link with students:\n" + link, "success");
 });
 
 function classFilterMatch(cls, filterValue){
   const v = filterValue.toLowerCase();
   return (
     (cls.unit||"").toLowerCase().includes(v) ||
-    (cls.unitCode||"").toLowerCase().includes(v) ||
     (cls.course||"").toLowerCase().includes(v) ||
     (cls.faculty||"").toLowerCase().includes(v) ||
     (cls.status||"").toLowerCase().includes(v) ||
-    (cls.lecturerName||"").toLowerCase().includes(v) ||
-    (cls.type||"").toLowerCase().includes(v) ||
-    (cls.meetingMode||"").toLowerCase().includes(v)
+    (cls.lecturerName||"").toLowerCase().includes(v)
   );
 }
+
 function setClassFilterOptions(selectId, classes, includeStatusHint){
   const sel = $(selectId);
   if(!sel) return;
   const old = sel.value;
 
   const units = unique(classes.map(c=>c.unit).filter(Boolean));
-  const codes = unique(classes.map(c=>c.unitCode).filter(Boolean));
   const courses = unique(classes.map(c=>c.course).filter(Boolean));
   const statuses = unique(classes.map(c=>c.status).filter(Boolean));
-  const types = unique(classes.map(c=>c.type).filter(Boolean));
 
   sel.innerHTML = "";
   const o0 = document.createElement("option");
   o0.value = "";
-  o0.textContent = "All Sessions";
+  o0.textContent = "All Classes";
   sel.appendChild(o0);
-
-  const grpT = document.createElement("optgroup");
-  grpT.label = "By Type";
-  types.forEach(t=>{
-    const o = document.createElement("option");
-    o.value = t;
-    o.textContent = t.toUpperCase();
-    grpT.appendChild(o);
-  });
-  sel.appendChild(grpT);
-
-  if(codes.length){
-    const grpC = document.createElement("optgroup");
-    grpC.label = "By Unit Code";
-    codes.forEach(x=>{
-      const o = document.createElement("option");
-      o.value = x;
-      o.textContent = x;
-      grpC.appendChild(o);
-    });
-    sel.appendChild(grpC);
-  }
 
   const grp1 = document.createElement("optgroup");
   grp1.label = "By Unit";
@@ -1396,7 +1545,7 @@ function renderLecturerClasses(){
   setClassFilterOptions("lecClassFilter", my, true);
 
   if(!my.length){
-    wrap.textContent = "No sessions created yet.";
+    wrap.textContent = "No classes created yet.";
     return;
   }
 
@@ -1404,29 +1553,34 @@ function renderLecturerClasses(){
   const filtered = filterValue ? my.filter(cls=> classFilterMatch(cls, filterValue)) : my;
 
   let html = `<table><thead><tr>
-    <th>Session</th><th>Venue / Date</th><th>Status</th><th>Attendance</th><th>Actions</th>
+    <th>Class</th>
+    <th>Venue / Date</th>
+    <th>Status</th>
+    <th>Attendance</th>
+    <th>Actions</th>
   </tr></thead><tbody>`;
 
   filtered.forEach(cls=>{
     const att = DATA.attendance.filter(a=>a.classId===cls.id);
     const statusBadge = cls.status==="open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`;
-    const title = cls.type==="meeting"
-      ? `<b>STAFF MEETING</b> <span class="chip">${(cls.meetingMode||"").toUpperCase()}</span>`
-      : `<b>${cls.unitCode ? (cls.unitCode + " — ") : ""}${cls.unit}</b>`;
-    const sub = cls.type==="meeting"
-      ? `<span class="small muted">Mode: ${(cls.meetingMode||"").toUpperCase()}</span>`
-      : `<span class="small">${cls.course}</span><br><span class="small">${cls.faculty}</span><br><span class="small">${cls.year}, ${cls.semester}</span>`;
-
     html += `<tr>
-      <td>${title}<br>${sub}</td>
-      <td>${cls.venue}<br><span class="small">${formatDateTime(cls.dateTime)}</span></td>
+      <td>
+        <b>${cls.unit}</b><br>
+        <span class="small">${cls.course}</span><br>
+        <span class="small">${cls.faculty}</span><br>
+        <span class="small">${cls.year}, ${cls.semester}</span>
+      </td>
+      <td>
+        ${cls.venue}<br>
+        <span class="small">${formatDateTime(cls.dateTime)}</span>
+      </td>
       <td>${statusBadge}</td>
-      <td><b>${att.length}</b> ${cls.type==="meeting" ? "staff" : "student"}(s)</td>
+      <td><b>${att.length}</b> student(s)</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn btn-secondary" data-action="copy-link" data-id="${cls.id}">Copy Link</button>
         <button class="btn btn-secondary" data-action="show-qr" data-id="${cls.id}">QR</button>
         ${cls.status==="open"
-          ? `<button class="btn btn-danger" data-action="close" data-id="${cls.id}">End</button>`
+          ? `<button class="btn btn-danger" data-action="close" data-id="${cls.id}">End Class</button>`
           : `<button class="btn btn-success" data-action="open" data-id="${cls.id}">Re-open</button>`
         }
         <button class="btn btn-primary" data-action="details" data-id="${cls.id}">View & Export</button>
@@ -1441,16 +1595,21 @@ function renderLecturerClasses(){
     btn.addEventListener("click", async ()=>{
       const action = btn.getAttribute("data-action");
       const id = btn.getAttribute("data-id");
+
       const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(id);
 
       if(action==="copy-link"){
-        navigator.clipboard?.writeText(link).catch(()=>{});
-        alert("Share this sign-in link:\n" + link);
+        navigator.clipboard?.writeText(link)
+          .then(()=>{ /* silent */ })
+          .catch(()=>{});
+        alert("Share this student sign-in link:\n" + link);
       }
+
       if(action==="show-qr"){
         await ensureLibs();
         showQrDialog(link);
       }
+
       if(action==="close" || action==="open"){
         DATA = loadData();
         const cls = DATA.classes.find(c=>c.id===id);
@@ -1460,6 +1619,7 @@ function renderLecturerClasses(){
         renderLecturerClasses();
         refreshClassPickers();
       }
+
       if(action==="details"){
         openClassDetailDialog(id, "lecturer");
       }
@@ -1468,7 +1628,7 @@ function renderLecturerClasses(){
 }
 
 /* ===========================
-   ADMIN: sessions table
+   ADMIN: classes table + filter + dialog
 =========================== */
 function renderAdminClasses(){
   const wrap = $("adminClassesTableWrapper");
@@ -1477,7 +1637,7 @@ function renderAdminClasses(){
   setClassFilterOptions("adminClassFilter", DATA.classes, false);
 
   if(!DATA.classes.length){
-    wrap.textContent = "No sessions created yet.";
+    wrap.textContent = "No classes created yet.";
     return;
   }
 
@@ -1485,27 +1645,32 @@ function renderAdminClasses(){
   const filtered = filterValue ? DATA.classes.filter(cls=> classFilterMatch(cls, filterValue)) : DATA.classes;
 
   let html = `<table><thead><tr>
-    <th>Session</th><th>Lecturer</th><th>Venue / Date</th><th>Status</th><th>Attendance</th><th>Actions</th>
+    <th>Class</th>
+    <th>Lecturer</th>
+    <th>Venue / Date</th>
+    <th>Status</th>
+    <th>Attendance</th>
+    <th>Actions</th>
   </tr></thead><tbody>`;
 
   filtered.forEach(cls=>{
     const att = DATA.attendance.filter(a=>a.classId===cls.id);
     const statusBadge = cls.status==="open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`;
     const lec = DATA.lecturers.find(l=>l.id===cls.lecturerId) || {};
-    const title = cls.type==="meeting"
-      ? `<b>STAFF MEETING</b> <span class="chip">${(cls.meetingMode||"").toUpperCase()}</span>`
-      : `<b>${cls.unitCode ? (cls.unitCode + " — ") : ""}${cls.unit}</b>`;
-    const sub = cls.type==="meeting"
-      ? `<span class="small muted">Mode: ${(cls.meetingMode||"").toUpperCase()}</span>`
-      : `<span class="small">${cls.course}</span><br><span class="small">${cls.faculty}</span><br><span class="small">${cls.year}, ${cls.semester}</span>`;
-
     html += `<tr>
-      <td>${title}<br>${sub}</td>
+      <td>
+        <b>${cls.unit}</b><br>
+        <span class="small">${cls.course}</span><br>
+        <span class="small">${cls.faculty}</span><br>
+        <span class="small">${cls.year}, ${cls.semester}</span>
+      </td>
       <td>${(lec.salutation||"") + " " + (lec.fullName||"")}</td>
       <td>${cls.venue}<br><span class="small">${formatDateTime(cls.dateTime)}</span></td>
       <td>${statusBadge}</td>
       <td><b>${att.length}</b></td>
-      <td><button class="btn btn-primary" data-action="details" data-id="${cls.id}">View & Export</button></td>
+      <td>
+        <button class="btn btn-primary" data-action="details" data-id="${cls.id}">View & Export</button>
+      </td>
     </tr>`;
   });
 
@@ -1540,8 +1705,8 @@ function showQrDialog(text){
   card.style.boxShadow = "var(--shadow2)";
 
   card.innerHTML = `
-    <h3 style="margin:.1rem 0 .4rem;">Sign-in Link QR Code</h3>
-    <div class="muted small" style="margin-bottom:.6rem;">Scan to sign using a phone.</div>
+    <h3 style="margin:.1rem 0 .4rem;">Student Link QR Code</h3>
+    <div class="muted small" style="margin-bottom:.6rem;">Students can scan and sign using a phone.</div>
     <div style="display:grid;place-items:center;">
       <div id="qrBox" style="background:#fff;padding:12px;border-radius:14px;border:1px solid rgba(0,0,0,.08);"></div>
     </div>
@@ -1570,12 +1735,12 @@ function showQrDialog(text){
 }
 
 /* ===========================
-   Class Detail Dialog (attendance + exports)
+   Class Detail Dialog (attendance + exports + signatures + QR)
 =========================== */
 function openClassDetailDialog(classId, callerRole){
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===classId);
-  if(!cls){ alert("Session not found."); return; }
+  if(!cls){ alert("Class not found."); return; }
   const att = DATA.attendance.filter(a=>a.classId===cls.id);
 
   const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
@@ -1600,31 +1765,24 @@ function openClassDetailDialog(classId, callerRole){
 
   const signThumbs = att.slice(0,12).map(a=>{
     const img = a.signature ? `<img src="${a.signature}" style="height:34px;border-radius:8px;border:1px solid rgba(0,0,0,.12);" />` : "";
-    const idLabel = cls.type==="meeting" ? (a.staffNo || "") : (a.admission || "");
     return `<div style="display:flex;align-items:center;gap:.6rem;padding:.35rem .4rem;border:1px solid rgba(0,0,0,.06);border-radius:12px;background:#fff;">
       ${img}
       <div>
-        <div style="font-weight:800;font-size:.88rem;">${idLabel}</div>
+        <div style="font-weight:800;font-size:.88rem;">${a.admission}</div>
         <div class="small">${a.surname} ${a.first}</div>
       </div>
     </div>`;
   }).join("");
 
-  const sessionTitle = cls.type==="meeting" ? "Staff Meeting Attendance" : "Class Attendance";
-  const metaLine = cls.type==="meeting"
-    ? `Mode: <b>${(cls.meetingMode||"").toUpperCase()}</b>`
-    : `Unit Code: <b>${cls.unitCode || ""}</b> · Unit: <b>${cls.unit || ""}</b>`;
-
   card.innerHTML = `
     <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start;">
       <div>
-        <h2 style="margin:.1rem 0 .35rem;">Session Details & Attendance</h2>
+        <h2 style="margin:.1rem 0 .35rem;">Class Details & Attendance</h2>
         <div class="muted">
-          <b>${sessionTitle}</b><br/>
-          ${metaLine}<br/>
-          ${cls.type==="meeting" ? "" : `Course: <b>${cls.course}</b> · Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>`}
-          Venue/Platform: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
-          Lecturer: <b>${cls.lecturerName || ""}</b> · Status: <b>${(cls.status||"").toUpperCase()}</b>
+          <b>${cls.unit}</b> — ${cls.course}<br/>
+          Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>
+          Venue: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
+          Lecturer: <b>${cls.lecturerName || ""}</b> · Status: <b>${cls.status.toUpperCase()}</b>
         </div>
       </div>
 
@@ -1638,7 +1796,7 @@ function openClassDetailDialog(classId, callerRole){
       </div>
     </div>
 
-    <div class="alert alert-info" style="margin-top:.75rem;">Sign-in Link: ${link}</div>
+    <div class="alert alert-info" style="margin-top:.75rem;">Student Link: ${link}</div>
 
     <hr style="border:none;border-top:1px solid rgba(0,0,0,.08);margin:1rem 0;" />
 
@@ -1649,7 +1807,7 @@ function openClassDetailDialog(classId, callerRole){
         <thead>
           <tr>
             <th>#</th>
-            <th>${cls.type==="meeting" ? "Staff No / PF" : "Admission No"}</th>
+            <th>Admission No</th>
             <th>Surname</th>
             <th>Middle</th>
             <th>First</th>
@@ -1660,16 +1818,16 @@ function openClassDetailDialog(classId, callerRole){
           ${att.map((a,i)=>`
             <tr>
               <td>${i+1}</td>
-              <td>${cls.type==="meeting" ? (a.staffNo||"") : (a.admission||"")}</td>
-              <td>${a.surname||""}</td>
+              <td>${a.admission}</td>
+              <td>${a.surname}</td>
               <td>${a.middle||""}</td>
-              <td>${a.first||""}</td>
+              <td>${a.first}</td>
               <td>${formatDateTime(a.createdAt)}</td>
             </tr>
           `).join("")}
         </tbody>
       </table>
-      ` : `<p class="muted">No attendance records yet.</p>`
+      ` : `<p class="muted">No students have signed yet.</p>`
     }
 
     <div style="margin-top:1rem;">
@@ -1746,7 +1904,7 @@ function openClassDetailDialog(classId, callerRole){
 
   card.querySelector("#dlgCopyLink").onclick = ()=>{
     navigator.clipboard?.writeText(link).catch(()=>{});
-    alert("Link copied.");
+    alert("Student link copied.");
   };
   card.querySelector("#dlgShowQR").onclick = async ()=>{
     await ensureLibs();
@@ -1772,7 +1930,7 @@ function openClassDetailDialog(classId, callerRole){
 }
 
 /* ===========================
-   Geofence
+   Student view + Geofence 1km
 =========================== */
 function haversineKm(lat1, lon1, lat2, lon2){
   const R = 6371;
@@ -1784,6 +1942,7 @@ function haversineKm(lat1, lon1, lat2, lon2){
     Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.sqrt(a));
 }
+
 async function checkGeofence(){
   return new Promise((resolve)=>{
     if(!navigator.geolocation){
@@ -1804,14 +1963,12 @@ async function checkGeofence(){
   });
 }
 
-/* ===========================
-   Participant view (Student / Staff)
-=========================== */
 function setupStudentView(){
   const mode = getQueryParam("mode");
   const classId = getQueryParam("classId");
   if(mode !== "student" || !classId) return;
 
+  // hide top pills/buttons completely for students
   $("userSummary").classList.add("hidden");
   $("logoutBtn").classList.add("hidden");
   $("openChangePwdBtn").classList.add("hidden");
@@ -1823,38 +1980,19 @@ function setupStudentView(){
   const infoEl = $("studentClassInfo");
 
   if(!cls){
-    infoEl.textContent = "Session not found. Check the link.";
+    infoEl.textContent = "Class not found. Check the link.";
     return;
   }
 
-  const isMeeting = cls.type==="meeting";
-  $("participantTitle").textContent = isMeeting ? "Staff Meeting – Attendance Sign-In" : "Class Attendance – Student Sign-In";
-
-  // Toggle ID fields
-  $("staffNoRow").classList.toggle("hidden", !isMeeting);
-  $("idLabel").textContent = isMeeting ? "National ID (optional)" : "Admission Number";
-  $("stAdmission").placeholder = isMeeting ? "Optional" : "";
-
-  $("geoNote").textContent = (isMeeting && cls.meetingMode==="online")
-    ? "Note: This is an ONLINE meeting. Location (GPS) is not required."
-    : "Note: Physical sessions may ask for location access (GPS) to confirm you are within JOOUST (1km radius).";
-
-  // Session info
-  infoEl.innerHTML = isMeeting
-    ? `
-      <b>STAFF MEETING</b> — Mode: <b>${(cls.meetingMode||"").toUpperCase()}</b><br/>
-      Venue/Platform: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
-      Organizer: <b>${cls.lecturerName || "N/A"}</b>
-    `
-    : `
-      <b>${cls.unitCode ? (cls.unitCode + " — ") : ""}${cls.unit}</b> — ${cls.course}<br/>
-      Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>
-      Venue: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
-      Lecturer: <b>${cls.lecturerName || "N/A"}</b>
-    `;
+  infoEl.innerHTML = `
+    <b>${cls.unit}</b> — ${cls.course}<br/>
+    Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>
+    Venue: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
+    Lecturer: <b>${cls.lecturerName || "N/A"}</b>
+  `;
 
   if(cls.status !== "open"){
-    setAlert($("studentSubmitMsg"), "This session has been closed. Link is no longer active.", "danger");
+    setAlert($("studentSubmitMsg"), "This class has been closed. Attendance link is no longer active.", "danger");
     $("studentFormWrapper").classList.add("hidden");
     return;
   }
@@ -1871,79 +2009,55 @@ function setupStudentView(){
     const surname = $("stSurname").value.trim();
     const middle = $("stMiddleName").value.trim();
     const first = $("stFirstName").value.trim();
-    const admOrId = $("stAdmission").value.trim();
-    const staffNo = $("stStaffNo").value.trim();
+    const adm = $("stAdmission").value.trim();
     const msgEl = $("studentSubmitMsg");
 
-    if(!surname || !first){
-      setAlert(msgEl,"Surname and First Name are required.","danger");
-      return;
-    }
-    if(!isMeeting && !admOrId){
-      setAlert(msgEl,"Admission Number is required.","danger");
-      return;
-    }
-    if(isMeeting && !staffNo){
-      setAlert(msgEl,"Staff No / PF No is required for staff meeting attendance.","danger");
+    if(!surname || !first || !adm){
+      setAlert(msgEl,"Surname, First Name and Admission are required.","danger");
       return;
     }
 
-    // Geo rules:
-    // - Classes: always enforce geofence
-    // - Meetings: enforce only if meetingMode === physical
-    const needsGeo = (!isMeeting) || (isMeeting && cls.meetingMode==="physical");
-
+    const geo = await checkGeofence();
     const geoEl = $("studentGeoInfo");
-    if(needsGeo){
-      const geo = await checkGeofence();
-      geoEl.classList.remove("hidden");
+    geoEl.classList.remove("hidden");
 
-      if(!geo.ok){
-        setAlert(geoEl, geo.distKm != null
-          ? `You are ${geo.distKm.toFixed(2)} km away. You must be within ${GEOFENCE_RADIUS_KM} km of JOOUST to sign attendance.`
-          : (geo.reason || "Location check failed."), "danger");
-        setAlert(msgEl,"Attendance blocked by location rule (1km).","danger");
-        return;
-      } else {
-        setAlert(geoEl, `Location verified: ${geo.distKm.toFixed(2)} km from JOOUST (Allowed).`, "success");
-      }
+    if(!geo.ok){
+      setAlert(geoEl, geo.distKm != null
+        ? `You are ${geo.distKm.toFixed(2)} km away. You must be within ${GEOFENCE_RADIUS_KM} km of JOOUST to sign attendance.`
+        : (geo.reason || "Location check failed."), "danger");
+      setAlert(msgEl,"Attendance blocked by location rule (1km).","danger");
+      return;
     } else {
-      geoEl.classList.add("hidden");
+      setAlert(geoEl, `Location verified: ${geo.distKm.toFixed(2)} km from JOOUST (Allowed).`, "success");
     }
 
     DATA = loadData();
     const clsNow = DATA.classes.find(c=>c.id===classId);
     if(!clsNow || clsNow.status!=="open"){
-      setAlert(msgEl,"Session is not open.","danger");
+      setAlert(msgEl,"Class is not open.","danger");
       return;
     }
 
-    // Uniqueness:
-    // - Class: admission must be unique per session
-    // - Meeting: staffNo must be unique per session
-    const exists = isMeeting
-      ? DATA.attendance.find(a=>a.classId===classId && a.role==="staff" && (a.staffNo||"") === staffNo)
-      : DATA.attendance.find(a=>a.classId===classId && a.role==="student" && (a.admission||"") === admOrId);
-
-    if(exists){
-      setAlert(msgEl, isMeeting ? "Attendance for this Staff No already exists." : "Attendance for this admission number already exists.","danger");
+    const existing = DATA.attendance.find(a=>a.classId===classId && a.admission===adm);
+    if(existing){
+      setAlert(msgEl,"Attendance for this admission number already exists.","danger");
       return;
     }
+
+    const sigDataUrl = stPad.toDataUrl();
 
     const rec = {
       id: uuid(),
       classId,
-      role: isMeeting ? "staff" : "student",
       surname, middle, first,
-      admission: isMeeting ? "" : admOrId,
-      staffNo: isMeeting ? staffNo : "",
-      signature: stPad.toDataUrl(),
+      admission: adm,
+      signature: sigDataUrl,
       createdAt: new Date().toISOString()
     };
 
     DATA.attendance.push(rec);
     saveData(DATA);
-    localStorage.setItem(deviceKey, isMeeting ? staffNo : admOrId);
+    localStorage.setItem(deviceKey, adm);
 
     setAlert(msgEl,"Attendance submitted successfully.","success");
     $("studentFormWrapper").classList.add("hidden");
@@ -1973,24 +2087,20 @@ function buildReportRows({ faculty, course, unit, year, semester, status, lectur
     const att = DATA.attendance.filter(a=>a.classId===cls.id);
     rows.push({
       classId: cls.id,
-      type: cls.type || "class",
-      meetingMode: cls.meetingMode || "",
-      unitCode: cls.unitCode || "",
       faculty: cls.faculty,
       course: cls.course,
       unit: cls.unit,
       year: cls.year,
       semester: cls.semester,
       venue: cls.venue,
-      dateTimeRaw: cls.dateTime || "",
       dateTime: formatDateTime(cls.dateTime),
       lecturer: cls.lecturerName || "",
-      attendees: att.length,
+      students: att.length,
       status: cls.status
     });
   });
 
-  rows.sort((a,b)=> (b.dateTimeRaw||"").localeCompare(a.dateTimeRaw||""));
+  rows.sort((a,b)=> (b.dateTime||"").localeCompare(a.dateTime||""));
   return rows;
 }
 
@@ -2002,8 +2112,8 @@ function renderReportTable(rows, tableEl){
   let html = `
     <thead>
       <tr>
-        <th>#</th><th>Type</th><th>Unit Code</th><th>Faculty</th><th>Course</th><th>Unit/Meeting</th><th>Year</th><th>Sem</th>
-        <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Count</th><th>Status</th>
+        <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th>
+        <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th>
       </tr>
     </thead>
     <tbody>
@@ -2012,18 +2122,16 @@ function renderReportTable(rows, tableEl){
     html += `
       <tr>
         <td>${i+1}</td>
-        <td>${(r.type||"").toUpperCase()}${r.type==="meeting" ? (" ("+(r.meetingMode||"")+")") : ""}</td>
-        <td>${r.unitCode || ""}</td>
-        <td>${r.faculty||""}</td>
-        <td>${r.course||""}</td>
-        <td>${r.unit||""}</td>
-        <td>${r.year||""}</td>
-        <td>${r.semester||""}</td>
-        <td>${r.venue||""}</td>
-        <td>${r.dateTime||""}</td>
-        <td>${r.lecturer||""}</td>
-        <td>${r.attendees||0}</td>
-        <td>${r.status||""}</td>
+        <td>${r.faculty}</td>
+        <td>${r.course}</td>
+        <td>${r.unit}</td>
+        <td>${r.year}</td>
+        <td>${r.semester}</td>
+        <td>${r.venue}</td>
+        <td>${r.dateTime}</td>
+        <td>${r.lecturer}</td>
+        <td>${r.students}</td>
+        <td>${r.status}</td>
       </tr>
     `;
   });
@@ -2042,7 +2150,7 @@ $("generateReportBtn").addEventListener("click", ()=>{
   });
   renderReportTable(rows, $("reportTable"));
   $("reportArea").classList.remove("hidden");
-  $("reportMeta").textContent = `Total sessions found: ${rows.length}`;
+  $("reportMeta").textContent = `Total classes found: ${rows.length}`;
   $("reportTable").dataset.rows = JSON.stringify(rows);
 });
 
@@ -2059,12 +2167,12 @@ $("generateReportLecturerBtn").addEventListener("click", ()=>{
   });
   renderReportTable(rows, $("reportTableL"));
   $("reportAreaLecturer").classList.remove("hidden");
-  $("reportMetaL").textContent = `Total sessions found: ${rows.length}`;
+  $("reportMetaL").textContent = `Total classes found: ${rows.length}`;
   $("reportTableL").dataset.rows = JSON.stringify(rows);
 });
 
 /* ===========================
-   EXPORTS (PDF / Word / Excel) - SUMMARY REPORTS
+   EXPORTS (PDF / Word / Excel)
 =========================== */
 async function exportToPdfReport(rows, title){
   const { okPdf } = await ensureLibs();
@@ -2077,7 +2185,7 @@ async function exportToPdfReport(rows, title){
   const margin = 40;
 
   if(jooustLogoDataUrl){
-    try{ doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 72, 54); } catch(e){}
+    doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 72, 54);
   }
   doc.setFontSize(15);
   doc.setTextColor(0,82,204);
@@ -2090,24 +2198,12 @@ async function exportToPdfReport(rows, title){
   doc.text("Generated: " + new Date().toLocaleString(), 130, 74);
 
   const body = rows.map((r,i)=>[
-    i+1,
-    (r.type||"").toUpperCase() + (r.type==="meeting" ? (" ("+(r.meetingMode||"")+")") : ""),
-    r.unitCode || "",
-    r.faculty || "",
-    r.course || "",
-    r.unit || "",
-    r.year || "",
-    r.semester || "",
-    r.venue || "",
-    r.dateTime || "",
-    r.lecturer || "",
-    r.attendees || 0,
-    r.status || ""
+    i+1, r.faculty, r.course, r.unit, r.year, r.semester, r.venue, r.dateTime, r.lecturer, r.students, r.status
   ]);
 
   doc.autoTable({
     startY: 92,
-    head:[["#","Type","Unit Code","Faculty","Course","Unit/Meeting","Year","Sem","Venue","Date/Time","Lecturer","Count","Status"]],
+    head:[["#","Faculty","Course","Unit","Year","Sem","Venue","Date/Time","Lecturer","Students","Status"]],
     body,
     styles:{ fontSize: 8, cellPadding: 3 },
     headStyles:{ fillColor:[0,82,204], textColor:255 }
@@ -2125,18 +2221,16 @@ function exportToWordReport(rows, title){
   const tableRows = rows.map((r,i)=>`
     <tr>
       <td>${i+1}</td>
-      <td>${(r.type||"").toUpperCase()}${r.type==="meeting" ? " ("+(r.meetingMode||"")+")" : ""}</td>
-      <td>${r.unitCode||""}</td>
-      <td>${r.faculty||""}</td>
-      <td>${r.course||""}</td>
-      <td>${r.unit||""}</td>
-      <td>${r.year||""}</td>
-      <td>${r.semester||""}</td>
-      <td>${r.venue||""}</td>
-      <td>${r.dateTime||""}</td>
-      <td>${r.lecturer||""}</td>
-      <td>${r.attendees||0}</td>
-      <td>${r.status||""}</td>
+      <td>${r.faculty}</td>
+      <td>${r.course}</td>
+      <td>${r.unit}</td>
+      <td>${r.year}</td>
+      <td>${r.semester}</td>
+      <td>${r.venue}</td>
+      <td>${r.dateTime}</td>
+      <td>${r.lecturer}</td>
+      <td>${r.students}</td>
+      <td>${r.status}</td>
     </tr>
   `).join("");
 
@@ -2159,11 +2253,11 @@ function exportToWordReport(rows, title){
     <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
       <thead>
         <tr style="background:#eff6ff;color:#1d4ed8;font-weight:700;">
-          <th>#</th><th>Type</th><th>Unit Code</th><th>Faculty</th><th>Course</th><th>Unit/Meeting</th><th>Year</th><th>Sem</th>
-          <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Count</th><th>Status</th>
+          <th>#</th><th>Faculty</th><th>Course</th><th>Unit</th><th>Year</th><th>Sem</th>
+          <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Students</th><th>Status</th>
         </tr>
       </thead>
-      <tbody>${tableRows || "<tr><td colspan='13'>No records.</td></tr>"}</tbody>
+      <tbody>${tableRows || "<tr><td colspan='11'>No records.</td></tr>"}</tbody>
     </table>
     <p style="margin-top:14px;font-size:11px;color:#555;">
       System created by <b>Gerotech</b> — <b>Dan Otieno</b>.
@@ -2187,24 +2281,10 @@ async function exportToExcelReport(rows, filename="jooust-attendance-report.xlsx
   }
 
   const wsData = [[
-    "#","Type","Unit Code","Faculty","Course","Unit/Meeting","Year","Semester","Venue","Date/Time","Lecturer","Count","Status"
+    "#","Faculty","Course","Unit","Year","Semester","Venue","Date/Time","Lecturer","Students","Status"
   ]];
   rows.forEach((r,i)=>{
-    wsData.push([
-      i+1,
-      (r.type||"").toUpperCase() + (r.type==="meeting" ? (" ("+(r.meetingMode||"")+")") : ""),
-      r.unitCode||"",
-      r.faculty||"",
-      r.course||"",
-      r.unit||"",
-      r.year||"",
-      r.semester||"",
-      r.venue||"",
-      r.dateTime||"",
-      r.lecturer||"",
-      r.attendees||0,
-      r.status||""
-    ]);
+    wsData.push([i+1,r.faculty,r.course,r.unit,r.year,r.semester,r.venue,r.dateTime,r.lecturer,r.students,r.status]);
   });
 
   const wb = XLSX.utils.book_new();
@@ -2216,11 +2296,11 @@ async function exportToExcelReport(rows, filename="jooust-attendance-report.xlsx
 
 $("exportPdfBtn").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTable").dataset.rows || "[]");
-  await exportToPdfReport(rows, "Attendance Report (All Sessions)");
+  await exportToPdfReport(rows, "Attendance Report (All Classes)");
 });
 $("exportWordBtn").addEventListener("click", ()=>{
   const rows = JSON.parse($("reportTable").dataset.rows || "[]");
-  exportToWordReport(rows, "Attendance Report (All Sessions)");
+  exportToWordReport(rows, "Attendance Report (All Classes)");
 });
 $("exportExcelBtn").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTable").dataset.rows || "[]");
@@ -2229,11 +2309,11 @@ $("exportExcelBtn").addEventListener("click", async ()=>{
 
 $("exportPdfBtnL").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
-  await exportToPdfReport(rows, "Attendance Report (My Sessions)");
+  await exportToPdfReport(rows, "Attendance Report (My Classes)");
 });
 $("exportWordBtnL").addEventListener("click", ()=>{
   const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
-  exportToWordReport(rows, "Attendance Report (My Sessions)");
+  exportToWordReport(rows, "Attendance Report (My Classes)");
 });
 $("exportExcelBtnL").addEventListener("click", async ()=>{
   const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
@@ -2241,25 +2321,24 @@ $("exportExcelBtnL").addEventListener("click", async ()=>{
 });
 
 /* ===========================
-   RAW attendance export (includes signatures)
+   RAW attendance export (names + signatures)
 =========================== */
 function buildRawAttendanceRowsForClass(classId){
   DATA = loadData();
-  const cls = DATA.classes.find(c=>c.id===classId) || {};
   const rows = DATA.attendance
     .filter(a=>a.classId===classId)
     .map((a,i)=>({
       "#": i+1,
-      Role: a.role || (cls.type==="meeting" ? "staff" : "student"),
-      ID: (a.role==="staff") ? (a.staffNo||"") : (a.admission||""),
-      Surname: a.surname || "",
+      Admission: a.admission,
+      Surname: a.surname,
       Middle: a.middle || "",
-      First: a.first || "",
+      First: a.first,
       Timestamp: formatDateTime(a.createdAt),
       SignatureDataURL: a.signature || ""
     }));
   return rows;
 }
+
 function exportRawAttendanceCsv(cls, rows){
   if(!rows.length){
     alert("No attendance to export.");
@@ -2267,7 +2346,7 @@ function exportRawAttendanceCsv(cls, rows){
   }
   const header = Object.keys(rows[0]);
   const csv = [
-    ["JOOUST Attendance (Raw)", `${cls.type||""}`, `${cls.unitCode||""}`, `${cls.unit||""}`, `${cls.course||""}`, `${cls.faculty||""}`].join(","),
+    ["JOOUST Attendance (Raw)", `${cls.unit}`, `${cls.course}`, `${cls.faculty}`, `${cls.year}`, `${cls.semester}`].join(","),
     "",
     header.join(","),
     ...rows.map(r=> header.map(h=>{
@@ -2280,14 +2359,11 @@ function exportRawAttendanceCsv(cls, rows){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `jooust-raw-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.csv`;
+  a.download = `jooust-raw-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-/* ===========================
-   Class/Meeting attendance exports (PDF/Word/Excel) WITH signatures
-=========================== */
 async function exportClassAttendanceExcel(cls, rows){
   const { okXlsx } = await ensureLibs();
   if(!okXlsx){
@@ -2295,37 +2371,34 @@ async function exportClassAttendanceExcel(cls, rows){
     return;
   }
   const wb = XLSX.utils.book_new();
-  wb.Props = { Title:"JOOUST Session Attendance", Subject:"Attendance", Author:"JOOUST Attendance System" };
+  wb.Props = { Title:"JOOUST Class Attendance", Subject:"Attendance", Author:"JOOUST Attendance System" };
 
   const summary = [
     ["Jaramogi Oginga Odinga University of Science & Technology"],
-    ["Session Attendance Export"],
+    ["Class Attendance Export"],
     [""],
-    ["Type", (cls.type||"").toUpperCase()],
-    ["Meeting Mode", cls.type==="meeting" ? (cls.meetingMode||"") : ""],
-    ["Unit Code", cls.unitCode || ""],
-    ["Unit/Meeting", cls.unit || ""],
-    ["Course", cls.course || ""],
-    ["Faculty", cls.faculty || ""],
-    ["Year", cls.year || ""],
-    ["Semester", cls.semester || ""],
-    ["Venue/Platform", cls.venue || ""],
+    ["Faculty", cls.faculty],
+    ["Course", cls.course],
+    ["Unit", cls.unit],
+    ["Year", cls.year],
+    ["Semester", cls.semester],
+    ["Venue", cls.venue],
     ["Date/Time", formatDateTime(cls.dateTime)],
     ["Lecturer", cls.lecturerName || ""],
-    ["Status", cls.status || ""],
+    ["Status", cls.status],
     [""],
     ["System created by Gerotech — Dan Otieno."]
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
 
-  const header = ["#","Role","ID","Surname","Middle","First","Timestamp","SignatureDataURL"];
+  const header = ["#","Admission","Surname","Middle","First","Timestamp","SignatureDataURL"];
   const wsData = [header];
   rows.forEach(r=>{
-    wsData.push([r["#"], r.Role, r.ID, r.Surname, r.Middle, r.First, r.Timestamp, r.SignatureDataURL]);
+    wsData.push([r["#"], r.Admission, r.Surname, r.Middle, r.First, r.Timestamp, r.SignatureDataURL]);
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Attendance");
 
-  XLSX.writeFile(wb, `jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.xlsx`);
+  XLSX.writeFile(wb, `jooust-class-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.xlsx`);
 }
 
 async function exportClassAttendancePdf(cls, rows){
@@ -2339,64 +2412,36 @@ async function exportClassAttendancePdf(cls, rows){
   const margin = 40;
 
   if(jooustLogoDataUrl){
-    try{ doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 70, 52); } catch(e){}
+    doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 70, 52);
   }
   doc.setFontSize(14);
   doc.setTextColor(0,82,204);
   doc.text("Jaramogi Oginga Odinga University of Science & Technology", 120, 38);
   doc.setFontSize(11);
   doc.setTextColor(31,41,55);
-  doc.text("Session Attendance Sheet", 120, 56);
+  doc.text("Class Attendance Sheet", 120, 56);
 
   doc.setFontSize(10);
   doc.setTextColor(71,85,105);
   const metaY = 82;
-  doc.text(`Type: ${(cls.type||"").toUpperCase()}${cls.type==="meeting" ? (" ("+(cls.meetingMode||"")+")") : ""}`, margin, metaY);
-  doc.text(`Unit Code: ${cls.unitCode || ""}`, margin, metaY+14);
-  doc.text(`Unit/Meeting: ${cls.unit || ""}`, margin, metaY+28);
-  if(cls.type!=="meeting"){
-    doc.text(`Course: ${cls.course}`, margin, metaY+42);
-    doc.text(`Faculty: ${cls.faculty}`, margin, metaY+56);
-    doc.text(`Year/Sem: ${cls.year} / ${cls.semester}`, margin, metaY+70);
-    doc.text(`Venue: ${cls.venue}`, margin, metaY+84);
-    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+98);
-    doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin, metaY+112);
-  } else {
-    doc.text(`Venue/Platform: ${cls.venue}`, margin, metaY+42);
-    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+56);
-    doc.text(`Organizer: ${cls.lecturerName || ""}`, margin, metaY+70);
-  }
+  doc.text(`Faculty: ${cls.faculty}`, margin, metaY);
+  doc.text(`Course: ${cls.course}`, margin, metaY+14);
+  doc.text(`Unit: ${cls.unit}`, margin, metaY+28);
+  doc.text(`Year/Sem: ${cls.year} / ${cls.semester}`, margin, metaY+42);
+  doc.text(`Venue: ${cls.venue}`, margin, metaY+56);
+  doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+70);
+  doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin, metaY+84);
 
-  const startY = cls.type==="meeting" ? (metaY + 95) : (metaY + 135);
-
-  // Build body with signature placeholder column
   const body = rows.map(r=>[
-    r["#"], r.Role, r.ID, r.Surname, r.Middle, r.First, "", r.Timestamp
+    r["#"], r.Admission, r.Surname, r.Middle, r.First, r.Timestamp
   ]);
 
   doc.autoTable({
-    startY,
-    head: [["#","Role","ID","Surname","Middle","First","Signature","Timestamp"]],
+    startY: metaY + 105,
+    head: [["#","Admission","Surname","Middle","First","Timestamp"]],
     body,
-    styles:{ fontSize: 8, cellPadding: 3, minCellHeight: 22 },
-    headStyles:{ fillColor:[0,82,204], textColor:255 },
-    columnStyles: { 6: { cellWidth: 90 } },
-    didDrawCell: (data)=>{
-      // Signature column index = 6
-      if(data.section === "body" && data.column.index === 6){
-        const rowIndex = data.row.index;
-        const sig = (rows[rowIndex] && rows[rowIndex].SignatureDataURL) ? rows[rowIndex].SignatureDataURL : "";
-        if(sig && sig.startsWith("data:image")){
-          try{
-            const x = data.cell.x + 2;
-            const y = data.cell.y + 2;
-            const w = Math.min(86, data.cell.width - 4);
-            const h = Math.min(18, data.cell.height - 4);
-            doc.addImage(sig, "PNG", x, y, w, h);
-          }catch(e){}
-        }
-      }
-    }
+    styles:{ fontSize: 9, cellPadding: 3 },
+    headStyles:{ fillColor:[0,82,204], textColor:255 }
   });
 
   let y = doc.lastAutoTable.finalY + 24;
@@ -2419,7 +2464,7 @@ async function exportClassAttendancePdf(cls, rows){
   doc.setTextColor(100,116,139);
   doc.text("System created by Gerotech — Dan Otieno.", margin, doc.internal.pageSize.getHeight()-18);
 
-  doc.save(`jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.pdf`);
+  doc.save(`jooust-class-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.pdf`);
 }
 
 async function exportClassAttendanceWord(cls, rows){
@@ -2428,36 +2473,19 @@ async function exportClassAttendanceWord(cls, rows){
     ? `<img src="${jooustLogoDataUrl}" style="height:58px;border-radius:10px;" />`
     : `<div style="font-weight:800;color:#003b8c;">JOOUST</div>`;
 
-  const bodyRows = rows.map(r=>{
-    const sig = r.SignatureDataURL ? `<img src="${r.SignatureDataURL}" style="height:32px;border:1px solid #ddd;border-radius:8px;" />` : "";
-    return `
-      <tr>
-        <td>${r["#"]}</td>
-        <td>${r.Role}</td>
-        <td>${r.ID}</td>
-        <td>${r.Surname}</td>
-        <td>${r.Middle}</td>
-        <td>${r.First}</td>
-        <td>${sig}</td>
-        <td>${r.Timestamp}</td>
-      </tr>
-    `;
-  }).join("");
+  const bodyRows = rows.map(r=>`
+    <tr>
+      <td>${r["#"]}</td>
+      <td>${r.Admission}</td>
+      <td>${r.Surname}</td>
+      <td>${r.Middle}</td>
+      <td>${r.First}</td>
+      <td>${r.Timestamp}</td>
+    </tr>
+  `).join("");
 
   const lecSig = cls.lecturerSignature ? `<img src="${cls.lecturerSignature}" style="height:70px;border:1px solid #ddd;border-radius:10px;" />` : `<i>Not provided</i>`;
   const hodSig = cls.hodSignature ? `<img src="${cls.hodSignature}" style="height:70px;border:1px solid #ddd;border-radius:10px;" />` : `<i>Not provided</i>`;
-
-  const metaBlock = cls.type==="meeting"
-    ? `
-      <tr><td><b>Type:</b> STAFF MEETING (${(cls.meetingMode||"").toUpperCase()})</td><td><b>Venue/Platform:</b> ${cls.venue}</td></tr>
-      <tr><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td><td><b>Organizer:</b> ${cls.lecturerName || ""}</td></tr>
-    `
-    : `
-      <tr><td><b>Unit Code:</b> ${cls.unitCode || ""}</td><td><b>Unit:</b> ${cls.unit}</td></tr>
-      <tr><td><b>Course:</b> ${cls.course}</td><td><b>Faculty:</b> ${cls.faculty}</td></tr>
-      <tr><td><b>Year/Sem:</b> ${cls.year} / ${cls.semester}</td><td><b>Venue:</b> ${cls.venue}</td></tr>
-      <tr><td colspan="2"><b>Date/Time:</b> ${formatDateTime(cls.dateTime)} · <b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
-    `;
 
   const html = `
   <html><head><meta charset="UTF-8"></head>
@@ -2466,14 +2494,17 @@ async function exportClassAttendanceWord(cls, rows){
       ${logoHtml}
       <div>
         <h2 style="margin:0;color:#0052cc;">Jaramogi Oginga Odinga University of Science & Technology</h2>
-        <div style="margin:0;font-size:12px;color:#555;">Session Attendance Sheet</div>
+        <div style="margin:0;font-size:12px;color:#555;">Class Attendance Sheet</div>
         <div style="margin:0;font-size:11px;color:#777;">Generated: ${dateStr}</div>
       </div>
     </div>
     <hr/>
 
     <table border="0" cellspacing="0" cellpadding="4" style="width:100%;font-size:11px;">
-      ${metaBlock}
+      <tr><td><b>Faculty:</b> ${cls.faculty}</td><td><b>Course:</b> ${cls.course}</td></tr>
+      <tr><td><b>Unit:</b> ${cls.unit}</td><td><b>Year/Sem:</b> ${cls.year} / ${cls.semester}</td></tr>
+      <tr><td><b>Venue:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
+      <tr><td colspan="2"><b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
     </table>
 
     <br/>
@@ -2481,11 +2512,11 @@ async function exportClassAttendanceWord(cls, rows){
     <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
       <thead>
         <tr style="background:#eff6ff;color:#1d4ed8;font-weight:700;">
-          <th>#</th><th>Role</th><th>ID</th><th>Surname</th><th>Middle</th><th>First</th><th>Signature</th><th>Timestamp</th>
+          <th>#</th><th>Admission</th><th>Surname</th><th>Middle</th><th>First</th><th>Timestamp</th>
         </tr>
       </thead>
       <tbody>
-        ${bodyRows || "<tr><td colspan='8'>No attendance.</td></tr>"}
+        ${bodyRows || "<tr><td colspan='6'>No attendance.</td></tr>"}
       </tbody>
     </table>
 
@@ -2512,7 +2543,7 @@ async function exportClassAttendanceWord(cls, rows){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.doc`;
+  a.download = `jooust-class-attendance-${(cls.unit||"unit").replace(/\s+/g,"_")}.doc`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -2531,16 +2562,13 @@ function refreshClassPickers(){
     if(!all.length){
       const o = document.createElement("option");
       o.value = "";
-      o.textContent = "No sessions available";
+      o.textContent = "No classes available";
       sel.appendChild(o);
     } else {
       all.forEach(cls=>{
         const o = document.createElement("option");
         o.value = cls.id;
-        const label = cls.type==="meeting"
-          ? `STAFF MEETING · ${formatDateTime(cls.dateTime)} · (${cls.status}) · ${cls.meetingMode}`
-          : `${(cls.unitCode||"")} ${cls.unit} · ${formatDateTime(cls.dateTime)} · (${cls.status})`;
-        o.textContent = label;
+        o.textContent = `${cls.unit} · ${cls.course} · ${formatDateTime(cls.dateTime)} · (${cls.status})`;
         sel.appendChild(o);
       });
       if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
@@ -2550,7 +2578,7 @@ function refreshClassPickers(){
 
 $("rawExportCsvBtn").addEventListener("click", ()=>{
   const id = $("rawClassPick").value;
-  if(!id){ setAlert($("rawExportMsg"), "Select a session first.", "danger"); return; }
+  if(!id){ setAlert($("rawExportMsg"), "Select a class first.", "danger"); return; }
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===id);
   const rows = buildRawAttendanceRowsForClass(id);
@@ -2559,7 +2587,7 @@ $("rawExportCsvBtn").addEventListener("click", ()=>{
 });
 $("rawExportExcelBtn").addEventListener("click", async ()=>{
   const id = $("rawClassPick").value;
-  if(!id){ setAlert($("rawExportMsg"), "Select a session first.", "danger"); return; }
+  if(!id){ setAlert($("rawExportMsg"), "Select a class first.", "danger"); return; }
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===id);
   const rows = buildRawAttendanceRowsForClass(id);
@@ -2590,18 +2618,20 @@ document.querySelectorAll("[data-admin-tab]").forEach(btn=>{
    INIT
 =========================== */
 window.addEventListener("load", async ()=>{
+  // If student mode, go straight to student view
   loadLogoAsDataUrl();
   setupStudentView();
 
+  // Prepare dropdowns
   refreshAllDropdowns();
   refreshClassPickers();
 
+  // Ensure library fallbacks (helps Excel/PDF issues)
   await ensureLibs();
 
+  // Default placeholders for filters
   setClassFilterOptions("lecClassFilter", [], true);
   setClassFilterOptions("adminClassFilter", [], false);
-
-  updateCreateSessionUI();
 });
 </script>
 </body>
