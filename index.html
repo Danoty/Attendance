@@ -2296,5 +2296,113 @@ window.addEventListener("load", async ()=>{
   updateCreateSessionUI();
 });
 </script>
+  <script>
+/* ===========================
+   EXPORT BUTTON HOOKS (Admin & Lecturer)
+=========================== */
+
+// Admin – summary exports
+$("exportPdfBtn")?.addEventListener("click", async ()=>{
+  const rows = JSON.parse($("reportTable").dataset.rows || "[]");
+  if(!rows.length){ alert("No report data to export."); return; }
+  await exportToPdfReport(rows, "JOOUST Attendance Report (All Sessions)");
+});
+
+$("exportWordBtn")?.addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTable").dataset.rows || "[]");
+  if(!rows.length){ alert("No report data to export."); return; }
+  exportToWordReport(rows, "JOOUST Attendance Report (All Sessions)");
+});
+
+$("exportExcelBtn")?.addEventListener("click", async ()=>{
+  const rows = JSON.parse($("reportTable").dataset.rows || "[]");
+  if(!rows.length){ alert("No report data to export."); return; }
+  await exportToExcelReport(rows, "jooust-attendance-report.xlsx");
+});
+
+// Lecturer – summary exports
+$("exportPdfBtnL")?.addEventListener("click", async ()=>{
+  const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
+  if(!rows.length){ alert("No report data to export."); return; }
+  await exportToPdfReport(rows, "JOOUST Attendance Report (My Sessions)");
+});
+
+$("exportWordBtnL")?.addEventListener("click", ()=>{
+  const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
+  if(!rows.length){ alert("No report data to export."); return; }
+  exportToWordReport(rows, "JOOUST Attendance Report (My Sessions)");
+});
+
+$("exportExcelBtnL")?.addEventListener("click", async ()=>{
+  const rows = JSON.parse($("reportTableL").dataset.rows || "[]");
+  if(!rows.length){ alert("No report data to export."); return; }
+  await exportToExcelReport(rows, "jooust-attendance-my-report.xlsx");
+});
+
+
+/* ===========================
+   RAW EXPORT TAB (Admin)
+=========================== */
+$("rawExportCsvBtn")?.addEventListener("click", ()=>{
+  const classId = $("rawClassPick").value;
+  if(!classId){
+    setAlert($("rawExportMsg"), "Please select a session.", "danger");
+    return;
+  }
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls){ setAlert($("rawExportMsg"), "Session not found.", "danger"); return; }
+
+  const rows = buildRawAttendanceRowsForClass(classId);
+  exportRawAttendanceCsv(cls, rows);
+  setAlert($("rawExportMsg"), "Raw CSV exported successfully.", "success");
+});
+
+$("rawExportExcelBtn")?.addEventListener("click", async ()=>{
+  const classId = $("rawClassPick").value;
+  if(!classId){
+    setAlert($("rawExportMsg"), "Please select a session.", "danger");
+    return;
+  }
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls){ setAlert($("rawExportMsg"), "Session not found.", "danger"); return; }
+
+  const rows = buildRawAttendanceRowsForClass(classId);
+  await exportClassAttendanceExcel(cls, rows);
+  setAlert($("rawExportMsg"), "Excel exported successfully.", "success");
+});
+
+
+/* ===========================
+   FINAL SAFETY & UI POLISH
+=========================== */
+
+// Hide meeting mode selector when not needed
+$("lcType")?.addEventListener("change", updateCreateSessionUI);
+
+// Auto refresh when storage changes (multi-tab safety)
+window.addEventListener("storage", ()=>{
+  DATA = loadData();
+  if(currentUser?.role==="admin"){
+    renderAdminLecturers();
+    renderAdminClasses();
+    refreshClassPickers();
+  }
+  if(currentUser?.role==="lecturer"){
+    renderLecturerClasses();
+    refreshClassPickers();
+  }
+});
+
+// Prevent accidental reload data loss (UX)
+window.addEventListener("beforeunload", (e)=>{
+  if(currentUser){
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+</script>
+
 </body>
 </html>
