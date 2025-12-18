@@ -330,6 +330,7 @@
     </div>
 
     <div id="studentFormWrapper">
+      <!-- Meeting Staff No -->
       <div class="row hidden" id="staffNoRow">
         <div>
           <label for="stStaffNo">Staff No / PF No</label>
@@ -352,6 +353,7 @@
         </div>
       </div>
 
+      <!-- Class Admission -->
       <div class="row" id="idRow">
         <div>
           <label id="idLabel" for="stAdmission">Admission Number</label>
@@ -807,9 +809,7 @@ const GEOFENCE_RADIUS_KM = 1.0;
 const SESSION_TIMEOUT_MIN = 20;
 let lastActivityTs = Date.now();
 
-function touchActivity(){
-  lastActivityTs = Date.now();
-}
+function touchActivity(){ lastActivityTs = Date.now(); }
 ["click","keydown","mousemove","touchstart"].forEach(ev => window.addEventListener(ev, touchActivity, {passive:true}));
 setInterval(()=>{
   if(!currentUser) return;
@@ -928,9 +928,7 @@ function showSection(id){
   });
 }
 
-function uuid(){
-  return Date.now().toString(36) + "-" + Math.random().toString(36).substring(2,10);
-}
+function uuid(){ return Date.now().toString(36) + "-" + Math.random().toString(36).substring(2,10); }
 function setAlert(el, msg, type="info"){
   el.textContent = msg;
   el.classList.remove("hidden","alert-info","alert-danger","alert-success");
@@ -1436,14 +1434,6 @@ function updateCreateSessionUI(){
   const type = $("lcType")?.value || "class";
   const meetingWrap = $("meetingModeWrap");
   if(meetingWrap) meetingWrap.classList.toggle("hidden", type !== "meeting");
-
-  // For meetings: allow blank mapping fields (optional), but still allow Academic Year selection if desired
-  const mapRequired = (type === "class");
-  ["lcFaculty","lcCourse","lcUnit","lcYear","lcSemester","lcUnitCode"].forEach(id=>{
-    const el = $(id);
-    if(!el) return;
-    el.closest("div").style.opacity = mapRequired ? "1" : "1";
-  });
 }
 $("lcType").addEventListener("change", updateCreateSessionUI);
 
@@ -1603,11 +1593,9 @@ function refreshClassPickers(){
   DATA = loadData();
   const classes = DATA.classes.slice().sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
 
-  // Filters
   setClassFilterOptions("lecClassFilter", currentUser?.role==="lecturer" ? classes.filter(c=>c.lecturerId===currentUser.id) : [], true);
   setClassFilterOptions("adminClassFilter", classes, true);
 
-  // Raw exports picker
   const rawPick = $("rawClassPick");
   if(rawPick){
     rawPick.innerHTML = "";
@@ -1739,7 +1727,9 @@ function toggleSessionStatus(classId){
   renderLecturerClasses();
   renderAdminClasses();
   refreshClassPickers();
-  if(!$("#sessionModal").classList.contains("hidden")) openSessionModal(classId, true);
+
+  // ✅ fixed: use $("sessionModal") not $("#sessionModal")
+  if($("sessionModal") && !$("sessionModal").classList.contains("hidden")) openSessionModal(classId, true);
 }
 
 /* ===========================
@@ -1795,14 +1785,8 @@ $("exportSessionCsvBtn").addEventListener("click", ()=>{
   exportRawAttendanceCsv(cls, rowsToRawRows(rows));
 });
 
-$("lecturerSignBtn").addEventListener("click", ()=>{
-  if(!currentModalClassId) return;
-  openSigModal("lecturer");
-});
-$("hodSignBtn").addEventListener("click", ()=>{
-  if(!currentModalClassId) return;
-  openSigModal("hod");
-});
+$("lecturerSignBtn").addEventListener("click", ()=>{ if(currentModalClassId) openSigModal("lecturer"); });
+$("hodSignBtn").addEventListener("click", ()=>{ if(currentModalClassId) openSigModal("hod"); });
 
 $("sigClearBtn").addEventListener("click", ()=> sigPad.clear());
 $("sigCancelBtn").addEventListener("click", ()=>{
@@ -1852,21 +1836,18 @@ $("sigSaveBtn").addEventListener("click", ()=>{
   openSessionModal(currentModalClassId, true);
 });
 
-function openSessionModal(classId, keepOpen=false){
+function openSessionModal(classId){
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===classId);
   if(!cls) return;
 
   currentModalClassId = classId;
 
-  // Admin-only HOD signature button
   $("hodSignBtn").classList.toggle("hidden", !(currentUser && currentUser.role==="admin"));
 
-  // Title/meta
   $("sessionModalTitle").textContent = `${cls.type==="meeting" ? "Staff Meeting" : "Class"} · ${cls.academicYear || ""} · ${cls.unitCode || ""} · ${cls.unit || ""}`;
   $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${cls.status.toUpperCase()}`;
 
-  // Link + QR
   const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(cls.id);
   $("sessionLinkText").textContent = link;
 
@@ -1877,10 +1858,8 @@ function openSessionModal(classId, keepOpen=false){
     $("qrTarget").innerHTML = "<div class='small'>QR failed to load</div>";
   }
 
-  // Status button
   $("toggleStatusBtn").textContent = (cls.status==="open") ? "Close Session" : "Open Session";
 
-  // Attendance table
   const rows = buildAttendanceRowsForClass(cls.id);
   $("sessionAttendanceMeta").textContent = `Total attendance: ${rows.length}. Signatures are embedded in exports (PDF/Word/Excel).`;
 
@@ -1901,7 +1880,6 @@ function renderAttendanceTable(tableId, rows, includeSigThumb){
     return;
   }
 
-  // ✅ NO ROLE COLUMN
   let head = `<thead><tr>
     <th>#</th><th>ID</th><th>Surname</th><th>Middle</th><th>First</th>${includeSigThumb? "<th>Signature</th>": ""}<th>Timestamp</th>
   </tr></thead>`;
@@ -1949,7 +1927,6 @@ function getClassAndRows(classId){
   return { cls, rows };
 }
 function rowsToRawRows(rows){
-  // same object shape as CSV exporter expects
   return rows.map(r=>({
     "#": r["#"],
     ID: r.ID,
@@ -1990,13 +1967,14 @@ async function loadStudentMode(){
   showSection("studentSection");
   $("participantTitle").textContent = (cls.type==="meeting") ? "Staff Meeting Sign-In" : "Class Attendance Sign-In";
 
-  // show correct ID controls
-  $("staffNoRow").classList.toggle("hidden", cls.type !== "meeting");
-  $("idLabel").textContent = (cls.type==="meeting") ? "Staff No / PF No" : "Admission Number";
-  $("stAdmission").placeholder = (cls.type==="meeting") ? "Enter Staff No / PF No" : "Enter Admission Number";
+  // ✅ only ONE ID field depending on type
+  const isMeeting = cls.type === "meeting";
+  $("staffNoRow").classList.toggle("hidden", !isMeeting);
+  $("idRow").classList.toggle("hidden", isMeeting);
+  $("idLabel").textContent = "Admission Number";
+  $("stAdmission").placeholder = "Enter Admission Number";
 
-  // session info header
-  const meta = cls.type==="meeting"
+  const meta = isMeeting
     ? `Meeting Mode: ${cls.meetingMode.toUpperCase()}
 Venue/Platform: ${cls.venue}
 Date/Time: ${formatDateTime(cls.dateTime)}
@@ -2016,7 +1994,6 @@ Status: ${cls.status.toUpperCase()}`;
   $("studentClassInfo").textContent = meta;
   $("studentFormWrapper").classList.remove("hidden");
 
-  // closed session
   if(cls.status !== "open"){
     setAlert($("studentSubmitMsg"), "This session is CLOSED. Please contact the organizer/lecturer.", "danger");
     $("stSubmit").disabled = true;
@@ -2025,7 +2002,6 @@ Status: ${cls.status.toUpperCase()}`;
     clearAlert($("studentSubmitMsg"));
   }
 
-  // duplicate check (device-based)
   const deviceId = getOrCreateDeviceId();
   const devKey = `submitted_${classId}_${deviceId}`;
   if(localStorage.getItem(devKey)==="1"){
@@ -2035,7 +2011,6 @@ Status: ${cls.status.toUpperCase()}`;
     $("studentAlreadySubmitted").classList.add("hidden");
   }
 
-  // GEO logic (only physical)
   const requireGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
   if(requireGeo){
     $("studentGeoInfo").classList.remove("hidden");
@@ -2075,14 +2050,12 @@ $("stSubmit").addEventListener("click", async ()=>{
     return;
   }
 
-  // Prevent duplicate by ID within same class
   const exists = DATA.attendance.some(a=>a.classId===classId && ((isMeeting && (a.staffNo||"")===idValue) || (!isMeeting && (a.admission||"")===idValue)));
   if(exists){
     setAlert($("studentSubmitMsg"), "This ID has already submitted attendance for this session.", "danger");
     return;
   }
 
-  // GEO enforce for physical
   const requireGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
   let geoObj = null;
 
@@ -2118,7 +2091,6 @@ $("stSubmit").addEventListener("click", async ()=>{
   DATA.attendance.push(record);
   saveData(DATA);
 
-  // Mark device submitted
   localStorage.setItem(`submitted_${classId}_${deviceId}`, "1");
 
   setAlert($("studentSubmitMsg"), "Attendance submitted successfully. Thank you.", "success");
@@ -2127,7 +2099,7 @@ $("stSubmit").addEventListener("click", async ()=>{
 });
 
 /* ===========================
-   RAW export (CSV/Excel) — ✅ ROLE REMOVED
+   RAW export (CSV/Excel)
 =========================== */
 function exportRawAttendanceCsv(cls, rows){
   if(!rows.length){
@@ -2166,12 +2138,12 @@ $("rawExportExcelBtn").addEventListener("click", ()=>{
   const id = $("rawClassPick").value;
   if(!id){ setAlert($("rawExportMsg"), "Pick a session first.", "danger"); return; }
   const { cls, rows } = getClassAndRows(id);
-  exportClassAttendanceExcel(cls, rows); // Excel export already includes signature data URL
+  exportClassAttendanceExcel(cls, rows);
   setAlert($("rawExportMsg"), "Excel exported successfully.", "success");
 });
 
 /* ===========================
-   OFFICIAL exports (PDF/Word/Excel) — ✅ ROLE REMOVED
+   OFFICIAL exports (PDF/Word/Excel)
 =========================== */
 async function exportClassAttendanceExcel(cls, rows){
   if(!window.XLSX){
@@ -2203,7 +2175,6 @@ async function exportClassAttendanceExcel(cls, rows){
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
 
-  // ✅ NO ROLE COLUMN
   const header = ["#","ID","Surname","Middle","First","Timestamp","SignatureDataURL"];
   const wsData = [header];
   rows.forEach(r=>{
@@ -2256,7 +2227,6 @@ async function exportClassAttendancePdf(cls, rows){
 
   const startY = cls.type==="meeting" ? (metaY + 105) : (metaY + 150);
 
-  // ✅ NO ROLE COLUMN
   const body = rows.map(r=>[
     r["#"], r.ID, r.Surname, r.Middle, r.First, "", r.Timestamp
   ]);
@@ -2314,7 +2284,6 @@ async function exportClassAttendanceWord(cls, rows){
     ? `<img src="${jooustLogoDataUrl}" style="height:58px;border-radius:10px;" />`
     : `<div style="font-weight:800;color:#003b8c;">JOOUST</div>`;
 
-  // ✅ NO ROLE COLUMN
   const bodyRows = rows.map(r=>{
     const sig = r.SignatureDataURL ? `<img src="${r.SignatureDataURL}" style="height:32px;border:1px solid #ddd;border-radius:8px;" />` : "";
     return `
@@ -2406,7 +2375,7 @@ async function exportClassAttendanceWord(cls, rows){
 }
 
 /* ===========================
-   REPORTS (sessions list) + exports + Download ALL reports (Excel)
+   REPORTS
 =========================== */
 function filterClassesForReport({ ay, faculty, course, unit, year, semester, status, onlyLecturerId=null }){
   DATA = loadData();
@@ -2430,13 +2399,18 @@ function renderReportTable(tableElId, classes){
     return;
   }
 
+  // ✅ faster counts
+  const d = loadData();
+  const counts = new Map();
+  d.attendance.forEach(a => counts.set(a.classId, (counts.get(a.classId)||0)+1));
+
   let head = `<thead><tr>
     <th>#</th><th>Type</th><th>Academic Year</th><th>Unit Code</th><th>Unit/Meeting</th><th>Lecturer</th><th>Venue</th><th>Date/Time</th><th>Status</th><th>Attendance</th>
   </tr></thead>`;
 
   let body = "<tbody>";
   classes.forEach((c,i)=>{
-    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
+    const count = counts.get(c.id) || 0;
     body += `<tr>
       <td>${i+1}</td>
       <td>${c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS"}</td>
@@ -2484,7 +2458,8 @@ $("generateReportLecturerBtn").addEventListener("click", ()=>{
     semester: $("repSemesterL").value,
     status: $("repStatusL").value
   };
-  const classes = filterClassesForReport(filters, );
+  // ✅ fixed syntax + simplest: filter all then pick mine
+  const classes = filterClassesForReport(filters);
   const mine = classes.filter(c=>c.lecturerId===currentUser?.id);
   lastReport = { classes: mine, scope:"lecturer" };
 
@@ -2493,27 +2468,28 @@ $("generateReportLecturerBtn").addEventListener("click", ()=>{
   renderReportTable("reportTableL", mine);
 });
 
-// Export report list (not attendance sheet)
+// Export report list (sessions list)
 function exportReportExcel(classes, filename){
   if(!window.XLSX){
     alert("Excel library not loaded.");
     return;
   }
-  const rows = classes.map((c,i)=>{
-    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
-    return {
-      "#": i+1,
-      Type: c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
-      AcademicYear: c.academicYear||"",
-      UnitCode: c.unitCode||"",
-      UnitName: c.unit||"",
-      Lecturer: c.lecturerName||"",
-      Venue: c.venue||"",
-      DateTime: formatDateTime(c.dateTime),
-      Status: (c.status||"").toUpperCase(),
-      AttendanceCount: count
-    };
-  });
+  const d = loadData();
+  const counts = new Map();
+  d.attendance.forEach(a => counts.set(a.classId, (counts.get(a.classId)||0)+1));
+
+  const rows = classes.map((c,i)=>({
+    "#": i+1,
+    Type: c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
+    AcademicYear: c.academicYear||"",
+    UnitCode: c.unitCode||"",
+    UnitName: c.unit||"",
+    Lecturer: c.lecturerName||"",
+    Venue: c.venue||"",
+    DateTime: formatDateTime(c.dateTime),
+    Status: (c.status||"").toUpperCase(),
+    AttendanceCount: counts.get(c.id)||0
+  }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Sessions");
   XLSX.writeFile(wb, filename);
@@ -2524,21 +2500,22 @@ function exportReportCsv(classes, filename){
     alert("No data.");
     return;
   }
-  const rows = classes.map((c,i)=>{
-    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
-    return [
-      i+1,
-      c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
-      c.academicYear||"",
-      c.unitCode||"",
-      c.unit||"",
-      c.lecturerName||"",
-      c.venue||"",
-      formatDateTime(c.dateTime),
-      (c.status||"").toUpperCase(),
-      count
-    ];
-  });
+  const d = loadData();
+  const counts = new Map();
+  d.attendance.forEach(a => counts.set(a.classId, (counts.get(a.classId)||0)+1));
+
+  const rows = classes.map((c,i)=>[
+    i+1,
+    c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
+    c.academicYear||"",
+    c.unitCode||"",
+    c.unit||"",
+    c.lecturerName||"",
+    c.venue||"",
+    formatDateTime(c.dateTime),
+    (c.status||"").toUpperCase(),
+    counts.get(c.id)||0
+  ]);
   const header = ["#","Type","AcademicYear","UnitCode","UnitName","Lecturer","Venue","DateTime","Status","AttendanceCount"];
   const csv = [header.join(","), ...rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(","))].join("\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
@@ -2550,15 +2527,11 @@ function exportReportCsv(classes, filename){
   URL.revokeObjectURL(url);
 }
 
-$("exportExcelBtn").addEventListener("click", ()=>{
-  exportReportExcel(lastReport.classes, "jooust-report-sessions.xlsx");
-});
-$("exportExcelBtnL").addEventListener("click", ()=>{
-  exportReportExcel(lastReport.classes, "jooust-my-report-sessions.xlsx");
-});
+$("exportExcelBtn").addEventListener("click", ()=> exportReportExcel(lastReport.classes, "jooust-report-sessions.xlsx"));
+$("exportExcelBtnL").addEventListener("click", ()=> exportReportExcel(lastReport.classes, "jooust-my-report-sessions.xlsx"));
 
 $("exportPdfBtn").addEventListener("click", ()=>{
-  exportReportCsv(lastReport.classes, "jooust-report-sessions.csv"); // quick, reliable for frontend
+  exportReportCsv(lastReport.classes, "jooust-report-sessions.csv");
   alert("For the sessions-list report, CSV is generated quickly. For attendance sheet PDF, open a session then Download PDF.");
 });
 $("exportPdfBtnL").addEventListener("click", ()=>{
@@ -2574,7 +2547,7 @@ $("exportWordBtnL").addEventListener("click", ()=>{
   alert("For sessions-list Word export, use CSV/Excel. Attendance sheet Word is available inside each session (View → Download Word).");
 });
 
-// ✅ Download ALL Reports (Excel workbook with one sheet per session, includes attendance+signatures)
+// Download ALL Reports (Excel workbook)
 $("downloadAllReportsBtn").addEventListener("click", ()=>{
   if(!window.XLSX){
     alert("Excel library not loaded.");
@@ -2597,25 +2570,24 @@ $("downloadAllReportsBtn").addEventListener("click", ()=>{
 
   const wb = XLSX.utils.book_new();
 
-  // Summary sheet
-  const summary = classes.map((c,i)=>{
-    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
-    return {
-      "#": i+1,
-      Type: c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
-      AcademicYear: c.academicYear||"",
-      UnitCode: c.unitCode||"",
-      UnitName: c.unit||"",
-      Lecturer: c.lecturerName||"",
-      Venue: c.venue||"",
-      DateTime: formatDateTime(c.dateTime),
-      Status: (c.status||"").toUpperCase(),
-      AttendanceCount: count
-    };
-  });
+  const d = loadData();
+  const counts = new Map();
+  d.attendance.forEach(a => counts.set(a.classId, (counts.get(a.classId)||0)+1));
+
+  const summary = classes.map((c,i)=>({
+    "#": i+1,
+    Type: c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
+    AcademicYear: c.academicYear||"",
+    UnitCode: c.unitCode||"",
+    UnitName: c.unit||"",
+    Lecturer: c.lecturerName||"",
+    Venue: c.venue||"",
+    DateTime: formatDateTime(c.dateTime),
+    Status: (c.status||"").toUpperCase(),
+    AttendanceCount: counts.get(c.id)||0
+  }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), "Summary");
 
-  // One sheet per session (attendance)
   classes.forEach((cls, idx)=>{
     const rows = buildAttendanceRowsForClass(cls.id);
     const sheetName = (`S${idx+1}_${(cls.unitCode||"").replace(/[^a-z0-9]/gi,"").slice(0,6)}_${(cls.type||"").slice(0,3)}`).slice(0,31);
@@ -2652,7 +2624,6 @@ $("downloadAllReportsBtn").addEventListener("click", ()=>{
   const inStudent = await loadStudentMode();
   if(inStudent) return;
 
-  // normal mode
   showSection("loginSection");
   refreshAllDropdowns();
   refreshClassPickers();
