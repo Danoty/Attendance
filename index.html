@@ -1,1023 +1,269 @@
-<!-- ========================= PART 3 / 3 ========================= -->
-/* ===========================
-   Student mode: open sign-in
-=========================== */
-const stPad = setupSignaturePad($("stSignaturePad"));
-$("stClearSignature").addEventListener("click", ()=> stPad.clear());
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JOOUST Smart Attendance System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-function sessionDeviceKey(classId){ return `jooust_submitted_${classId}`; }
-
-async function initStudentModeIfNeeded(){
-  const mode = getQueryParam("mode");
-  const classId = getQueryParam("classId");
-  if(mode !== "student" || !classId) return false;
-
-  DATA = loadData();
-  const cls = DATA.classes.find(c=>c.id===classId);
-  if(!cls){
-    showSection("loginSection");
-    alert("Session not found.");
-    return true;
-  }
-
-  // show student section
-  showSection("studentSection");
-
-  const title = cls.type==="meeting" ? "Staff Meeting Attendance Sign-In" : "Class Attendance Sign-In";
-  $("participantTitle").textContent = title;
-
-  const info = cls.type==="meeting"
-    ? `MEETING: STAFF MEETING (${(cls.meetingMode||"").toUpperCase()})
-Venue/Platform: ${cls.venue}
-Date/Time: ${formatDateTime(cls.dateTime)}
-Organizer: ${cls.lecturerName||""}
-Academic Year: ${cls.academicYear||""}`
-    : `UNIT CODE: ${cls.unitCode||""}
-UNIT NAME: ${cls.unit||""}
-PROGRAMME: ${cls.course||""}
-SCHOOL/FACULTY: ${cls.faculty||""}
-ACADEMIC YEAR: ${cls.academicYear||""}
-YEAR/SEMESTER: ${cls.year||""}/${cls.semester||""}
-Venue: ${cls.venue}
-Date/Time: ${formatDateTime(cls.dateTime)}
-Lecturer: ${cls.lecturerName||""}`;
-
-  $("studentClassInfo").textContent = info;
-
-  const already = localStorage.getItem(sessionDeviceKey(classId));
-  $("studentAlreadySubmitted").classList.toggle("hidden", !already);
-  $("studentFormWrapper").classList.toggle("hidden", !!already);
-
-  // labels
-  const isMeeting = cls.type==="meeting";
-  $("staffNoWrap").classList.toggle("hidden", !isMeeting);
-  $("idLabel").textContent = isMeeting ? "National ID (optional)" : "Admission Number";
-  $("geoNote").classList.toggle("hidden", !(cls.meetingMode==="physical" || cls.type==="class"));
-
-  // Geofence check for physical sessions (class always physical)
-  const requiresGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
-  if(requiresGeo){
-    $("studentGeoInfo").classList.remove("hidden");
-    $("studentGeoInfo").textContent = "Checking your location for JOOUST geo-fence… (allow GPS)";
-    try{
-      const pos = await getGeo();
-      const km = haversineKm(pos.lat,pos.lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
-      const ok = km <= GEOFENCE_RADIUS_KM;
-      $("studentGeoInfo").textContent =
-        `Distance to JOOUST: ${km.toFixed(2)} km (Accuracy: ±${Math.round(pos.acc)}m)
-Geo-Fence Requirement: within ${GEOFENCE_RADIUS_KM} km
-Status: ${ok ? "✅ Allowed" : "❌ Too far"}`
-      ;
-      $("studentGeoInfo").classList.remove("alert-info","alert-danger");
-      $("studentGeoInfo").classList.add(ok ? "alert-info" : "alert-danger");
-      $("stSubmit").disabled = !ok;
-      if(!ok) setAlert($("studentSubmitMsg"), "You are outside the allowed radius. Move closer or use Online Meeting mode (if meeting).", "danger");
-      else clearAlert($("studentSubmitMsg"));
-      $("stSubmit").dataset.geook = ok ? "1" : "0";
-    }catch(e){
-      $("studentGeoInfo").textContent = "Could not read location. Please enable GPS/Location and refresh.\n" + (e.message||"");
-      $("studentGeoInfo").classList.remove("alert-info");
-      $("studentGeoInfo").classList.add("alert-danger");
-      $("stSubmit").disabled = true;
-      $("stSubmit").dataset.geook = "0";
-    }
-  } else {
-    $("studentGeoInfo").classList.add("hidden");
-    $("stSubmit").disabled = false;
-    $("stSubmit").dataset.geook = "1";
-  }
-
-  $("stSubmit").onclick = async ()=>{
-    const msgEl = $("studentSubmitMsg");
-    clearAlert(msgEl);
-
-    if(cls.status !== "open"){
-      setAlert(msgEl,"Session is closed. You cannot submit.", "danger");
-      return;
-    }
-    if(localStorage.getItem(sessionDeviceKey(classId))){
-      setAlert(msgEl,"Already submitted on this device.", "danger");
-      return;
-    }
-    if(($("stSubmit").dataset.geook||"0") !== "1"){
-      setAlert(msgEl,"Location requirement not met.", "danger");
-      return;
-    }
-
-    const admission = $("stAdmission").value.trim();
-    const staffNo = $("stStaffNo").value.trim();
-    const surname = $("stSurname").value.trim();
-    const middle = $("stMiddleName").value.trim();
-    const first = $("stFirstName").value.trim();
-
-    if(!surname || !first){
-      setAlert(msgEl,"Enter at least Surname and First Name.", "danger");
-      return;
-    }
-
-    if(cls.type==="class" && !admission){
-      setAlert(msgEl,"Admission number is required for class.", "danger");
-      return;
-    }
-    if(cls.type==="meeting" && !staffNo){
-      setAlert(msgEl,"Staff No / PF No is required for meeting.", "danger");
-      return;
-    }
-    if(stPad.isBlank()){
-      setAlert(msgEl,"Please sign before submitting.", "danger");
-      return;
-    }
-
-    const entry = {
-      id: uuid(),
-      classId,
-      role: cls.type==="meeting" ? "staff" : "student",
-      admission: admission || "",
-      staffNo: staffNo || "",
-      surname, middle, first,
-      signature: stPad.toDataUrl(),
-      createdAt: new Date().toISOString(),
-      prevHash: "",
-      hash: ""
-    };
-
-    DATA = loadData();
-    const last = DATA.attendance.filter(a=>a.classId===classId).slice(-1)[0];
-    entry.prevHash = last?.hash || "";
-    entry.hash = await computeAttendanceHash(entry);
-
-    // prevent duplicates (same ID+name in same session)
-    const idKey = (cls.type==="meeting" ? entry.staffNo : entry.admission).toLowerCase();
-    const exists = DATA.attendance.some(a=>{
-      const k = (cls.type==="meeting" ? (a.staffNo||a.admission||"") : (a.admission||"")).toLowerCase();
-      const n1 = [a.surname,a.middle,a.first].filter(Boolean).join(" ").toLowerCase();
-      const n2 = [entry.surname,entry.middle,entry.first].filter(Boolean).join(" ").toLowerCase();
-      return a.classId===classId && k===idKey && n1===n2;
-    });
-    if(exists){
-      setAlert(msgEl,"Duplicate detected for this session (same ID + name).", "danger");
-      return;
-    }
-
-    DATA.attendance.push(entry);
-    saveData(DATA);
-
-    localStorage.setItem(sessionDeviceKey(classId), "1");
-    setAlert(msgEl,"Attendance submitted successfully ✅", "success");
-    $("studentAlreadySubmitted").classList.remove("hidden");
-    $("studentFormWrapper").classList.add("hidden");
-  };
-
-  return true;
+<style>
+:root{
+  --primary:#0052cc;
+  --secondary:#003b8c;
+  --success:#24a148;
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --text:#1f2933;
+  --muted:#6b7280;
+  --radius:14px;
+  --shadow:0 10px 24px rgba(0,0,0,.08);
 }
-
-/* ===========================
-   Raw Exports (CSV/Excel) - ROLE REMOVED
-=========================== */
-function buildRawAttendanceRowsForClass(classId){
-  DATA = loadData();
-  const cls = DATA.classes.find(c=>c.id===classId) || {};
-  const rows = DATA.attendance
-    .filter(a=>a.classId===classId)
-    .sort((a,b)=>(a.createdAt||"").localeCompare(b.createdAt||""))
-    .map((a,i)=>({
-      "#": i+1,
-      ID: (cls.type==="meeting") ? (a.staffNo||a.admission||"") : (a.admission||""),
-      Surname: a.surname || "",
-      Middle: a.middle || "",
-      First: a.first || "",
-      Timestamp: formatDateTime(a.createdAt),
-      SignatureDataURL: a.signature || "",
-      Hash: a.hash || ""
-    }));
-  return rows;
+*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text)}
+header{
+  background:linear-gradient(135deg,var(--secondary),var(--primary));
+  color:#fff;padding:1rem;
 }
-
-function exportRawAttendanceCsv(cls, rows){
-  if(!rows.length){ alert("No attendance to export."); return; }
-  const header = Object.keys(rows[0]);
-  const csv = [
-    ["JOOUST Attendance (Raw)", `${cls.type||""}`, `${cls.academicYear||""}`, `${cls.unitCode||""}`, `${cls.unit||""}`, `${cls.course||""}`, `${cls.faculty||""}`].join(","),
-    "",
-    header.join(","),
-    ...rows.map(r=> header.map(h=>{
-      const val = (r[h] ?? "").toString().replaceAll('"','""');
-      return `"${val}"`;
-    }).join(","))
-  ].join("\n");
-
-  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `jooust-raw-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+header h1{margin:0;font-size:1.1rem}
+main{max-width:1100px;margin:1.2rem auto;padding:0 1rem}
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:1rem;
+  margin-bottom:1rem;
 }
-
-async function exportRawAttendanceExcel(cls, rows){
-  const { okXlsx } = await ensureLibs();
-  if(!okXlsx){ alert("Excel library not loaded. Ensure internet is available, then refresh."); return; }
-
-  const wb = XLSX.utils.book_new();
-  const summary = [
-    ["JOOUST Raw Attendance Export"],
-    [""],
-    ["Type", (cls.type||"").toUpperCase()],
-    ["Meeting Mode", cls.type==="meeting" ? (cls.meetingMode||"") : ""],
-    ["Academic Year", cls.academicYear || ""],
-    ["Unit Code", cls.unitCode || ""],
-    ["Unit/Meeting", cls.unit || ""],
-    ["Programme", cls.course || ""],
-    ["School/Faculty", cls.faculty || ""],
-    ["Year", cls.year || ""],
-    ["Semester", cls.semester || ""],
-    ["Venue/Platform", cls.venue || ""],
-    ["Date/Time", formatDateTime(cls.dateTime)],
-    ["Lecturer/Organizer", cls.lecturerName || ""]
-  ];
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
-
-  const ws = XLSX.utils.json_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-  XLSX.writeFile(wb, `jooust-raw-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.xlsx`);
+.hidden{display:none}
+label{font-size:.85rem;color:var(--muted)}
+input,select{
+  width:100%;padding:.6rem;
+  border-radius:10px;border:1px solid #d1d5db;
 }
-
-/* ===========================
-   Class/Meeting attendance exports (PDF/Word/Excel) WITH signatures
-   ROLE REMOVED in exports ✅
-=========================== */
-async function exportClassAttendanceExcel(cls, rows){
-  const { okXlsx } = await ensureLibs();
-  if(!okXlsx){ alert("Excel library not loaded. Ensure internet is available, then refresh."); return; }
-
-  const wb = XLSX.utils.book_new();
-  wb.Props = { Title:"JOOUST Session Attendance", Subject:"Attendance", Author:"JOOUST Attendance System" };
-
-  const summary = [
-    ["Jaramogi Oginga Odinga University of Science & Technology"],
-    ["Session Attendance Sheet"],
-    [""],
-    ["Type", (cls.type||"").toUpperCase()],
-    ["Meeting Mode", cls.type==="meeting" ? (cls.meetingMode||"") : ""],
-    ["Academic Year", cls.academicYear || ""],
-    ["Unit Code", cls.unitCode || ""],
-    ["Unit/Meeting", cls.unit || ""],
-    ["Programme", cls.course || ""],
-    ["School/Faculty", cls.faculty || ""],
-    ["Year", cls.year || ""],
-    ["Semester", cls.semester || ""],
-    ["Venue/Platform", cls.venue || ""],
-    ["Date/Time", formatDateTime(cls.dateTime)],
-    ["Lecturer/Organizer", cls.lecturerName || ""],
-    [""],
-    ["System created by Gerotech — Dan Otieno."]
-  ];
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), "Summary");
-
-  const header = ["#","ID","Surname","Middle","First","Timestamp","SignatureDataURL","Hash"];
-  const wsData = [header];
-  rows.forEach(r=>{
-    wsData.push([r["#"], r.ID, r.Surname, r.Middle, r.First, r.Timestamp, r.SignatureDataURL, r.Hash]);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Attendance");
-  XLSX.writeFile(wb, `jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.xlsx`);
+input:focus,select:focus{
+  outline:none;border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(0,82,204,.15);
 }
-
-async function exportClassAttendancePdf(cls, rows){
-  const { okPdf } = await ensureLibs();
-  if(!okPdf){ alert("PDF library not loaded. Ensure internet is available, then refresh."); return; }
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p","pt","a4");
-  const margin = 40;
-
-  if(jooustLogoDataUrl){
-    try{ doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 70, 52); } catch(e){}
-  }
-  doc.setFontSize(14);
-  doc.setTextColor(0,82,204);
-  doc.text("Jaramogi Oginga Odinga University of Science & Technology", 120, 38);
-  doc.setFontSize(11);
-  doc.setTextColor(31,41,55);
-  doc.text("Session Attendance Sheet", 120, 56);
-
-  doc.setFontSize(10);
-  doc.setTextColor(71,85,105);
-  const metaY = 82;
-  doc.text(`Type: ${(cls.type||"").toUpperCase()}${cls.type==="meeting" ? (" ("+(cls.meetingMode||"")+")") : ""}`, margin, metaY);
-  doc.text(`Academic Year: ${cls.academicYear || ""}`, margin, metaY+14);
-  doc.text(`Unit Code: ${cls.unitCode || ""}`, margin, metaY+28);
-  doc.text(`Unit/Meeting: ${cls.unit || ""}`, margin, metaY+42);
-  doc.text(`Programme: ${cls.course || ""}`, margin, metaY+56);
-  doc.text(`School/Faculty: ${cls.faculty || ""}`, margin, metaY+70);
-  doc.text(`Year/Sem: ${cls.year || ""} / ${cls.semester || ""}`, margin, metaY+84);
-  doc.text(`Venue/Platform: ${cls.venue || ""}`, margin, metaY+98);
-  doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+112);
-  doc.text(`Lecturer/Organizer: ${cls.lecturerName || ""}`, margin, metaY+126);
-
-  const startY = metaY + 150;
-  const body = rows.map(r=>[
-    r["#"], r.ID, r.Surname, r.Middle, r.First, "", r.Timestamp
-  ]);
-
-  doc.autoTable({
-    startY,
-    head: [["#","ID","Surname","Middle","First","Signature","Timestamp"]],
-    body: body.length ? body : [["","","No records","","","",""]],
-    styles:{ fontSize: 8, cellPadding: 3, minCellHeight: 22 },
-    headStyles:{ fillColor:[0,82,204], textColor:255 },
-    columnStyles: { 5: { cellWidth: 90 } },
-    didDrawCell: (data)=>{
-      if(data.section === "body" && data.column.index === 5){
-        const rowIndex = data.row.index;
-        const sig = (rows[rowIndex] && rows[rowIndex].SignatureDataURL) ? rows[rowIndex].SignatureDataURL : "";
-        if(sig && sig.startsWith("data:image")){
-          try{
-            const x = data.cell.x + 2;
-            const y = data.cell.y + 2;
-            const w = Math.min(86, data.cell.width - 4);
-            const h = Math.min(18, data.cell.height - 4);
-            doc.addImage(sig, "PNG", x, y, w, h);
-          }catch(e){}
-        }
-      }
-    }
-  });
-
-  doc.setFontSize(9);
-  doc.setTextColor(100,116,139);
-  doc.text("System created by Gerotech — Dan Otieno.", margin, doc.internal.pageSize.getHeight()-18);
-
-  doc.save(`jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.pdf`);
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+button{
+  border:none;border-radius:999px;
+  padding:.6rem 1rem;
+  cursor:pointer;font-weight:700;
 }
+.btn-primary{background:var(--primary);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-secondary{background:#e5e7eb}
+.alert{margin-top:.7rem;padding:.7rem;border-radius:10px}
+.alert-error{background:#fee2e2;color:#991b1b}
+.alert-success{background:#dcfce7;color:#166534}
+.footer{text-align:center;font-size:.85rem;color:#64748b;margin:1.5rem 0}
+</style>
+</head>
 
-async function exportClassAttendanceWord(cls, rows){
-  const dateStr = new Date().toLocaleString();
-  const logoHtml = jooustLogoDataUrl
-    ? `<img src="${jooustLogoDataUrl}" style="height:58px;border-radius:10px;" />`
-    : `<div style="font-weight:800;color:#003b8c;">JOOUST</div>`;
+<body>
 
-  const bodyRows = rows.map(r=>{
-    const sig = r.SignatureDataURL ? `<img src="${r.SignatureDataURL}" style="height:32px;border:1px solid #ddd;border-radius:8px;" />` : "";
-    return `
-      <tr>
-        <td>${r["#"]}</td>
-        <td>${r.ID}</td>
-        <td>${r.Surname}</td>
-        <td>${r.Middle}</td>
-        <td>${r.First}</td>
-        <td>${sig}</td>
-        <td>${r.Timestamp}</td>
-      </tr>
-    `;
-  }).join("");
+<header>
+  <h1>JOOUST Smart Attendance System</h1>
+</header>
 
-  const html = `
-  <html><head><meta charset="UTF-8"></head>
-  <body style="font-family:Calibri,Arial,sans-serif;">
-    <div style="display:flex;gap:16px;align-items:center;">
-      ${logoHtml}
+<main>
+
+<!-- LOGIN -->
+<section id="loginSection" class="card">
+  <h3>Login</h3>
+
+  <div class="row">
+    <div>
+      <label>Login As</label>
+      <select id="loginRole">
+        <option value="admin">Admin</option>
+        <option value="lecturer">Lecturer</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Username</label>
+      <input id="loginUser">
+    </div>
+    <div>
+      <label>Password</label>
+      <input id="loginPass" type="password">
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="login()">Login</button>
+  <div id="loginMsg" class="alert hidden"></div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="hidden">
+
+  <div class="card">
+    <h3 id="dashTitle"></h3>
+    <button class="btn-secondary" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Lecturer -->
+  <section id="lecturerPanel" class="card hidden">
+    <h4>Create Activity</h4>
+
+    <div class="row">
       <div>
-        <h2 style="margin:0;color:#0052cc;">Jaramogi Oginga Odinga University of Science & Technology</h2>
-        <div style="margin:0;font-size:12px;color:#555;">Session Attendance Sheet</div>
-        <div style="margin:0;font-size:11px;color:#777;">Generated: ${dateStr}</div>
+        <label>Activity Type</label>
+        <select id="actType">
+          <option value="class">Class</option>
+          <option value="meeting">Meeting</option>
+        </select>
+      </div>
+      <div>
+        <label>Academic Year</label>
+        <input id="actAY" placeholder="2025/2026">
       </div>
     </div>
-    <hr/>
 
-    <table border="0" cellspacing="0" cellpadding="4" style="width:100%;font-size:11px;">
-      <tr><td><b>Type:</b> ${(cls.type||"").toUpperCase()}</td><td><b>Meeting Mode:</b> ${cls.type==="meeting"?(cls.meetingMode||""):""}</td></tr>
-      <tr><td><b>Academic Year:</b> ${cls.academicYear||""}</td><td><b>Unit Code:</b> ${cls.unitCode||""}</td></tr>
-      <tr><td><b>Unit/Meeting:</b> ${cls.unit||""}</td><td><b>Programme:</b> ${cls.course||""}</td></tr>
-      <tr><td><b>School/Faculty:</b> ${cls.faculty||""}</td><td><b>Year/Sem:</b> ${cls.year||""} / ${cls.semester||""}</td></tr>
-      <tr><td><b>Venue/Platform:</b> ${cls.venue||""}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
-      <tr><td colspan="2"><b>Lecturer/Organizer:</b> ${cls.lecturerName||""}</td></tr>
-    </table>
+    <div class="row">
+      <div>
+        <label>Course / Programme</label>
+        <input id="actCourse">
+      </div>
+      <div>
+        <label>Unit / Meeting Name</label>
+        <input id="actUnit">
+      </div>
+    </div>
 
-    <br/>
+    <div class="row">
+      <div>
+        <label>Venue / Platform</label>
+        <input id="actVenue">
+      </div>
+      <div>
+        <label>Date & Time</label>
+        <input id="actDate" type="datetime-local">
+      </div>
+    </div>
 
-    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
-      <thead>
-        <tr style="background:#eff6ff;color:#1d4ed8;font-weight:700;">
-          <th>#</th><th>ID</th><th>Surname</th><th>Middle</th><th>First</th><th>Signature</th><th>Timestamp</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${bodyRows || "<tr><td colspan='7'>No attendance.</td></tr>"}
-      </tbody>
-    </table>
+    <button class="btn-success" onclick="createActivity()">Create Activity</button>
+    <div id="createMsg" class="alert hidden"></div>
+  </section>
 
-    <p style="margin-top:14px;font-size:11px;color:#555;">
-      System created by <b>Gerotech</b> — <b>Dan Otieno</b>.
-    </p>
-  </body></html>`;
+  <!-- Activities -->
+  <section class="card">
+    <h4>Activities</h4>
+    <div id="activityList" class="alert">No activities yet.</div>
+  </section>
 
-  const blob = new Blob(["\ufeff", html], { type:"application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.doc`;
-  a.click();
-  URL.revokeObjectURL(url);
+</section>
+
+<div class="footer">
+  System by <b>Gerotech Enterprises</b> © 2025
+</div>
+
+</main>
+
+<script>
+/* =========================
+   FAST STORAGE CORE
+========================= */
+const KEY="jooust_fast_v1";
+
+function load(){
+  return JSON.parse(localStorage.getItem(KEY)) || {
+    admins:[{u:"admin",p:"admin123"}],
+    lecturers:[{u:"lecturer",p:"1234"}],
+    activities:[],
+    attendance:[]
+  };
 }
+function save(d){localStorage.setItem(KEY,JSON.stringify(d));}
+let DB=load();
+let USER=null;
 
-/* ===========================
-   Reports: Session Report (list of sessions + attendance count)
-=========================== */
-let lastReportRows = [];
-let lastReportMeta = null;
-let lastReportRowsL = [];
-let lastReportMetaL = null;
+/* =========================
+   AUTH
+========================= */
+function login(){
+  const u=loginUser.value.trim();
+  const p=loginPass.value;
+  const r=loginRole.value;
+  const msg=loginMsg;
+  msg.className="alert hidden";
 
-function filterSessionsForReport({lecturerOnly, academicYear, faculty, course, unit, year, semester, status}){
-  DATA = loadData();
-  let sessions = DATA.classes.filter(c=>c.type==="class"); // best decision: reports focus on student class sessions
-  if(lecturerOnly && currentUser?.role==="lecturer"){
-    sessions = sessions.filter(c=>c.lecturerId===currentUser.id);
-  }
-  if(academicYear) sessions = sessions.filter(c=>(c.academicYear||"")===academicYear);
-  if(faculty) sessions = sessions.filter(c=>(c.faculty||"")===faculty);
-  if(course) sessions = sessions.filter(c=>(c.course||"")===course);
-  if(unit) sessions = sessions.filter(c=>(c.unit||"")===unit);
-  if(year) sessions = sessions.filter(c=>(c.year||"")===year);
-  if(semester) sessions = sessions.filter(c=>(c.semester||"")===semester);
-  if(status) sessions = sessions.filter(c=>(c.status||"")===status);
-
-  sessions.sort((a,b)=>(b.dateTime||"").localeCompare(a.dateTime||""));
-  return sessions;
-}
-
-function buildSessionReportRows(sessions){
-  DATA = loadData();
-  return sessions.map((cls, i)=>{
-    const n = DATA.attendance.filter(a=>a.classId===cls.id).length;
-    return {
-      "#": i+1,
-      AcademicYear: cls.academicYear || "",
-      UnitCode: cls.unitCode || "",
-      UnitName: cls.unit || "",
-      Programme: cls.course || "",
-      School: cls.faculty || "",
-      Year: cls.year || "",
-      Semester: cls.semester || "",
-      Venue: cls.venue || "",
-      DateTime: formatDateTime(cls.dateTime),
-      Lecturer: cls.lecturerName || "",
-      Status: (cls.status||"").toUpperCase(),
-      AttendanceCount: n
-    };
-  });
-}
-
-function renderReportTable(tableEl, rows){
-  if(!rows.length){
-    tableEl.innerHTML = `<tr><td>No records.</td></tr>`;
+  if(!u||!p){
+    msg.textContent="Missing credentials";
+    msg.className="alert alert-error";
     return;
   }
-  const head = Object.keys(rows[0]);
-  let html = `<thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
-  html += rows.map(r=>`<tr>${head.map(h=>`<td>${r[h] ?? ""}</td>`).join("")}</tr>`).join("");
-  html += `</tbody>`;
-  tableEl.innerHTML = html;
-}
 
-$("generateReportBtn").addEventListener("click", ()=>{
-  const sessions = filterSessionsForReport({
-    lecturerOnly:false,
-    academicYear: $("repAcademicYear").value,
-    faculty: $("repFaculty").value,
-    course: $("repCourse").value,
-    unit: $("repUnit").value,
-    year: $("repYear").value,
-    semester: $("repSemester").value,
-    status: $("repStatus").value
-  });
-  const rows = buildSessionReportRows(sessions);
-  lastReportRows = rows;
-  lastReportMeta = { scope:"Admin", count: rows.length, generatedAt: new Date().toLocaleString() };
-
-  $("reportArea").classList.remove("hidden");
-  $("reportMeta").textContent = `Records: ${rows.length} · Generated: ${lastReportMeta.generatedAt}`;
-  renderReportTable($("reportTable"), rows);
-});
-
-$("generateReportLecturerBtn").addEventListener("click", ()=>{
-  const sessions = filterSessionsForReport({
-    lecturerOnly:true,
-    academicYear: $("repAcademicYearL").value,
-    faculty: $("repFacultyL").value,
-    course: $("repCourseL").value,
-    unit: $("repUnitL").value,
-    year: $("repYearL").value,
-    semester: $("repSemesterL").value,
-    status: $("repStatusL").value
-  });
-  const rows = buildSessionReportRows(sessions);
-  lastReportRowsL = rows;
-  lastReportMetaL = { scope:"Lecturer", count: rows.length, generatedAt: new Date().toLocaleString() };
-
-  $("reportAreaLecturer").classList.remove("hidden");
-  $("reportMetaL").textContent = `Records: ${rows.length} · Generated: ${lastReportMetaL.generatedAt}`;
-  renderReportTable($("reportTableL"), rows);
-});
-
-/* Export the report table as PDF/Word/Excel (role not included anywhere) */
-async function exportReportExcel(rows, filename){
-  const { okXlsx } = await ensureLibs();
-  if(!okXlsx){ alert("Excel library not loaded."); return; }
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(rows.length?rows:[{Info:"No records"}]);
-  XLSX.utils.book_append_sheet(wb, ws, "Report");
-  XLSX.writeFile(wb, filename);
-}
-async function exportReportPdf(rows, title, filename){
-  const { okPdf } = await ensureLibs();
-  if(!okPdf){ alert("PDF library not loaded."); return; }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p","pt","a4");
-  const margin = 40;
-
-  if(jooustLogoDataUrl){
-    try{ doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 70, 52); } catch(e){}
-  }
-  doc.setFontSize(13);
-  doc.setTextColor(0,82,204);
-  doc.text("JOOUST Report", margin, 80);
-  doc.setFontSize(10);
-  doc.setTextColor(31,41,55);
-  doc.text(title, margin, 96);
-
-  const head = rows.length ? Object.keys(rows[0]) : ["Info"];
-  const body = rows.length ? rows.map(r=>head.map(h=>r[h]??"")) : [["No records"]];
-
-  doc.autoTable({
-    startY: 115,
-    head: [head],
-    body,
-    styles:{ fontSize: 7, cellPadding: 3 },
-    headStyles:{ fillColor:[0,82,204], textColor:255 }
-  });
-  doc.save(filename);
-}
-function exportReportWord(rows, title, filename){
-  const head = rows.length ? Object.keys(rows[0]) : ["Info"];
-  const body = rows.length ? rows.map(r=>`<tr>${head.map(h=>`<td>${r[h]??""}</td>`).join("")}</tr>`).join("") : `<tr><td>No records</td></tr>`;
-  const html = `
-  <html><head><meta charset="UTF-8"></head>
-  <body style="font-family:Calibri,Arial,sans-serif;">
-    <h2 style="color:#0052cc;margin:0;">JOOUST Report</h2>
-    <div style="color:#333;margin:.2rem 0 1rem;">${title}</div>
-    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
-      <thead><tr style="background:#eff6ff;color:#1d4ed8;font-weight:700;">${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
-      <tbody>${body}</tbody>
-    </table>
-  </body></html>`;
-  const blob = new Blob(["\ufeff", html], { type:"application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-$("exportExcelBtn").addEventListener("click", ()=> exportReportExcel(lastReportRows, "jooust-report-admin.xlsx"));
-$("exportPdfBtn").addEventListener("click", ()=> exportReportPdf(lastReportRows, "Admin Session Report", "jooust-report-admin.pdf"));
-$("exportWordBtn").addEventListener("click", ()=> exportReportWord(lastReportRows, "Admin Session Report", "jooust-report-admin.doc"));
-
-$("exportExcelBtnL").addEventListener("click", ()=> exportReportExcel(lastReportRowsL, "jooust-report-lecturer.xlsx"));
-$("exportPdfBtnL").addEventListener("click", ()=> exportReportPdf(lastReportRowsL, "Lecturer Session Report", "jooust-report-lecturer.pdf"));
-$("exportWordBtnL").addEventListener("click", ()=> exportReportWord(lastReportRowsL, "Lecturer Session Report", "jooust-report-lecturer.doc"));
-
-/* ===========================
-   Download ALL reports (combined)
-=========================== */
-$("downloadAllPdfBtn").addEventListener("click", async ()=>{
-  const sessions = filterSessionsForReport({
-    lecturerOnly:false,
-    academicYear: $("repAcademicYear").value,
-    faculty: $("repFaculty").value,
-    course: $("repCourse").value,
-    unit: $("repUnit").value,
-    year: $("repYear").value,
-    semester: $("repSemester").value,
-    status: $("repStatus").value
-  });
-  const { okPdf } = await ensureLibs();
-  if(!okPdf){ alert("PDF library not loaded."); return; }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p","pt","a4");
-  for(let i=0;i<sessions.length;i++){
-    const cls = sessions[i];
-    const rows = buildRawAttendanceRowsForClass(cls.id);
-    if(i>0) doc.addPage();
-    doc.setFontSize(12);
-    doc.text(`JOOUST Attendance: ${cls.unitCode||""} ${cls.unit||""}`, 40, 40);
-    doc.setFontSize(9);
-    doc.text(`Academic Year: ${cls.academicYear||""} · ${formatDateTime(cls.dateTime)} · Venue: ${cls.venue||""}`, 40, 56);
-
-    const body = rows.map(r=>[r["#"], r.ID, r.Surname, r.Middle, r.First, "", r.Timestamp]);
-    doc.autoTable({
-      startY: 70,
-      head: [["#","ID","Surname","Middle","First","Signature","Timestamp"]],
-      body: body.length ? body : [["","","No records","","","",""]],
-      styles:{ fontSize: 7, cellPadding: 3, minCellHeight: 22 },
-      headStyles:{ fillColor:[0,82,204], textColor:255 },
-      columnStyles: { 5: { cellWidth: 90 } },
-      didDrawCell: (data)=>{
-        if(data.section === "body" && data.column.index === 5){
-          const rowIndex = data.row.index;
-          const sig = rows[rowIndex]?.SignatureDataURL || "";
-          if(sig && sig.startsWith("data:image")){
-            try{ doc.addImage(sig, "PNG", data.cell.x+2, data.cell.y+2, 86, 18); }catch(e){}
-          }
-        }
-      }
-    });
-  }
-  doc.save("jooust-all-reports.pdf");
-});
-
-$("downloadAllExcelBtn").addEventListener("click", async ()=>{
-  const sessions = filterSessionsForReport({
-    lecturerOnly:false,
-    academicYear: $("repAcademicYear").value,
-    faculty: $("repFaculty").value,
-    course: $("repCourse").value,
-    unit: $("repUnit").value,
-    year: $("repYear").value,
-    semester: $("repSemester").value,
-    status: $("repStatus").value
-  });
-  const { okXlsx } = await ensureLibs();
-  if(!okXlsx){ alert("Excel library not loaded."); return; }
-
-  const wb = XLSX.utils.book_new();
-  for(const cls of sessions){
-    const rows = buildRawAttendanceRowsForClass(cls.id);
-    const name = (cls.unitCode||cls.unit||"Session").toString().slice(0,25).replace(/[\\/*?:[\]]/g,"_");
-    const ws = XLSX.utils.json_to_sheet(rows.length?rows:[{Info:"No records"}]);
-    XLSX.utils.book_append_sheet(wb, ws, name || "Session");
-  }
-  XLSX.writeFile(wb, "jooust-all-reports.xlsx");
-});
-
-/* ===========================
-   Monthly Attendance Sheet (Week 1–4) per your Word template
-=========================== */
-function monthKeyFromDate(dt){
-  const d = new Date(dt);
-  if(isNaN(d)) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  return `${y}-${m}`;
-}
-function monthLabelFromKey(k){
-  if(!k) return "";
-  const [y,m] = k.split("-");
-  const names = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  return `${names[(parseInt(m,10)-1)] || "Month"} ${y}`;
-}
-function weekOfMonth(dt){
-  const d = new Date(dt);
-  if(isNaN(d)) return 1;
-  const day = d.getDate();
-  if(day <= 7) return 1;
-  if(day <= 14) return 2;
-  if(day <= 21) return 3;
-  return 4;
-}
-
-function buildMonthlySheetRows({ academicYear, faculty, course, unit, year, semester, monthKey, lecturerOnly=false }){
-  DATA = loadData();
-  let sessions = DATA.classes.filter(c => c.type === "class");
-  if(lecturerOnly && currentUser?.role==="lecturer"){
-    sessions = sessions.filter(c=>c.lecturerId === currentUser.id);
-  }
-  if(academicYear) sessions = sessions.filter(c => (c.academicYear||"") === academicYear);
-  if(faculty) sessions = sessions.filter(c => (c.faculty||"") === faculty);
-  if(course) sessions = sessions.filter(c => (c.course||"") === course);
-  if(unit) sessions = sessions.filter(c => (c.unit||"") === unit);
-  if(year) sessions = sessions.filter(c => (c.year||"") === year);
-  if(semester) sessions = sessions.filter(c => (c.semester||"") === semester);
-
-  if(monthKey){
-    sessions = sessions.filter(c => monthKeyFromDate(c.dateTime) === monthKey);
-  }
-
-  const sessionIds = new Set(sessions.map(s=>s.id));
-  const firstSession = sessions[0] || {};
-  const meta = {
-    school: firstSession.faculty || "",
-    programme: firstSession.course || "",
-    academicYear: academicYear || firstSession.academicYear || "",
-    yearOfStudy: year || firstSession.year || "",
-    semester: semester || firstSession.semester || "",
-    month: monthLabelFromKey(monthKey || monthKeyFromDate(firstSession.dateTime)),
-    lecturerName: firstSession.lecturerName || "",
-    courseCode: firstSession.unitCode || "",
-    courseTitle: firstSession.unit || ""
-  };
-
-  const att = DATA.attendance.filter(a => sessionIds.has(a.classId));
-
-  const byStudent = new Map();
-  for(const a of att){
-    const reg = (a.admission || "").trim();
-    if(!reg) continue;
-    const name = [a.surname,a.middle,a.first].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
-    const cls = sessions.find(s => s.id === a.classId);
-    const w = cls ? weekOfMonth(cls.dateTime) : 1;
-    if(!byStudent.has(reg)){
-      byStudent.set(reg, { reg, name, w:{1:false,2:false,3:false,4:false} });
+  DB=load();
+  if(r==="admin"){
+    if(!DB.admins.find(a=>a.u===u&&a.p===p)){
+      msg.textContent="Invalid admin login";
+      msg.className="alert alert-error";return;
     }
-    byStudent.get(reg).w[w] = true;
+  }else{
+    if(!DB.lecturers.find(l=>l.u===u&&l.p===p)){
+      msg.textContent="Invalid lecturer login";
+      msg.className="alert alert-error";return;
+    }
   }
 
-  const rows = [...byStudent.values()].sort((a,b)=>a.reg.localeCompare(b.reg)).map((s, idx)=>{
-    const present = [1,2,3,4].reduce((acc,k)=>acc+(s.w[k]?1:0), 0);
-    const pct = Math.round((present/4)*100);
-    return {
-      "SN": idx+1,
-      "REG. NO": s.reg,
-      "STUDENT NAME": s.name,
-      "CLASS ATTENDANCE %": pct + "%",
-      "Week One": s.w[1] ? "✓" : "",
-      "Week Two": s.w[2] ? "✓" : "",
-      "Week Three": s.w[3] ? "✓" : "",
-      "Week Four": s.w[4] ? "✓" : ""
-    };
-  });
-
-  return { rows, meta };
+  USER={role:r,name:u};
+  loginSection.classList.add("hidden");
+  dashboard.classList.remove("hidden");
+  dashTitle.textContent=`Logged in as ${r.toUpperCase()} – ${u}`;
+  lecturerPanel.classList.toggle("hidden",r!=="lecturer");
+  renderActivities();
 }
 
-async function exportMonthlySheetPdf({ lecturerOnly=false }){
-  const { okPdf } = await ensureLibs();
-  if(!okPdf){ alert("PDF library not loaded."); return; }
+function logout(){
+  USER=null;
+  dashboard.classList.add("hidden");
+  loginSection.classList.remove("hidden");
+}
 
-  const monthKey = lecturerOnly ? ($("repMonthL").value || monthKeyFromDate(new Date())) : ($("repMonth").value || monthKeyFromDate(new Date()));
-  const filters = lecturerOnly ? {
-    academicYear: $("repAcademicYearL").value,
-    faculty: $("repFacultyL").value,
-    course: $("repCourseL").value,
-    unit: $("repUnitL").value,
-    year: $("repYearL").value,
-    semester: $("repSemesterL").value
-  } : {
-    academicYear: $("repAcademicYear").value,
-    faculty: $("repFaculty").value,
-    course: $("repCourse").value,
-    unit: $("repUnit").value,
-    year: $("repYear").value,
-    semester: $("repSemester").value
+/* =========================
+   ACTIVITIES
+========================= */
+function createActivity(){
+  const a={
+    id:Date.now(),
+    type:actType.value,
+    ay:actAY.value,
+    course:actCourse.value,
+    unit:actUnit.value,
+    venue:actVenue.value,
+    dt:actDate.value,
+    by:USER.name
   };
-
-  const { rows, meta } = buildMonthlySheetRows({ ...filters, monthKey, lecturerOnly });
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p","pt","a4");
-  const margin = 40;
-
-  if(jooustLogoDataUrl){
-    try{ doc.addImage(jooustLogoDataUrl, "JPEG", margin, 18, 70, 52); } catch(e){}
+  if(!a.unit||!a.dt){
+    createMsg.textContent="Fill required fields";
+    createMsg.className="alert alert-error";
+    return;
   }
-  doc.setFontSize(12);
-  doc.setTextColor(31,41,55);
-  doc.text("JARAMOGI OGINGA ODINGA UNIVERSITY OF SCIENCE & TECHNOLOGY", margin, 34);
-  doc.setFontSize(11);
-  doc.text("STUDENT CLASS ATTENDANCE SHEET", margin, 52);
-
-  doc.setFontSize(9);
-  doc.setTextColor(71,85,105);
-  const y0 = 74;
-  doc.text(`SCHOOL: ${meta.school}`, margin, y0);
-  doc.text(`PROGRAMME: ${meta.programme}`, margin+280, y0);
-  doc.text(`ACADEMIC YEAR: ${meta.academicYear}`, margin, y0+14);
-  doc.text(`YEAR OF STUDY: ${meta.yearOfStudy}`, margin+280, y0+14);
-  doc.text(`SEMESTER: ${meta.semester}`, margin, y0+28);
-  doc.text(`MONTH: ${meta.month}`, margin+280, y0+28);
-  doc.text(`LECTURER'S NAME: ${meta.lecturerName}`, margin, y0+44);
-  doc.text(`COURSE CODE: ${meta.courseCode}`, margin, y0+58);
-  doc.text(`COURSE TITLE: ${meta.courseTitle}`, margin+280, y0+58);
-
-  const head = [[ "SN","REG. NO","STUDENT NAME","CLASS ATTENDANCE %","Week One","Week Two","Week Three","Week Four" ]];
-  const body = rows.map(r=>[
-    r["SN"], r["REG. NO"], r["STUDENT NAME"], r["CLASS ATTENDANCE %"],
-    r["Week One"], r["Week Two"], r["Week Three"], r["Week Four"]
-  ]);
-
-  doc.autoTable({
-    startY: y0+78,
-    head,
-    body: body.length ? body : [["","","No records","","","","",""]],
-    styles:{ fontSize: 8, cellPadding: 3 },
-    headStyles:{ fillColor:[239,246,255], textColor:[29,78,216] },
-    columnStyles:{ 0:{cellWidth:26}, 1:{cellWidth:70}, 2:{cellWidth:170}, 3:{cellWidth:85} }
-  });
-
-  let y = doc.lastAutoTable.finalY + 26;
-  doc.setFontSize(10);
-  doc.setTextColor(31,41,55);
-  doc.text("Lecturer ________________________________", margin, y);
-  doc.text("DATE: ____________________", margin+320, y);
-  y += 26;
-  doc.text("DEAN ____________________________________", margin, y);
-  doc.text("DATE: ____________________", margin+320, y);
-
-  doc.save(`JOOUST-Monthly-Attendance-${(meta.courseCode||meta.courseTitle||"class").replace(/\s+/g,"_")}.pdf`);
+  DB=load();
+  DB.activities.push(a);
+  save(DB);
+  createMsg.textContent="Activity created successfully";
+  createMsg.className="alert alert-success";
+  renderActivities();
 }
 
-function exportMonthlySheetWord({ lecturerOnly=false }){
-  const monthKey = lecturerOnly ? ($("repMonthL").value || monthKeyFromDate(new Date())) : ($("repMonth").value || monthKeyFromDate(new Date()));
-  const filters = lecturerOnly ? {
-    academicYear: $("repAcademicYearL").value,
-    faculty: $("repFacultyL").value,
-    course: $("repCourseL").value,
-    unit: $("repUnitL").value,
-    year: $("repYearL").value,
-    semester: $("repSemesterL").value
-  } : {
-    academicYear: $("repAcademicYear").value,
-    faculty: $("repFaculty").value,
-    course: $("repCourse").value,
-    unit: $("repUnit").value,
-    year: $("repYear").value,
-    semester: $("repSemester").value
-  };
-
-  const { rows, meta } = buildMonthlySheetRows({ ...filters, monthKey, lecturerOnly });
-
-  const bodyRows = rows.map(r=>`
-    <tr>
-      <td>${r["SN"]}</td><td>${r["REG. NO"]}</td><td>${r["STUDENT NAME"]}</td><td>${r["CLASS ATTENDANCE %"]}</td>
-      <td>${r["Week One"]}</td><td>${r["Week Two"]}</td><td>${r["Week Three"]}</td><td>${r["Week Four"]}</td>
-    </tr>
-  `).join("") || `<tr><td colspan="8">No records.</td></tr>`;
-
-  const html = `
-  <html><head><meta charset="UTF-8"></head>
-  <body style="font-family:Calibri,Arial,sans-serif;">
-    <h3 style="margin:0;">JARAMOGI OGINGA ODINGA UNIVERSITY OF SCIENCE & TECHNOLOGY</h3>
-    <h4 style="margin:.25rem 0 1rem;">STUDENT CLASS ATTENDANCE SHEET</h4>
-
-    <div style="font-size:11px;">
-      <div><b>SCHOOL</b> ${meta.school} &nbsp;&nbsp;&nbsp; <b>PROGRAMME</b> ${meta.programme} &nbsp;&nbsp;&nbsp; <b>ACADEMIC YEAR</b> ${meta.academicYear}</div>
-      <div><b>YEAR OF STUDY</b> ${meta.yearOfStudy} &nbsp;&nbsp;&nbsp; <b>SEMESTER</b> ${meta.semester} &nbsp;&nbsp;&nbsp; <b>MONTH</b> ${meta.month}</div>
-      <div><b>LECTURER’S NAME</b> ${meta.lecturerName}</div>
-      <div><b>COURSE CODE</b> ${meta.courseCode} &nbsp;&nbsp;&nbsp; <b>COURSE TITLE</b> ${meta.courseTitle}</div>
+function renderActivities(){
+  DB=load();
+  if(!DB.activities.length){
+    activityList.textContent="No activities yet.";
+    return;
+  }
+  activityList.innerHTML=DB.activities.map(a=>`
+    <div style="margin-bottom:.5rem">
+      <b>${a.unit}</b> (${a.type})<br>
+      ${a.course || ""} | ${a.venue}<br>
+      ${new Date(a.dt).toLocaleString()}
     </div>
-
-    <br/>
-    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
-      <thead>
-        <tr style="background:#f3f4f6;font-weight:700;">
-          <th>SN</th><th>REG. NO</th><th>STUDENT NAME</th><th>CLASS ATTENDANCE %</th>
-          <th>Week One</th><th>Week Two</th><th>Week Three</th><th>Week Four</th>
-        </tr>
-      </thead>
-      <tbody>${bodyRows}</tbody>
-    </table>
-
-    <br/>
-    <div style="font-size:11px;">
-      Lecturer ________________________________ &nbsp;&nbsp;&nbsp; DATE: ____________________<br/><br/>
-      DEAN ____________________________________ &nbsp;&nbsp;&nbsp; DATE: ____________________
-    </div>
-  </body></html>`;
-
-  const blob = new Blob(["\ufeff", html], { type:"application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `JOOUST-Monthly-Attendance-${(meta.courseCode||meta.courseTitle||"class").replace(/\s+/g,"_")}.doc`;
-  a.click();
-  URL.revokeObjectURL(url);
+  `).join("");
 }
-
-async function exportMonthlySheetExcel({ lecturerOnly=false }){
-  const { okXlsx } = await ensureLibs();
-  if(!okXlsx){ alert("Excel library not loaded."); return; }
-
-  const monthKey = lecturerOnly ? ($("repMonthL").value || monthKeyFromDate(new Date())) : ($("repMonth").value || monthKeyFromDate(new Date()));
-  const filters = lecturerOnly ? {
-    academicYear: $("repAcademicYearL").value,
-    faculty: $("repFacultyL").value,
-    course: $("repCourseL").value,
-    unit: $("repUnitL").value,
-    year: $("repYearL").value,
-    semester: $("repSemesterL").value
-  } : {
-    academicYear: $("repAcademicYear").value,
-    faculty: $("repFaculty").value,
-    course: $("repCourse").value,
-    unit: $("repUnit").value,
-    year: $("repYear").value,
-    semester: $("repSemester").value
-  };
-
-  const { rows, meta } = buildMonthlySheetRows({ ...filters, monthKey, lecturerOnly });
-
-  const wb = XLSX.utils.book_new();
-  const header = [
-    ["JARAMOGI OGINGA ODINGA UNIVERSITY OF SCIENCE & TECHNOLOGY"],
-    ["STUDENT CLASS ATTENDANCE SHEET"],
-    [""],
-    ["SCHOOL", meta.school],
-    ["PROGRAMME", meta.programme],
-    ["ACADEMIC YEAR", meta.academicYear],
-    ["YEAR OF STUDY", meta.yearOfStudy],
-    ["SEMESTER", meta.semester],
-    ["MONTH", meta.month],
-    ["LECTURER’S NAME", meta.lecturerName],
-    ["COURSE CODE", meta.courseCode],
-    ["COURSE TITLE", meta.courseTitle]
-  ];
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(header), "Header");
-
-  const wsData = [["SN","REG. NO","STUDENT NAME","CLASS ATTENDANCE %","Week One","Week Two","Week Three","Week Four"]];
-  rows.forEach(r=>{
-    wsData.push([r["SN"], r["REG. NO"], r["STUDENT NAME"], r["CLASS ATTENDANCE %"], r["Week One"], r["Week Two"], r["Week Three"], r["Week Four"]]);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Attendance");
-  XLSX.writeFile(wb, `JOOUST-Monthly-Attendance-${(meta.courseCode||meta.courseTitle||"class").replace(/\s+/g,"_")}.xlsx`);
-}
-
-/* hook monthly export buttons */
-$("exportMonthlyPdfBtn").addEventListener("click", ()=> exportMonthlySheetPdf({ lecturerOnly:false }));
-$("exportMonthlyWordBtn").addEventListener("click", ()=> exportMonthlySheetWord({ lecturerOnly:false }));
-$("exportMonthlyExcelBtn").addEventListener("click", ()=> exportMonthlySheetExcel({ lecturerOnly:false }));
-
-$("exportMonthlyPdfBtnL").addEventListener("click", ()=> exportMonthlySheetPdf({ lecturerOnly:true }));
-$("exportMonthlyWordBtnL").addEventListener("click", ()=> exportMonthlySheetWord({ lecturerOnly:true }));
-$("exportMonthlyExcelBtnL").addEventListener("click", ()=> exportMonthlySheetExcel({ lecturerOnly:true }));
-
-/* ===========================
-   Raw export UI hook
-=========================== */
-function refreshClassPickers(){
-  DATA = loadData();
-  const sel = $("rawClassPick");
-  if(!sel) return;
-  sel.innerHTML = "";
-  const o0 = document.createElement("option");
-  o0.value = ""; o0.textContent = "Select session";
-  sel.appendChild(o0);
-
-  const classes = [...DATA.classes].sort((a,b)=>(b.dateTime||"").localeCompare(a.dateTime||""));
-  for(const c of classes){
-    const o = document.createElement("option");
-    o.value = c.id;
-    const label = c.type==="meeting"
-      ? `MEETING (${(c.meetingMode||"").toUpperCase()}) · ${formatDateTime(c.dateTime)}`
-      : `${c.unitCode||""} · ${c.unit||""} · ${formatDateTime(c.dateTime)}`;
-    o.textContent = label;
-    sel.appendChild(o);
-  }
-}
-$("rawExportCsvBtn").addEventListener("click", ()=>{
-  const id = $("rawClassPick").value;
-  if(!id) return setAlert($("rawExportMsg"), "Pick a session first.", "danger");
-  DATA = loadData();
-  const cls = DATA.classes.find(c=>c.id===id);
-  const rows = buildRawAttendanceRowsForClass(id);
-  exportRawAttendanceCsv(cls, rows);
-  setAlert($("rawExportMsg"), "CSV downloaded.", "success");
-});
-$("rawExportExcelBtn").addEventListener("click", async ()=>{
-  const id = $("rawClassPick").value;
-  if(!id) return setAlert($("rawExportMsg"), "Pick a session first.", "danger");
-  DATA = loadData();
-  const cls = DATA.classes.find(c=>c.id===id);
-  const rows = buildRawAttendanceRowsForClass(id);
-  await exportRawAttendanceExcel(cls, rows);
-  setAlert($("rawExportMsg"), "Excel downloaded.", "success");
-});
-
-/* ===========================
-   Boot
-=========================== */
-(async function boot(){
-  loadLogoAsDataUrl();
-  await migrateToHashedPasswords();
-  refreshAllDropdowns();
-  refreshClassPickers();
-  updateCreateSessionUI();
-
-  // default month values
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth()+1).padStart(2,"0");
-  if($("repMonth")) $("repMonth").value = `${y}-${m}`;
-  if($("repMonthL")) $("repMonthL").value = `${y}-${m}`;
-
-  // student mode?
-  const handled = await initStudentModeIfNeeded();
-  if(!handled){
-    showSection("loginSection");
-  }
-})();
 </script>
+
 </body>
 </html>
-<!-- ========================= END (PART 3/3) ========================= -->
