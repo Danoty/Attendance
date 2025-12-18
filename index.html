@@ -5,6 +5,21 @@
   <title>JOOUST Attendance Management System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <!-- Basic CSP (frontend-only) -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 img-src 'self' data: https:;
+                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                 font-src https://fonts.gstatic.com data:;
+                 script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+                 connect-src 'self' https:;
+                 base-uri 'self';
+                 frame-ancestors 'none';
+                 object-src 'none';
+                 upgrade-insecure-requests">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --jooust-blue:#0052cc; --jooust-blue-dark:#003b8c; --jooust-green:#24a148; --jooust-gold:#f2c94c;
@@ -12,7 +27,7 @@
       --shadow: 0 10px 28px rgba(15,23,42,.10); --shadow2: 0 18px 40px rgba(15,23,42,.14);
       --radius: 16px;
     }
-    *{ box-sizing:border-box; font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    *{ box-sizing:border-box; font-family: Inter, system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     body{ margin:0; background: var(--bg); color: var(--text); }
     header{
       background: linear-gradient(135deg, var(--jooust-blue-dark), var(--jooust-blue));
@@ -27,7 +42,7 @@
     .top-actions{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; justify-content:flex-end; }
     .user-pill{ display:flex; align-items:center; gap:.5rem; padding:.35rem .7rem; border-radius:999px;
       background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); font-size:.86rem; white-space:nowrap; }
-    .user-pill b{ font-weight:700; }
+    .user-pill b{ font-weight:800; }
 
     main{ max-width:1200px; margin:1.2rem auto 2.5rem; padding:0 1rem; }
     .hero{
@@ -63,7 +78,7 @@
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:.45rem;
       padding:.62rem 1rem; border-radius: 999px; border:none; cursor:pointer;
-      font-size:.92rem; font-weight:700; transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
+      font-size:.92rem; font-weight:800; transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
       white-space:nowrap; user-select:none;
     }
     .btn:active{ transform: translateY(1px); box-shadow:none; }
@@ -83,15 +98,15 @@
 
     .tabs{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.5rem; }
     .tab{ padding:.45rem .95rem; border-radius:999px; font-size:.9rem; border: 1px solid #d1d5db;
-      background:#f3f4f6; cursor:pointer; font-weight:700; }
+      background:#f3f4f6; cursor:pointer; font-weight:900; }
     .tab.active{ background: var(--jooust-blue); border-color: var(--jooust-blue-dark); color:#fff; }
 
     table{ width:100%; border-collapse: collapse; font-size: .85rem; margin-top:.6rem; overflow:hidden; border-radius: 14px; }
     th, td{ border: 1px solid #e5e7eb; padding:.55rem .5rem; text-align:left; vertical-align: top; }
-    th{ background:#eff6ff; color:#1d4ed8; font-weight:800; }
+    th{ background:#eff6ff; color:#1d4ed8; font-weight:900; }
     tr:nth-child(even) td{ background:#f9fafb; }
 
-    .badge{ padding:.1rem .55rem; border-radius:999px; font-size:.72rem; font-weight:800; background:#e5e7eb; }
+    .badge{ padding:.1rem .55rem; border-radius:999px; font-size:.72rem; font-weight:900; background:#e5e7eb; }
     .badge.open{ background:#dcfce7; color:#166534; }
     .badge.closed{ background:#fee2e2; color:#b91c1c; }
 
@@ -125,19 +140,58 @@
       background: linear-gradient(135deg, rgba(0,82,204,.08), rgba(36,161,72,.05));
       border-radius:14px; padding:.8rem .9rem; box-shadow: 0 10px 22px rgba(15,23,42,.06);
     }
-    .kpi .v{ font-size:1.35rem; font-weight:900; color: var(--jooust-blue-dark); }
+    .kpi .v{ font-size:1.1rem; font-weight:900; color: var(--jooust-blue-dark); }
     .kpi .t{ font-size:.82rem; color: var(--muted); margin-top:.1rem; }
+
+    .qrBox{
+      border:1px dashed rgba(0,82,204,.35);
+      border-radius:14px;
+      padding:.7rem;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      background:#f8fafc;
+      margin-top:.6rem;
+    }
+    .qr{ width:140px; height:140px; background:#fff; border-radius:12px; padding:8px; border:1px solid #e5e7eb; }
+    .qrMeta{ flex:1; min-width: 220px; }
+    .linkBox{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:.55rem .65rem;
+      font-size:.86rem;
+      overflow:auto;
+      max-height: 78px;
+    }
+
+    .miniSig{
+      height: 36px;
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      background:#fff;
+      padding:2px;
+    }
 
     @media (max-width:640px){
       .brand img{ height:46px; }
       .brand h1{ font-size: 1.05rem; }
       .signature-pad{ height: 170px; }
     }
+
+    @media print{
+      header, .tabs, .btn, .btn-group, .footer, #pwdModal, #sessionModal, #sigModal { display:none !important; }
+      body{ background:#fff; }
+      .card{ box-shadow:none; border:1px solid #e5e7eb; }
+    }
   </style>
 
+  <!-- Export libs -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -171,7 +225,7 @@
       <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions can enforce within 1km of JOOUST</div></div>
       <div class="kpi"><div class="v">Online Meetings</div><div class="t">Staff can sign remotely for online meetings</div></div>
       <div class="kpi"><div class="v">Signatures</div><div class="t">Finger or mouse on phone/laptop</div></div>
-      <div class="kpi"><div class="v">Academic Year</div><div class="t">Filters + reports now include academic year (e.g. 2025/2026)</div></div>
+      <div class="kpi"><div class="v">Academic Year</div><div class="t">Filters + reports include academic year (e.g. 2025/2026)</div></div>
     </div>
   </div>
 
@@ -276,7 +330,7 @@
     </div>
 
     <div id="studentFormWrapper">
-      <div class="row" id="staffNoRow" class="hidden">
+      <div class="row hidden" id="staffNoRow">
         <div>
           <label for="stStaffNo">Staff No / PF No</label>
           <input id="stStaffNo" type="text" />
@@ -396,7 +450,7 @@
     <section id="reportsTab" class="card admin-tab hidden">
       <h3 style="margin:.1rem 0 .25rem;">Reports</h3>
       <div class="muted" style="margin-bottom:.8rem;">
-        Filter and export as PDF/Word/Excel.
+        Filter sessions and export official reports. You can also download <b>ALL matching session reports</b> as one Excel workbook.
       </div>
 
       <div class="row">
@@ -442,6 +496,7 @@
 
       <div class="btn-group">
         <button class="btn btn-primary" id="generateReportBtn">Generate Report</button>
+        <button class="btn btn-secondary" id="downloadAllReportsBtn">Download ALL Reports (Excel)</button>
       </div>
 
       <div id="reportArea" class="hidden" style="margin-top:1rem;">
@@ -668,15 +723,104 @@
   </div>
 </div>
 
+<!-- Session modal (view link/QR/attendance/export/sign) -->
+<div id="sessionModal" class="hidden" style="position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+  <div class="card" style="width:min(980px,96%);max-height:90vh;overflow:auto;box-shadow:var(--shadow2);">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+      <div>
+        <h3 style="margin:.1rem 0 .2rem;" id="sessionModalTitle">Session</h3>
+        <div class="small" id="sessionModalMeta"></div>
+      </div>
+      <div class="btn-group" style="margin-top:0;">
+        <button class="btn btn-secondary" id="sessionModalPrintBtn">Print</button>
+        <button class="btn btn-secondary" id="sessionModalCloseBtn">Close</button>
+      </div>
+    </div>
+
+    <div class="qrBox" id="sessionLinkBox">
+      <div class="qr" id="qrTarget"></div>
+      <div class="qrMeta">
+        <div class="small"><b>Share this sign-in link</b> (works on phones)</div>
+        <div class="linkBox" id="sessionLinkText"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="copyLinkBtn">Copy Link</button>
+          <button class="btn btn-secondary" id="openLinkBtn">Open Link</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-success" id="toggleStatusBtn">Close Session</button>
+      <button class="btn btn-primary" id="exportSessionPdfBtn">Download PDF</button>
+      <button class="btn btn-secondary" id="exportSessionWordBtn">Download Word</button>
+      <button class="btn btn-secondary" id="exportSessionExcelBtn">Download Excel</button>
+      <button class="btn btn-secondary" id="exportSessionCsvBtn">Download CSV</button>
+      <button class="btn btn-secondary" id="lecturerSignBtn">Add Lecturer Signature</button>
+      <button class="btn btn-secondary hidden" id="hodSignBtn">Add HOD Signature (Admin)</button>
+    </div>
+
+    <div class="alert hidden" id="sessionModalMsg"></div>
+
+    <h4 style="margin:1rem 0 .35rem;">Attendance (Signatures included)</h4>
+    <div class="muted" id="sessionAttendanceMeta"></div>
+    <table id="sessionAttendanceTable"></table>
+  </div>
+</div>
+
+<!-- Signature modal (lecturer/hod) -->
+<div id="sigModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+  <div class="card" style="width:min(720px,96%);box-shadow:var(--shadow2);">
+    <h3 style="margin:.1rem 0 .6rem;" id="sigModalTitle">Signature</h3>
+
+    <div id="hodNameWrap" class="row hidden">
+      <div>
+        <label for="hodNameInput">HOD Name</label>
+        <input id="hodNameInput" type="text" placeholder="e.g. Dr. John Doe" />
+      </div>
+    </div>
+
+    <label>Draw Signature</label>
+    <canvas id="sigPad" class="signature-pad"></canvas>
+    <div class="signature-actions">
+      <button class="btn btn-secondary" id="sigClearBtn">Clear</button>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" id="sigSaveBtn">Save</button>
+      <button class="btn btn-secondary" id="sigCancelBtn">Cancel</button>
+    </div>
+    <div id="sigMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+  </div>
+</div>
+
 <script>
 /* ===========================
    STORAGE + BASE DATA
 =========================== */
-const STORAGE_KEY = "jooust_attendance_data_v5_academic_year";
+const STORAGE_KEY = "jooust_attendance_data_v6_merged";
 
 /* JOOUST Center (Approx) */
 const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 };
 const GEOFENCE_RADIUS_KM = 1.0;
+
+/* Session timeout (frontend-only) */
+const SESSION_TIMEOUT_MIN = 20;
+let lastActivityTs = Date.now();
+
+function touchActivity(){
+  lastActivityTs = Date.now();
+}
+["click","keydown","mousemove","touchstart"].forEach(ev => window.addEventListener(ev, touchActivity, {passive:true}));
+setInterval(()=>{
+  if(!currentUser) return;
+  const mins = (Date.now() - lastActivityTs) / 60000;
+  if(mins >= SESSION_TIMEOUT_MIN){
+    currentUser = null;
+    updateTopBar();
+    showSection("loginSection");
+    alert("Session timed out for security. Please login again.");
+  }
+}, 15000);
 
 function getDefaultAcademicYear(){
   const now = new Date();
@@ -688,7 +832,7 @@ function getDefaultAcademicYear(){
 
 function baseData(){
   return {
-    version: 5,
+    version: 6,
     admins: [{ username:"admin", password:"admin123" }],
     lecturers: [],
     facultyConfig: [],
@@ -705,6 +849,7 @@ function migrateData(d){
   d.attendance = d.attendance || [];
 
   const defAY = getDefaultAcademicYear();
+
   d.facultyConfig = d.facultyConfig.map(r=>({
     faculty: r.faculty || "",
     course: r.course || "",
@@ -715,11 +860,42 @@ function migrateData(d){
   }));
 
   d.classes = d.classes.map(c=>({
-    ...c,
-    academicYear: c.academicYear || c.academic_year || (c.type==="meeting" ? "" : defAY)
+    id: c.id || (Date.now().toString(36)+Math.random().toString(36).slice(2,8)),
+    type: c.type || "class",
+    meetingMode: c.meetingMode || (c.type==="meeting" ? "online" : "physical"),
+    academicYear: c.academicYear || c.academic_year || (c.type==="meeting" ? "" : defAY),
+    unitCode: c.unitCode || c.unit_code || "",
+    lecturerId: c.lecturerId || "",
+    faculty: c.faculty || "",
+    course: c.course || "",
+    unit: c.unit || (c.type==="meeting" ? "Staff Meeting" : ""),
+    year: c.year || "",
+    semester: c.semester || "",
+    venue: c.venue || "",
+    dateTime: c.dateTime || c.date_time || "",
+    status: c.status || "open",
+    lecturerName: c.lecturerName || c.lecturer_name || "",
+    lecturerSignature: c.lecturerSignature || null,
+    hodName: c.hodName || "",
+    hodSignature: c.hodSignature || null,
+    createdAt: c.createdAt || Date.now()
   }));
 
-  d.version = 5;
+  d.attendance = d.attendance.map(a=>({
+    id: a.id || (Date.now().toString(36)+Math.random().toString(36).slice(2,8)),
+    classId: a.classId || a.class_id || "",
+    surname: a.surname || "",
+    middle: a.middle || "",
+    first: a.first || "",
+    admission: a.admission || "",
+    staffNo: a.staffNo || "",
+    signature: a.signature || "",
+    createdAt: a.createdAt || Date.now(),
+    geo: a.geo || null,
+    deviceId: a.deviceId || ""
+  }));
+
+  d.version = 6;
   return d;
 }
 
@@ -744,9 +920,6 @@ let DATA = loadData();
 let currentUser = null;
 let jooustLogoDataUrl = null;
 
-/* ===========================
-   DOM helpers
-=========================== */
 function $(id){ return document.getElementById(id); }
 function showSection(id){
   ["loginSection","lecturerRegistrationSection","adminDashboard","lecturerDashboard","studentSection"].forEach(sid=>{
@@ -754,6 +927,7 @@ function showSection(id){
     el.classList.toggle("hidden", sid !== id);
   });
 }
+
 function uuid(){
   return Date.now().toString(36) + "-" + Math.random().toString(36).substring(2,10);
 }
@@ -765,6 +939,7 @@ function setAlert(el, msg, type="info"){
   else el.classList.add("alert-info");
 }
 function clearAlert(el){ el.classList.add("hidden"); }
+
 function formatDateTime(dt){
   if(!dt) return "";
   const d = new Date(dt);
@@ -775,58 +950,26 @@ function getQueryParam(name){
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get(name);
 }
+function unique(arr){ return [...new Set(arr)].filter(x=>x!=null && x!=="").sort((a,b)=>a.localeCompare(b)); }
 
-/* ===========================
-   Robust library loader
-=========================== */
-function loadScriptOnce(url){
-  return new Promise((resolve, reject)=>{
-    const existing = [...document.scripts].find(s=>s.src===url);
-    if(existing) { resolve(true); return; }
-    const s = document.createElement("script");
-    s.src = url; s.async = true;
-    s.onload = ()=> resolve(true);
-    s.onerror = ()=> reject(new Error("Failed: " + url));
-    document.head.appendChild(s);
+function setOptions(selectEl, values, placeholder="All / Select"){
+  if(!selectEl) return;
+  const cur = selectEl.value;
+  selectEl.innerHTML = "";
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = placeholder;
+  selectEl.appendChild(opt0);
+
+  values.forEach(v=>{
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = v;
+    selectEl.appendChild(o);
   });
-}
-async function ensureLibs(){
-  const okPdf = !!(window.jspdf && window.jspdf.jsPDF);
-  const okXlsx = !!window.XLSX;
-  const okQR = !!window.QRCode;
-
-  const tasks = [];
-  if(!okPdf){
-    tasks.push(
-      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
-        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"))
-    );
-    tasks.push(
-      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js")
-        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"))
-    );
-  }
-  if(!okXlsx){
-    tasks.push(
-      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js")
-        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"))
-    );
-  }
-  if(!okQR){
-    tasks.push(
-      loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js")
-        .catch(()=>loadScriptOnce("https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"))
-    );
-  }
-  if(tasks.length){
-    try{ await Promise.all(tasks); } catch(e){}
-  }
-  return { okPdf: !!(window.jspdf && window.jspdf.jsPDF), okXlsx: !!window.XLSX, okQR: !!window.QRCode };
+  if(cur && values.includes(cur)) selectEl.value = cur;
 }
 
-/* ===========================
-   Load logo as DataURL
-=========================== */
 function loadLogoAsDataUrl(){
   const img = new Image();
   img.crossOrigin = "anonymous";
@@ -841,9 +984,10 @@ function loadLogoAsDataUrl(){
     }catch(e){ jooustLogoDataUrl = null; }
   };
 }
+loadLogoAsDataUrl();
 
 /* ===========================
-   Canvas signature
+   Signature pads
 =========================== */
 function setupSignaturePad(canvas, opts={}){
   const ctx = canvas.getContext("2d");
@@ -897,18 +1041,18 @@ function setupSignaturePad(canvas, opts={}){
   return {
     clear: ()=> ctx.clearRect(0,0, canvas.width, canvas.height),
     toDataUrl: ()=> canvas.toDataURL("image/png"),
-    loadDataUrl: (dataUrl)=>{
-      if(!dataUrl) return;
-      const rect = canvas.getBoundingClientRect();
-      const img = new Image();
-      img.onload = ()=> ctx.drawImage(img, 0, 0, rect.width, rect.height);
-      img.src = dataUrl;
+    isBlank: ()=> {
+      const tmp = document.createElement("canvas");
+      tmp.width = canvas.width; tmp.height = canvas.height;
+      return tmp.toDataURL() === canvas.toDataURL();
     }
   };
 }
+const stSig = setupSignaturePad($("stSignaturePad"));
+$("stClearSignature").addEventListener("click", ()=> stSig.clear());
 
 /* ===========================
-   USER summary + top buttons
+   Top bar + logout + change pwd
 =========================== */
 function updateTopBar(){
   const summary = $("userSummary");
@@ -934,7 +1078,6 @@ function updateTopBar(){
     summary.innerHTML = `Logged in as <b>Lecturer</b> · <b>${name}</b>`;
   }
 }
-
 $("logoutBtn").addEventListener("click", ()=>{
   currentUser = null;
   updateTopBar();
@@ -979,6 +1122,20 @@ $("pwdSaveBtn").addEventListener("click", ()=>{
     saveData(DATA);
     setAlert(msgEl,"Password updated successfully.","success");
   }
+});
+
+/* ===========================
+   Admin tab switching
+=========================== */
+document.querySelectorAll("[data-admin-tab]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("[data-admin-tab]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const tab = btn.getAttribute("data-admin-tab");
+    document.querySelectorAll(".admin-tab").forEach(sec=>{
+      sec.classList.toggle("hidden", sec.id !== tab);
+    });
+  });
 });
 
 /* ===========================
@@ -1042,8 +1199,8 @@ $("loginBtn").addEventListener("click", ()=>{
     showSection("adminDashboard");
     renderAdminLecturers();
     renderFacultySummary();
-    renderAdminClasses();
     refreshAllDropdowns();
+    renderAdminClasses();
     refreshClassPickers();
   } else {
     const lec = DATA.lecturers.find(l=>l.username===username && l.password===password);
@@ -1056,6 +1213,7 @@ $("loginBtn").addEventListener("click", ()=>{
     showSection("lecturerDashboard");
     refreshAllDropdowns();
     renderLecturerClasses();
+    refreshClassPickers();
   }
 });
 
@@ -1114,14 +1272,14 @@ function renderAdminLecturers(){
         if(!np) return;
         lec.password = np;
         saveData(DATA);
-        setAlert($("loginMessage"), "Lecturer password reset successfully (admin action).", "success");
+        alert("Lecturer password reset successfully.");
       }
     });
   });
 }
 
 /* ===========================
-   FACULTY CSV upload + dropdown builders
+   FACULTY CSV upload + summary
 =========================== */
 $("uploadFacultyCsvBtn").addEventListener("click", ()=>{
   const file = $("facultyCsvInput").files[0];
@@ -1183,8 +1341,8 @@ function renderFacultySummary(){
     return;
   }
   const total = DATA.facultyConfig.length;
-  const faculties = [...new Set(DATA.facultyConfig.map(r=>r.faculty))];
-  const acYears = [...new Set(DATA.facultyConfig.map(r=>r.academicYear || ""))].filter(Boolean).sort();
+  const faculties = unique(DATA.facultyConfig.map(r=>r.faculty));
+  const acYears = unique(DATA.facultyConfig.map(r=>r.academicYear || ""));
   wrap.innerHTML = `<p class="muted" style="margin:.2rem 0 0;">
     Total entries: <b>${total}</b><br/>
     Academic Years: <b>${acYears.join(", ") || "N/A"}</b><br/>
@@ -1192,30 +1350,12 @@ function renderFacultySummary(){
   </p>`;
 }
 
-function unique(arr){ return [...new Set(arr)].filter(x=>x!=null && x!=="").sort((a,b)=>a.localeCompare(b)); }
-function setOptions(selectEl, values, placeholder="All / Select"){
-  if(!selectEl) return;
-  const cur = selectEl.value;
-  selectEl.innerHTML = "";
-  const opt0 = document.createElement("option");
-  opt0.value = "";
-  opt0.textContent = placeholder;
-  selectEl.appendChild(opt0);
-
-  values.forEach(v=>{
-    const o = document.createElement("option");
-    o.value = v;
-    o.textContent = v;
-    selectEl.appendChild(o);
-  });
-
-  if(cur && values.includes(cur)) selectEl.value = cur;
-}
 function getMapping(){ DATA = loadData(); return DATA.facultyConfig || []; }
 
 function refreshAllDropdowns(){
   const m = getMapping();
 
+  // Admin report filters
   setOptions($("repAcademicYear"), unique(m.map(x=>x.academicYear)), "All Academic Years");
   setOptions($("repFaculty"), unique(m.map(x=>x.faculty)), "All Faculties");
   setOptions($("repCourse"), unique(m.map(x=>x.course)), "All Courses");
@@ -1223,13 +1363,16 @@ function refreshAllDropdowns(){
   setOptions($("repYear"), unique(m.map(x=>x.year)), "All Study Years");
   setOptions($("repSemester"), unique(m.map(x=>x.semester)), "All Semesters");
 
-  setOptions($("lcAcademicYear"), unique(m.map(x=>x.academicYear)).length ? unique(m.map(x=>x.academicYear)) : [getDefaultAcademicYear()], "Select Academic Year");
+  // Lecturer create session
+  const ayList = unique(m.map(x=>x.academicYear));
+  setOptions($("lcAcademicYear"), ayList.length ? ayList : [getDefaultAcademicYear()], "Select Academic Year");
   setOptions($("lcFaculty"), unique(m.map(x=>x.faculty)), "Select Faculty");
   setOptions($("lcCourse"), unique(m.map(x=>x.course)), "Select Course");
   setOptions($("lcUnit"), unique(m.map(x=>x.unit)), "Select Unit");
   setOptions($("lcYear"), unique(m.map(x=>x.year)), "Select Study Year");
   setOptions($("lcSemester"), unique(m.map(x=>x.semester)), "Select Semester");
 
+  // Lecturer report filters
   setOptions($("repAcademicYearL"), unique(m.map(x=>x.academicYear)), "All Academic Years");
   setOptions($("repFacultyL"), unique(m.map(x=>x.faculty)), "All Faculties");
   setOptions($("repCourseL"), unique(m.map(x=>x.course)), "All Courses");
@@ -1238,6 +1381,7 @@ function refreshAllDropdowns(){
   setOptions($("repSemesterL"), unique(m.map(x=>x.semester)), "All Semesters");
 
   hookupCascadingCreateClass();
+  updateCreateSessionUI();
 }
 
 function hookupCascadingCreateClass(){
@@ -1286,17 +1430,47 @@ function hookupCascadingCreateClass(){
 }
 
 /* ===========================
-   Session Type UI behavior
+   Session type UI
 =========================== */
 function updateCreateSessionUI(){
   const type = $("lcType")?.value || "class";
   const meetingWrap = $("meetingModeWrap");
   if(meetingWrap) meetingWrap.classList.toggle("hidden", type !== "meeting");
+
+  // For meetings: allow blank mapping fields (optional), but still allow Academic Year selection if desired
+  const mapRequired = (type === "class");
+  ["lcFaculty","lcCourse","lcUnit","lcYear","lcSemester","lcUnitCode"].forEach(id=>{
+    const el = $(id);
+    if(!el) return;
+    el.closest("div").style.opacity = mapRequired ? "1" : "1";
+  });
 }
 $("lcType").addEventListener("change", updateCreateSessionUI);
 
 /* ===========================
-   CLASSES/MEETINGS: Lecturer create + view
+   GEO helpers
+=========================== */
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const toRad = (d)=> d * Math.PI/180;
+  const dLat = toRad(lat2-lat1);
+  const dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function getGeo(){
+  return new Promise((resolve, reject)=>{
+    if(!navigator.geolocation) return reject(new Error("Geolocation not supported"));
+    navigator.geolocation.getCurrentPosition(
+      (pos)=> resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy }),
+      (err)=> reject(err),
+      { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+    );
+  });
+}
+
+/* ===========================
+   CLASSES/MEETINGS: Lecturer create
 =========================== */
 $("createClassBtn").addEventListener("click", ()=>{
   const type = $("lcType").value;
@@ -1324,10 +1498,7 @@ $("createClassBtn").addEventListener("click", ()=>{
   }
 
   if(type==="class"){
-    if(!academicYear){
-      setAlert(msgEl,"Please select Academic Year.","danger");
-      return;
-    }
+    if(!academicYear){ setAlert(msgEl,"Please select Academic Year.","danger"); return; }
     if(!f || !c || !u || !y || !s){
       setAlert(msgEl,"Please select Faculty/Course/Unit/Study Year/Semester for classes.","danger");
       return;
@@ -1352,7 +1523,7 @@ $("createClassBtn").addEventListener("click", ()=>{
     lecturerId: lec.id,
     faculty: f || "",
     course: c || "",
-    unit: u || (type==="meeting" ? "Staff Meeting" : ""),
+    unit: type==="meeting" ? "Staff Meeting" : (u || ""),
     year: y || "",
     semester: s || "",
     venue: v,
@@ -1361,7 +1532,8 @@ $("createClassBtn").addEventListener("click", ()=>{
     lecturerName: lec.salutation + " " + lec.fullName,
     lecturerSignature: null,
     hodName: "",
-    hodSignature: null
+    hodSignature: null,
+    createdAt: Date.now()
   };
 
   DATA.classes.push(cls);
@@ -1374,8 +1546,12 @@ $("createClassBtn").addEventListener("click", ()=>{
   setAlert(msgEl, "Session created. Share this sign-in link:\n" + link, "success");
 });
 
+/* ===========================
+   Filters + pickers
+=========================== */
 function classFilterMatch(cls, filterValue){
   const v = (filterValue||"").toLowerCase();
+  if(!v) return true;
   return (
     (cls.unit||"").toLowerCase().includes(v) ||
     (cls.unitCode||"").toLowerCase().includes(v) ||
@@ -1394,12 +1570,13 @@ function setClassFilterOptions(selectId, classes, includeStatusHint){
   if(!sel) return;
   const old = sel.value;
 
-  const acYears = unique(classes.map(c=>c.academicYear).filter(Boolean));
-  const units = unique(classes.map(c=>c.unit).filter(Boolean));
-  const codes = unique(classes.map(c=>c.unitCode).filter(Boolean));
-  const courses = unique(classes.map(c=>c.course).filter(Boolean));
-  const statuses = unique(classes.map(c=>c.status).filter(Boolean));
-  const types = unique(classes.map(c=>c.type).filter(Boolean));
+  const items = [];
+  unique(classes.map(c=>c.type)).forEach(t=> items.push({label:`TYPE: ${t.toUpperCase()}`, value:t}));
+  unique(classes.map(c=>c.academicYear).filter(Boolean)).forEach(a=> items.push({label:`AY: ${a}`, value:a}));
+  unique(classes.map(c=>c.unitCode).filter(Boolean)).forEach(c=> items.push({label:`CODE: ${c}`, value:c}));
+  unique(classes.map(c=>c.unit).filter(Boolean)).forEach(u=> items.push({label:`UNIT: ${u}`, value:u}));
+  unique(classes.map(c=>c.course).filter(Boolean)).forEach(x=> items.push({label:`COURSE: ${x}`, value:x}));
+  if(includeStatusHint) unique(classes.map(c=>c.status)).forEach(s=> items.push({label:`STATUS: ${s.toUpperCase()}`, value:s}));
 
   sel.innerHTML = "";
   const o0 = document.createElement("option");
@@ -1407,71 +1584,12 @@ function setClassFilterOptions(selectId, classes, includeStatusHint){
   o0.textContent = "All Sessions";
   sel.appendChild(o0);
 
-  const grpT = document.createElement("optgroup");
-  grpT.label = "By Type";
-  types.forEach(t=>{
+  items.forEach(it=>{
     const o = document.createElement("option");
-    o.value = t;
-    o.textContent = t.toUpperCase();
-    grpT.appendChild(o);
+    o.value = it.value;
+    o.textContent = it.label;
+    sel.appendChild(o);
   });
-  sel.appendChild(grpT);
-
-  if(acYears.length){
-    const grpAY = document.createElement("optgroup");
-    grpAY.label = "By Academic Year";
-    acYears.forEach(x=>{
-      const o = document.createElement("option");
-      o.value = x;
-      o.textContent = x;
-      grpAY.appendChild(o);
-    });
-    sel.appendChild(grpAY);
-  }
-
-  if(codes.length){
-    const grpC = document.createElement("optgroup");
-    grpC.label = "By Unit Code";
-    codes.forEach(x=>{
-      const o = document.createElement("option");
-      o.value = x;
-      o.textContent = x;
-      grpC.appendChild(o);
-    });
-    sel.appendChild(grpC);
-  }
-
-  const grp1 = document.createElement("optgroup");
-  grp1.label = "By Unit";
-  units.forEach(u=>{
-    const o = document.createElement("option");
-    o.value = u;
-    o.textContent = u;
-    grp1.appendChild(o);
-  });
-  sel.appendChild(grp1);
-
-  const grp2 = document.createElement("optgroup");
-  grp2.label = "By Course";
-  courses.forEach(c=>{
-    const o = document.createElement("option");
-    o.value = c;
-    o.textContent = c;
-    grp2.appendChild(o);
-  });
-  sel.appendChild(grp2);
-
-  if(includeStatusHint){
-    const grp3 = document.createElement("optgroup");
-    grp3.label = "By Status";
-    statuses.forEach(s=>{
-      const o = document.createElement("option");
-      o.value = s;
-      o.textContent = s.toUpperCase();
-      grp3.appendChild(o);
-    });
-    sel.appendChild(grp3);
-  }
 
   if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
 
@@ -1481,32 +1599,536 @@ function setClassFilterOptions(selectId, classes, includeStatusHint){
   };
 }
 
-/* ===========================
-   (unchanged) renderLecturerClasses / renderAdminClasses / QR / Dialog
-   ... your existing code continues here ...
-   For brevity, everything is unchanged until EXPORT section below.
-=========================== */
+function refreshClassPickers(){
+  DATA = loadData();
+  const classes = DATA.classes.slice().sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+
+  // Filters
+  setClassFilterOptions("lecClassFilter", currentUser?.role==="lecturer" ? classes.filter(c=>c.lecturerId===currentUser.id) : [], true);
+  setClassFilterOptions("adminClassFilter", classes, true);
+
+  // Raw exports picker
+  const rawPick = $("rawClassPick");
+  if(rawPick){
+    rawPick.innerHTML = "";
+    const o0 = document.createElement("option");
+    o0.value = "";
+    o0.textContent = "Select Session";
+    rawPick.appendChild(o0);
+
+    classes.forEach(cls=>{
+      const o = document.createElement("option");
+      o.value = cls.id;
+      o.textContent = `${(cls.type==="meeting" ? "MEETING" : "CLASS")} · ${cls.academicYear||""} · ${cls.unitCode||""} · ${cls.unit||""} · ${formatDateTime(cls.dateTime)} · ${cls.status.toUpperCase()}`;
+      rawPick.appendChild(o);
+    });
+  }
+}
 
 /* ===========================
-   RAW attendance export (includes signatures)  ✅ UPDATED: ROLE REMOVED
+   Lecturer sessions table
 =========================== */
-function buildRawAttendanceRowsForClass(classId){
+function renderLecturerClasses(){
+  const wrapper = $("lecturerClassesTableWrapper");
+  DATA = loadData();
+  const lecId = currentUser?.id;
+  const filter = $("lecClassFilter")?.value || "";
+
+  const list = DATA.classes
+    .filter(c=>c.lecturerId===lecId)
+    .filter(c=>classFilterMatch(c, filter))
+    .sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+
+  if(!list.length){
+    wrapper.textContent = "No sessions yet.";
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Type</th><th>Academic Year</th><th>Unit Code</th><th>Unit/Meeting</th><th>Venue</th><th>Date/Time</th><th>Status</th><th>Actions</th>
+  </tr></thead><tbody>`;
+
+  list.forEach(cls=>{
+    const badge = `<span class="badge ${cls.status}">${cls.status.toUpperCase()}</span>`;
+    html += `<tr>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${cls.meetingMode.toUpperCase()}</span>` : "CLASS"}</td>
+      <td>${cls.academicYear || ""}</td>
+      <td>${cls.unitCode || ""}</td>
+      <td><b>${cls.unit || ""}</b><div class="small">${cls.course || ""} ${cls.faculty ? "· "+cls.faculty : ""}</div></td>
+      <td>${cls.venue || ""}</td>
+      <td>${formatDateTime(cls.dateTime)}</td>
+      <td>${badge}</td>
+      <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" data-act="view" data-id="${cls.id}">View</button>
+        <button class="btn btn-secondary" data-act="toggle" data-id="${cls.id}">${cls.status==="open"?"Close":"Open"}</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  wrapper.innerHTML = html;
+
+  wrapper.querySelectorAll("button[data-act]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const act = btn.getAttribute("data-act");
+      if(act==="view") openSessionModal(id);
+      if(act==="toggle") toggleSessionStatus(id);
+    });
+  });
+}
+
+/* ===========================
+   Admin sessions table
+=========================== */
+function renderAdminClasses(){
+  const wrapper = $("adminClassesTableWrapper");
+  DATA = loadData();
+  const filter = $("adminClassFilter")?.value || "";
+
+  const list = DATA.classes
+    .filter(c=>classFilterMatch(c, filter))
+    .sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+
+  if(!list.length){
+    wrapper.textContent = "No sessions created yet.";
+    return;
+  }
+
+  let html = `<table><thead><tr>
+    <th>Type</th><th>Academic Year</th><th>Unit Code</th><th>Unit/Meeting</th><th>Lecturer</th><th>Venue</th><th>Date/Time</th><th>Status</th><th>Actions</th>
+  </tr></thead><tbody>`;
+
+  list.forEach(cls=>{
+    const badge = `<span class="badge ${cls.status}">${cls.status.toUpperCase()}</span>`;
+    html += `<tr>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${cls.meetingMode.toUpperCase()}</span>` : "CLASS"}</td>
+      <td>${cls.academicYear || ""}</td>
+      <td>${cls.unitCode || ""}</td>
+      <td><b>${cls.unit || ""}</b><div class="small">${cls.course || ""} ${cls.faculty ? "· "+cls.faculty : ""}</div></td>
+      <td>${cls.lecturerName || ""}</td>
+      <td>${cls.venue || ""}</td>
+      <td>${formatDateTime(cls.dateTime)}</td>
+      <td>${badge}</td>
+      <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" data-act="view" data-id="${cls.id}">View</button>
+        <button class="btn btn-secondary" data-act="toggle" data-id="${cls.id}">${cls.status==="open"?"Close":"Open"}</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  wrapper.innerHTML = html;
+
+  wrapper.querySelectorAll("button[data-act]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const act = btn.getAttribute("data-act");
+      if(act==="view") openSessionModal(id);
+      if(act==="toggle") toggleSessionStatus(id);
+    });
+  });
+}
+
+function toggleSessionStatus(classId){
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls) return;
+  cls.status = (cls.status==="open") ? "closed" : "open";
+  saveData(DATA);
+  renderLecturerClasses();
+  renderAdminClasses();
+  refreshClassPickers();
+  if(!$("#sessionModal").classList.contains("hidden")) openSessionModal(classId, true);
+}
+
+/* ===========================
+   Session modal (QR + attendance + export + signatures)
+=========================== */
+let currentModalClassId = null;
+let sigPad = setupSignaturePad($("sigPad"));
+
+$("sessionModalCloseBtn").addEventListener("click", ()=>{
+  $("sessionModal").classList.add("hidden");
+  $("qrTarget").innerHTML = "";
+  currentModalClassId = null;
+});
+$("sessionModalPrintBtn").addEventListener("click", ()=> window.print());
+
+$("copyLinkBtn").addEventListener("click", async ()=>{
+  const link = $("sessionLinkText").textContent.trim();
+  try{
+    await navigator.clipboard.writeText(link);
+    alert("Link copied.");
+  }catch(e){
+    alert("Copy failed. Please manually copy the link.");
+  }
+});
+$("openLinkBtn").addEventListener("click", ()=>{
+  const link = $("sessionLinkText").textContent.trim();
+  window.open(link, "_blank");
+});
+
+$("toggleStatusBtn").addEventListener("click", ()=>{
+  if(!currentModalClassId) return;
+  toggleSessionStatus(currentModalClassId);
+});
+
+$("exportSessionPdfBtn").addEventListener("click", async ()=>{
+  if(!currentModalClassId) return;
+  const { cls, rows } = getClassAndRows(currentModalClassId);
+  await exportClassAttendancePdf(cls, rows);
+});
+$("exportSessionWordBtn").addEventListener("click", async ()=>{
+  if(!currentModalClassId) return;
+  const { cls, rows } = getClassAndRows(currentModalClassId);
+  await exportClassAttendanceWord(cls, rows);
+});
+$("exportSessionExcelBtn").addEventListener("click", async ()=>{
+  if(!currentModalClassId) return;
+  const { cls, rows } = getClassAndRows(currentModalClassId);
+  await exportClassAttendanceExcel(cls, rows);
+});
+$("exportSessionCsvBtn").addEventListener("click", ()=>{
+  if(!currentModalClassId) return;
+  const { cls, rows } = getClassAndRows(currentModalClassId);
+  exportRawAttendanceCsv(cls, rowsToRawRows(rows));
+});
+
+$("lecturerSignBtn").addEventListener("click", ()=>{
+  if(!currentModalClassId) return;
+  openSigModal("lecturer");
+});
+$("hodSignBtn").addEventListener("click", ()=>{
+  if(!currentModalClassId) return;
+  openSigModal("hod");
+});
+
+$("sigClearBtn").addEventListener("click", ()=> sigPad.clear());
+$("sigCancelBtn").addEventListener("click", ()=>{
+  $("sigModal").classList.add("hidden");
+  clearAlert($("sigMsg"));
+});
+let sigMode = "lecturer";
+function openSigModal(mode){
+  sigMode = mode;
+  sigPad.clear();
+  clearAlert($("sigMsg"));
+
+  $("hodNameWrap").classList.toggle("hidden", mode !== "hod");
+  $("sigModalTitle").textContent = (mode==="hod" ? "HOD Signature" : "Lecturer Signature");
+  if(mode==="hod"){
+    const cls = loadData().classes.find(c=>c.id===currentModalClassId);
+    $("hodNameInput").value = cls?.hodName || "";
+  }
+  $("sigModal").classList.remove("hidden");
+}
+
+$("sigSaveBtn").addEventListener("click", ()=>{
+  if(!currentModalClassId) return;
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===currentModalClassId);
+  if(!cls) return;
+
+  if(sigPad.isBlank()){
+    setAlert($("sigMsg"), "Please draw the signature first.", "danger");
+    return;
+  }
+  const dataUrl = sigPad.toDataUrl();
+
+  if(sigMode==="lecturer"){
+    cls.lecturerSignature = dataUrl;
+  } else {
+    const hodName = $("hodNameInput").value.trim();
+    if(!hodName){
+      setAlert($("sigMsg"), "Please enter HOD name.", "danger");
+      return;
+    }
+    cls.hodName = hodName;
+    cls.hodSignature = dataUrl;
+  }
+  saveData(DATA);
+  $("sigModal").classList.add("hidden");
+  openSessionModal(currentModalClassId, true);
+});
+
+function openSessionModal(classId, keepOpen=false){
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls) return;
+
+  currentModalClassId = classId;
+
+  // Admin-only HOD signature button
+  $("hodSignBtn").classList.toggle("hidden", !(currentUser && currentUser.role==="admin"));
+
+  // Title/meta
+  $("sessionModalTitle").textContent = `${cls.type==="meeting" ? "Staff Meeting" : "Class"} · ${cls.academicYear || ""} · ${cls.unitCode || ""} · ${cls.unit || ""}`;
+  $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${cls.status.toUpperCase()}`;
+
+  // Link + QR
+  const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(cls.id);
+  $("sessionLinkText").textContent = link;
+
+  $("qrTarget").innerHTML = "";
+  try{
+    new QRCode($("qrTarget"), { text: link, width: 130, height: 130 });
+  }catch(e){
+    $("qrTarget").innerHTML = "<div class='small'>QR failed to load</div>";
+  }
+
+  // Status button
+  $("toggleStatusBtn").textContent = (cls.status==="open") ? "Close Session" : "Open Session";
+
+  // Attendance table
+  const rows = buildAttendanceRowsForClass(cls.id);
+  $("sessionAttendanceMeta").textContent = `Total attendance: ${rows.length}. Signatures are embedded in exports (PDF/Word/Excel).`;
+
+  renderAttendanceTable("sessionAttendanceTable", rows, true);
+
+  $("sessionModal").classList.remove("hidden");
+}
+
+/* ===========================
+   Attendance table renderer
+=========================== */
+function renderAttendanceTable(tableId, rows, includeSigThumb){
+  const table = $(tableId);
+  if(!table) return;
+
+  if(!rows.length){
+    table.innerHTML = `<thead><tr><th>No data</th></tr></thead><tbody><tr><td>No attendance yet.</td></tr></tbody>`;
+    return;
+  }
+
+  // ✅ NO ROLE COLUMN
+  let head = `<thead><tr>
+    <th>#</th><th>ID</th><th>Surname</th><th>Middle</th><th>First</th>${includeSigThumb? "<th>Signature</th>": ""}<th>Timestamp</th>
+  </tr></thead>`;
+
+  let body = "<tbody>";
+  rows.forEach(r=>{
+    const sigCell = includeSigThumb
+      ? `<td>${r.SignatureDataURL ? `<img class="miniSig" src="${r.SignatureDataURL}" alt="sig">` : ""}</td>`
+      : "";
+    body += `<tr>
+      <td>${r["#"]}</td>
+      <td>${r.ID}</td>
+      <td>${r.Surname}</td>
+      <td>${r.Middle}</td>
+      <td>${r.First}</td>
+      ${sigCell}
+      <td>${r.Timestamp}</td>
+    </tr>`;
+  });
+  body += "</tbody>";
+  table.innerHTML = head + body;
+}
+
+function buildAttendanceRowsForClass(classId){
   DATA = loadData();
   const cls = DATA.classes.find(c=>c.id===classId) || {};
-  const rows = DATA.attendance
+  const items = DATA.attendance
     .filter(a=>a.classId===classId)
+    .sort((a,b)=> (a.createdAt||0)-(b.createdAt||0))
     .map((a,i)=>({
       "#": i+1,
-      ID: (a.role==="staff") ? (a.staffNo||"") : (a.admission||""),
+      ID: (cls.type==="meeting") ? (a.staffNo||"") : (a.admission||""),
       Surname: a.surname || "",
       Middle: a.middle || "",
       First: a.first || "",
       Timestamp: formatDateTime(a.createdAt),
       SignatureDataURL: a.signature || ""
     }));
-  return rows;
+  return items;
+}
+function getClassAndRows(classId){
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  const rows = buildAttendanceRowsForClass(classId);
+  return { cls, rows };
+}
+function rowsToRawRows(rows){
+  // same object shape as CSV exporter expects
+  return rows.map(r=>({
+    "#": r["#"],
+    ID: r.ID,
+    Surname: r.Surname,
+    Middle: r.Middle,
+    First: r.First,
+    Timestamp: r.Timestamp,
+    SignatureDataURL: r.SignatureDataURL
+  }));
 }
 
+/* ===========================
+   PARTICIPANT view (mode=student)
+=========================== */
+function getOrCreateDeviceId(){
+  const k = "jooust_device_id";
+  let v = localStorage.getItem(k);
+  if(!v){
+    v = uuid();
+    localStorage.setItem(k, v);
+  }
+  return v;
+}
+
+async function loadStudentMode(){
+  const classId = getQueryParam("classId");
+  if(!classId) return false;
+
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls){
+    showSection("studentSection");
+    setAlert($("studentClassInfo"), "Invalid session link (classId not found).", "danger");
+    $("studentFormWrapper").classList.add("hidden");
+    return true;
+  }
+
+  showSection("studentSection");
+  $("participantTitle").textContent = (cls.type==="meeting") ? "Staff Meeting Sign-In" : "Class Attendance Sign-In";
+
+  // show correct ID controls
+  $("staffNoRow").classList.toggle("hidden", cls.type !== "meeting");
+  $("idLabel").textContent = (cls.type==="meeting") ? "Staff No / PF No" : "Admission Number";
+  $("stAdmission").placeholder = (cls.type==="meeting") ? "Enter Staff No / PF No" : "Enter Admission Number";
+
+  // session info header
+  const meta = cls.type==="meeting"
+    ? `Meeting Mode: ${cls.meetingMode.toUpperCase()}
+Venue/Platform: ${cls.venue}
+Date/Time: ${formatDateTime(cls.dateTime)}
+Organizer: ${cls.lecturerName}
+Status: ${cls.status.toUpperCase()}`
+    : `Academic Year: ${cls.academicYear}
+Unit Code: ${cls.unitCode}
+Unit Name: ${cls.unit}
+Course: ${cls.course}
+Faculty: ${cls.faculty}
+Study Year/Semester: ${cls.year} / ${cls.semester}
+Venue: ${cls.venue}
+Date/Time: ${formatDateTime(cls.dateTime)}
+Lecturer: ${cls.lecturerName}
+Status: ${cls.status.toUpperCase()}`;
+
+  $("studentClassInfo").textContent = meta;
+  $("studentFormWrapper").classList.remove("hidden");
+
+  // closed session
+  if(cls.status !== "open"){
+    setAlert($("studentSubmitMsg"), "This session is CLOSED. Please contact the organizer/lecturer.", "danger");
+    $("stSubmit").disabled = true;
+  }else{
+    $("stSubmit").disabled = false;
+    clearAlert($("studentSubmitMsg"));
+  }
+
+  // duplicate check (device-based)
+  const deviceId = getOrCreateDeviceId();
+  const devKey = `submitted_${classId}_${deviceId}`;
+  if(localStorage.getItem(devKey)==="1"){
+    $("studentAlreadySubmitted").classList.remove("hidden");
+    $("studentFormWrapper").classList.add("hidden");
+  } else {
+    $("studentAlreadySubmitted").classList.add("hidden");
+  }
+
+  // GEO logic (only physical)
+  const requireGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
+  if(requireGeo){
+    $("studentGeoInfo").classList.remove("hidden");
+    $("studentGeoInfo").textContent = "This is a PHYSICAL session. Location verification is required (within 1km of JOOUST). When you submit, the system will verify your location.";
+  }else{
+    $("studentGeoInfo").classList.add("hidden");
+  }
+
+  return true;
+}
+
+$("stSubmit").addEventListener("click", async ()=>{
+  const classId = getQueryParam("classId");
+  if(!classId) return;
+  DATA = loadData();
+  const cls = DATA.classes.find(c=>c.id===classId);
+  if(!cls) return;
+
+  if(cls.status!=="open"){
+    setAlert($("studentSubmitMsg"), "Session is CLOSED.", "danger");
+    return;
+  }
+
+  const surname = $("stSurname").value.trim();
+  const middle = $("stMiddleName").value.trim();
+  const first = $("stFirstName").value.trim();
+
+  const isMeeting = cls.type==="meeting";
+  const idValue = isMeeting ? $("stStaffNo").value.trim() : $("stAdmission").value.trim();
+
+  if(!surname || !first || !idValue){
+    setAlert($("studentSubmitMsg"), "Please fill required fields (Surname, First Name, ID).", "danger");
+    return;
+  }
+  if(stSig.isBlank()){
+    setAlert($("studentSubmitMsg"), "Please add your signature.", "danger");
+    return;
+  }
+
+  // Prevent duplicate by ID within same class
+  const exists = DATA.attendance.some(a=>a.classId===classId && ((isMeeting && (a.staffNo||"")===idValue) || (!isMeeting && (a.admission||"")===idValue)));
+  if(exists){
+    setAlert($("studentSubmitMsg"), "This ID has already submitted attendance for this session.", "danger");
+    return;
+  }
+
+  // GEO enforce for physical
+  const requireGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
+  let geoObj = null;
+
+  if(requireGeo){
+    try{
+      const g = await getGeo();
+      const distKm = haversineKm(g.lat, g.lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
+      geoObj = { lat:g.lat, lon:g.lon, acc:g.acc, distKm: +distKm.toFixed(3) };
+
+      if(distKm > GEOFENCE_RADIUS_KM){
+        setAlert($("studentSubmitMsg"), `Location check failed. You are ${distKm.toFixed(2)} km away. Required within ${GEOFENCE_RADIUS_KM} km of JOOUST.`, "danger");
+        return;
+      }
+    }catch(e){
+      setAlert($("studentSubmitMsg"), "Location permission is required for physical sessions. Please enable GPS and try again.", "danger");
+      return;
+    }
+  }
+
+  const deviceId = getOrCreateDeviceId();
+  const record = {
+    id: uuid(),
+    classId,
+    surname, middle, first,
+    admission: isMeeting ? "" : idValue,
+    staffNo: isMeeting ? idValue : "",
+    signature: stSig.toDataUrl(),
+    createdAt: Date.now(),
+    geo: geoObj,
+    deviceId
+  };
+
+  DATA.attendance.push(record);
+  saveData(DATA);
+
+  // Mark device submitted
+  localStorage.setItem(`submitted_${classId}_${deviceId}`, "1");
+
+  setAlert($("studentSubmitMsg"), "Attendance submitted successfully. Thank you.", "success");
+  $("studentAlreadySubmitted").classList.remove("hidden");
+  $("studentFormWrapper").classList.add("hidden");
+});
+
+/* ===========================
+   RAW export (CSV/Excel) — ✅ ROLE REMOVED
+=========================== */
 function exportRawAttendanceCsv(cls, rows){
   if(!rows.length){
     alert("No attendance to export.");
@@ -1532,12 +2154,27 @@ function exportRawAttendanceCsv(cls, rows){
   URL.revokeObjectURL(url);
 }
 
+$("rawExportCsvBtn").addEventListener("click", ()=>{
+  const id = $("rawClassPick").value;
+  if(!id){ setAlert($("rawExportMsg"), "Pick a session first.", "danger"); return; }
+  const { cls, rows } = getClassAndRows(id);
+  exportRawAttendanceCsv(cls, rowsToRawRows(rows));
+  setAlert($("rawExportMsg"), "CSV exported successfully.", "success");
+});
+
+$("rawExportExcelBtn").addEventListener("click", ()=>{
+  const id = $("rawClassPick").value;
+  if(!id){ setAlert($("rawExportMsg"), "Pick a session first.", "danger"); return; }
+  const { cls, rows } = getClassAndRows(id);
+  exportClassAttendanceExcel(cls, rows); // Excel export already includes signature data URL
+  setAlert($("rawExportMsg"), "Excel exported successfully.", "success");
+});
+
 /* ===========================
-   Class/Meeting attendance exports (PDF/Word/Excel) WITH signatures ✅ UPDATED: ROLE REMOVED
+   OFFICIAL exports (PDF/Word/Excel) — ✅ ROLE REMOVED
 =========================== */
 async function exportClassAttendanceExcel(cls, rows){
-  const { okXlsx } = await ensureLibs();
-  if(!okXlsx){
+  if(!window.XLSX){
     alert("Excel library not loaded. Ensure internet is available, then refresh.");
     return;
   }
@@ -1578,8 +2215,7 @@ async function exportClassAttendanceExcel(cls, rows){
 }
 
 async function exportClassAttendancePdf(cls, rows){
-  const { okPdf } = await ensureLibs();
-  if(!okPdf){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
     alert("PDF library not loaded. Ensure internet is available, then refresh.");
     return;
   }
@@ -1631,9 +2267,8 @@ async function exportClassAttendancePdf(cls, rows){
     body,
     styles:{ fontSize: 8, cellPadding: 3, minCellHeight: 22 },
     headStyles:{ fillColor:[0,82,204], textColor:255 },
-    columnStyles: { 5: { cellWidth: 90 } }, // ✅ signature column index changed
+    columnStyles: { 5: { cellWidth: 90 } },
     didDrawCell: (data)=>{
-      // ✅ signature column index changed from 6 -> 5
       if(data.section === "body" && data.column.index === 5){
         const rowIndex = data.row.index;
         const sig = (rows[rowIndex] && rows[rowIndex].SignatureDataURL) ? rows[rowIndex].SignatureDataURL : "";
@@ -1706,7 +2341,7 @@ async function exportClassAttendanceWord(cls, rows){
     `
     : `
       <tr><td><b>Academic Year:</b> ${cls.academicYear || ""}</td><td><b>Unit Code:</b> ${cls.unitCode || ""}</td></tr>
-      <tr><td><b>Unit:</b> ${cls.unit}</td><td><b>Course:</b> ${cls.course}</td></tr>
+      <tr><td><b>Unit Name:</b> ${cls.unit}</td><td><b>Course:</b> ${cls.course}</td></tr>
       <tr><td><b>Faculty:</b> ${cls.faculty}</td><td><b>Study Year/Sem:</b> ${cls.year} / ${cls.semester}</td></tr>
       <tr><td><b>Venue:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
       <tr><td colspan="2"><b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
@@ -1770,6 +2405,258 @@ async function exportClassAttendanceWord(cls, rows){
   URL.revokeObjectURL(url);
 }
 
+/* ===========================
+   REPORTS (sessions list) + exports + Download ALL reports (Excel)
+=========================== */
+function filterClassesForReport({ ay, faculty, course, unit, year, semester, status, onlyLecturerId=null }){
+  DATA = loadData();
+  return DATA.classes.filter(c=>{
+    if(onlyLecturerId && c.lecturerId !== onlyLecturerId) return false;
+    if(ay && (c.academicYear||"") !== ay) return false;
+    if(faculty && (c.faculty||"") !== faculty) return false;
+    if(course && (c.course||"") !== course) return false;
+    if(unit && (c.unit||"") !== unit) return false;
+    if(year && (c.year||"") !== year) return false;
+    if(semester && (c.semester||"") !== semester) return false;
+    if(status && (c.status||"") !== status) return false;
+    return true;
+  }).sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+}
+
+function renderReportTable(tableElId, classes){
+  const table = $(tableElId);
+  if(!classes.length){
+    table.innerHTML = `<thead><tr><th>No results</th></tr></thead><tbody><tr><td>No sessions match your filters.</td></tr></tbody>`;
+    return;
+  }
+
+  let head = `<thead><tr>
+    <th>#</th><th>Type</th><th>Academic Year</th><th>Unit Code</th><th>Unit/Meeting</th><th>Lecturer</th><th>Venue</th><th>Date/Time</th><th>Status</th><th>Attendance</th>
+  </tr></thead>`;
+
+  let body = "<tbody>";
+  classes.forEach((c,i)=>{
+    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
+    body += `<tr>
+      <td>${i+1}</td>
+      <td>${c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS"}</td>
+      <td>${c.academicYear||""}</td>
+      <td>${c.unitCode||""}</td>
+      <td><b>${c.unit||""}</b></td>
+      <td>${c.lecturerName||""}</td>
+      <td>${c.venue||""}</td>
+      <td>${formatDateTime(c.dateTime)}</td>
+      <td><span class="badge ${c.status}">${c.status.toUpperCase()}</span></td>
+      <td><b>${count}</b></td>
+    </tr>`;
+  });
+  body += "</tbody>";
+  table.innerHTML = head + body;
+}
+
+let lastReport = { classes: [], scope:"admin" };
+
+$("generateReportBtn").addEventListener("click", ()=>{
+  const filters = {
+    ay: $("repAcademicYear").value,
+    faculty: $("repFaculty").value,
+    course: $("repCourse").value,
+    unit: $("repUnit").value,
+    year: $("repYear").value,
+    semester: $("repSemester").value,
+    status: $("repStatus").value
+  };
+  const classes = filterClassesForReport(filters);
+  lastReport = { classes, scope:"admin" };
+
+  $("reportArea").classList.remove("hidden");
+  $("reportMeta").textContent = `Matched sessions: ${classes.length}`;
+  renderReportTable("reportTable", classes);
+});
+
+$("generateReportLecturerBtn").addEventListener("click", ()=>{
+  const filters = {
+    ay: $("repAcademicYearL").value,
+    faculty: $("repFacultyL").value,
+    course: $("repCourseL").value,
+    unit: $("repUnitL").value,
+    year: $("repYearL").value,
+    semester: $("repSemesterL").value,
+    status: $("repStatusL").value
+  };
+  const classes = filterClassesForReport(filters, );
+  const mine = classes.filter(c=>c.lecturerId===currentUser?.id);
+  lastReport = { classes: mine, scope:"lecturer" };
+
+  $("reportAreaLecturer").classList.remove("hidden");
+  $("reportMetaL").textContent = `Matched my sessions: ${mine.length}`;
+  renderReportTable("reportTableL", mine);
+});
+
+// Export report list (not attendance sheet)
+function exportReportExcel(classes, filename){
+  if(!window.XLSX){
+    alert("Excel library not loaded.");
+    return;
+  }
+  const rows = classes.map((c,i)=>{
+    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
+    return {
+      "#": i+1,
+      Type: c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
+      AcademicYear: c.academicYear||"",
+      UnitCode: c.unitCode||"",
+      UnitName: c.unit||"",
+      Lecturer: c.lecturerName||"",
+      Venue: c.venue||"",
+      DateTime: formatDateTime(c.dateTime),
+      Status: (c.status||"").toUpperCase(),
+      AttendanceCount: count
+    };
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Sessions");
+  XLSX.writeFile(wb, filename);
+}
+
+function exportReportCsv(classes, filename){
+  if(!classes.length){
+    alert("No data.");
+    return;
+  }
+  const rows = classes.map((c,i)=>{
+    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
+    return [
+      i+1,
+      c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
+      c.academicYear||"",
+      c.unitCode||"",
+      c.unit||"",
+      c.lecturerName||"",
+      c.venue||"",
+      formatDateTime(c.dateTime),
+      (c.status||"").toUpperCase(),
+      count
+    ];
+  });
+  const header = ["#","Type","AcademicYear","UnitCode","UnitName","Lecturer","Venue","DateTime","Status","AttendanceCount"];
+  const csv = [header.join(","), ...rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(","))].join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+$("exportExcelBtn").addEventListener("click", ()=>{
+  exportReportExcel(lastReport.classes, "jooust-report-sessions.xlsx");
+});
+$("exportExcelBtnL").addEventListener("click", ()=>{
+  exportReportExcel(lastReport.classes, "jooust-my-report-sessions.xlsx");
+});
+
+$("exportPdfBtn").addEventListener("click", ()=>{
+  exportReportCsv(lastReport.classes, "jooust-report-sessions.csv"); // quick, reliable for frontend
+  alert("For the sessions-list report, CSV is generated quickly. For attendance sheet PDF, open a session then Download PDF.");
+});
+$("exportPdfBtnL").addEventListener("click", ()=>{
+  exportReportCsv(lastReport.classes, "jooust-my-report-sessions.csv");
+  alert("For the sessions-list report, CSV is generated quickly. For attendance sheet PDF, open a session then Download PDF.");
+});
+$("exportWordBtn").addEventListener("click", ()=>{
+  exportReportCsv(lastReport.classes, "jooust-report-sessions.csv");
+  alert("For sessions-list Word export, use CSV/Excel. Attendance sheet Word is available inside each session (View → Download Word).");
+});
+$("exportWordBtnL").addEventListener("click", ()=>{
+  exportReportCsv(lastReport.classes, "jooust-my-report-sessions.csv");
+  alert("For sessions-list Word export, use CSV/Excel. Attendance sheet Word is available inside each session (View → Download Word).");
+});
+
+// ✅ Download ALL Reports (Excel workbook with one sheet per session, includes attendance+signatures)
+$("downloadAllReportsBtn").addEventListener("click", ()=>{
+  if(!window.XLSX){
+    alert("Excel library not loaded.");
+    return;
+  }
+  const filters = {
+    ay: $("repAcademicYear").value,
+    faculty: $("repFaculty").value,
+    course: $("repCourse").value,
+    unit: $("repUnit").value,
+    year: $("repYear").value,
+    semester: $("repSemester").value,
+    status: $("repStatus").value
+  };
+  const classes = filterClassesForReport(filters);
+  if(!classes.length){
+    alert("No matching sessions to export.");
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // Summary sheet
+  const summary = classes.map((c,i)=>{
+    const count = loadData().attendance.filter(a=>a.classId===c.id).length;
+    return {
+      "#": i+1,
+      Type: c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
+      AcademicYear: c.academicYear||"",
+      UnitCode: c.unitCode||"",
+      UnitName: c.unit||"",
+      Lecturer: c.lecturerName||"",
+      Venue: c.venue||"",
+      DateTime: formatDateTime(c.dateTime),
+      Status: (c.status||"").toUpperCase(),
+      AttendanceCount: count
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), "Summary");
+
+  // One sheet per session (attendance)
+  classes.forEach((cls, idx)=>{
+    const rows = buildAttendanceRowsForClass(cls.id);
+    const sheetName = (`S${idx+1}_${(cls.unitCode||"").replace(/[^a-z0-9]/gi,"").slice(0,6)}_${(cls.type||"").slice(0,3)}`).slice(0,31);
+    const wsData = [
+      ["Type", (cls.type||"").toUpperCase()],
+      ["MeetingMode", cls.type==="meeting" ? (cls.meetingMode||"") : ""],
+      ["AcademicYear", cls.academicYear||""],
+      ["UnitCode", cls.unitCode||""],
+      ["UnitName", cls.unit||""],
+      ["Course", cls.course||""],
+      ["Faculty", cls.faculty||""],
+      ["StudyYear", cls.year||""],
+      ["Semester", cls.semester||""],
+      ["Venue/Platform", cls.venue||""],
+      ["DateTime", formatDateTime(cls.dateTime)],
+      ["Lecturer", cls.lecturerName||""],
+      ["Status", (cls.status||"").toUpperCase()],
+      [""],
+      ["#","ID","Surname","Middle","First","Timestamp","SignatureDataURL"]
+    ];
+    rows.forEach(r=>{
+      wsData.push([r["#"], r.ID, r.Surname, r.Middle, r.First, r.Timestamp, r.SignatureDataURL]);
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), sheetName);
+  });
+
+  XLSX.writeFile(wb, "jooust-all-session-reports.xlsx");
+});
+
+/* ===========================
+   Startup: student mode vs normal
+=========================== */
+(async ()=>{
+  const inStudent = await loadStudentMode();
+  if(inStudent) return;
+
+  // normal mode
+  showSection("loginSection");
+  refreshAllDropdowns();
+  refreshClassPickers();
+})();
 </script>
 </body>
 </html>
