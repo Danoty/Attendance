@@ -168,10 +168,10 @@
     </p>
 
     <div class="kpi-grid">
-      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions can enforce within 1km of JOOUST</div></div>
+      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions use the meeting location (auto from organizer GPS)</div></div>
       <div class="kpi"><div class="v">Online Meetings</div><div class="t">Staff can sign remotely for online meetings</div></div>
       <div class="kpi"><div class="v">Signatures</div><div class="t">Finger or mouse on phone/laptop</div></div>
-      <div class="kpi"><div class="v">Academic Year</div><div class="t">Filters + reports now include academic year (e.g. 2025/2026)</div></div>
+      <div class="kpi"><div class="v">Secure Roles</div><div class="t">Admin approval + change password + logout</div></div>
     </div>
   </div>
 
@@ -276,7 +276,7 @@
     </div>
 
     <div id="studentFormWrapper">
-      <div class="row" id="staffNoRow" class="hidden">
+      <div class="row hidden" id="staffNoRow">
         <div>
           <label for="stStaffNo">Staff No / PF No</label>
           <input id="stStaffNo" type="text" />
@@ -319,7 +319,7 @@
     </div>
 
     <div class="small" id="geoNote" style="margin-top:.8rem;">
-      Note: Physical sessions may ask for location access (GPS) to confirm you are within JOOUST (1km radius).
+      Note: Physical sessions may ask for location access (GPS) to confirm you are within the meeting location radius.
     </div>
   </section>
 
@@ -352,14 +352,13 @@
       <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
         <div>
           <h3 style="margin:.1rem 0;">Faculty / Course / Unit Mapping</h3>
-          <div class="small">Upload CSV to populate dropdown lists (Faculty, Course, Unit, Study Year, Semester, Academic Year).</div>
+          <div class="small">Upload CSV to populate dropdown lists (Faculty, Course, Unit, Year, Semester).</div>
         </div>
       </div>
 
       <div class="alert alert-info">
-        CSV Structure (recommended): <code>Faculty,Course,Unit,Year,Semester,AcademicYear</code><br />
-        Example AcademicYear: <code>2025/2026</code><br/>
-        <span class="small">Backward compatible: if you upload old 5-column CSV, AcademicYear will be set automatically.</span>
+        CSV Structure: <code>Faculty,Course,Unit,Year,Semester</code><br />
+        Each row represents one unit/class option.
       </div>
 
       <input type="file" id="facultyCsvInput" accept=".csv" />
@@ -384,7 +383,7 @@
         </div>
 
         <div style="min-width:260px;">
-          <label for="adminClassFilter">Quick Filter (Unit / Lecturer / Course / Meeting / Academic Year)</label>
+          <label for="adminClassFilter">Quick Filter (Unit / Lecturer / Course / Meeting)</label>
           <select id="adminClassFilter"></select>
         </div>
       </div>
@@ -401,10 +400,6 @@
 
       <div class="row">
         <div>
-          <label for="repAcademicYear">Academic Year</label>
-          <select id="repAcademicYear"></select>
-        </div>
-        <div>
           <label for="repFaculty">Faculty</label>
           <select id="repFaculty"></select>
         </div>
@@ -412,24 +407,21 @@
           <label for="repCourse">Course</label>
           <select id="repCourse"></select>
         </div>
-      </div>
-
-      <div class="row">
         <div>
           <label for="repUnit">Unit</label>
           <select id="repUnit"></select>
         </div>
+      </div>
+
+      <div class="row">
         <div>
-          <label for="repYear">Study Year</label>
+          <label for="repYear">Year</label>
           <select id="repYear"></select>
         </div>
         <div>
           <label for="repSemester">Semester</label>
           <select id="repSemester"></select>
         </div>
-      </div>
-
-      <div class="row">
         <div>
           <label for="repStatus">Status</label>
           <select id="repStatus">
@@ -522,10 +514,6 @@
 
       <div class="row">
         <div>
-          <label for="lcAcademicYear">Academic Year</label>
-          <select id="lcAcademicYear"></select>
-        </div>
-        <div>
           <label for="lcFaculty">Faculty</label>
           <select id="lcFaculty"></select>
         </div>
@@ -548,7 +536,7 @@
 
       <div class="row">
         <div>
-          <label for="lcYear">Study Year</label>
+          <label for="lcYear">Year</label>
           <select id="lcYear"></select>
         </div>
         <div>
@@ -597,16 +585,13 @@
       </p>
 
       <div class="row">
-        <div><label for="repAcademicYearL">Academic Year</label><select id="repAcademicYearL"></select></div>
         <div><label for="repFacultyL">Faculty</label><select id="repFacultyL"></select></div>
         <div><label for="repCourseL">Course</label><select id="repCourseL"></select></div>
-      </div>
-      <div class="row">
         <div><label for="repUnitL">Unit</label><select id="repUnitL"></select></div>
-        <div><label for="repYearL">Study Year</label><select id="repYearL"></select></div>
-        <div><label for="repSemesterL">Semester</label><select id="repSemesterL"></select></div>
       </div>
       <div class="row">
+        <div><label for="repYearL">Year</label><select id="repYearL"></select></div>
+        <div><label for="repSemesterL">Semester</label><select id="repSemesterL"></select></div>
         <div>
           <label for="repStatusL">Status</label>
           <select id="repStatusL">
@@ -672,25 +657,16 @@
 /* ===========================
    STORAGE + BASE DATA
 =========================== */
-const STORAGE_KEY = "jooust_attendance_data_v5_academic_year";
+const STORAGE_KEY = "jooust_attendance_data_v4";
 
-/* JOOUST Center (Approx) */
-const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 };
+// Default radius for geofence (km)
 const GEOFENCE_RADIUS_KM = 1.0;
 
-function getDefaultAcademicYear(){
-  // Kenya academic year format e.g. 2025/2026
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth()+1;
-  // if late in year, assume next cycle starts (simple heuristic)
-  const start = (m >= 9) ? y : (y-1);
-  return `${start}/${start+1}`;
-}
+// Fallback location if organizer refuses location permission (optional)
+const FALLBACK_CENTER = { lat: -0.0936, lon: 34.2809 }; // JOOUST fallback
 
 function baseData(){
   return {
-    version: 5,
     admins: [{ username:"admin", password:"admin123" }],
     lecturers: [],
     facultyConfig: [],
@@ -698,36 +674,6 @@ function baseData(){
     attendance: []   // mixed: student or staff
   };
 }
-
-function migrateData(d){
-  // Ensure required arrays exist
-  d.admins = d.admins || [{ username:"admin", password:"admin123" }];
-  d.lecturers = d.lecturers || [];
-  d.facultyConfig = d.facultyConfig || [];
-  d.classes = d.classes || [];
-  d.attendance = d.attendance || [];
-
-  // Add academicYear to facultyConfig if missing
-  const defAY = getDefaultAcademicYear();
-  d.facultyConfig = d.facultyConfig.map(r=>({
-    faculty: r.faculty || "",
-    course: r.course || "",
-    unit: r.unit || "",
-    year: r.year || "",
-    semester: r.semester || "",
-    academicYear: r.academicYear || r.academic_year || defAY
-  }));
-
-  // Add academicYear to classes if missing
-  d.classes = d.classes.map(c=>({
-    ...c,
-    academicYear: c.academicYear || c.academic_year || (c.type==="meeting" ? "" : defAY)
-  }));
-
-  d.version = 5;
-  return d;
-}
-
 function loadData(){
   const raw = localStorage.getItem(STORAGE_KEY);
   if(!raw){
@@ -735,15 +681,14 @@ function loadData(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(b));
     return b;
   }
-  try{
-    return migrateData(JSON.parse(raw));
-  } catch(e){
+  try{ return JSON.parse(raw); }
+  catch(e){
     const b = baseData();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(b));
     return b;
   }
 }
-function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(migrateData(d))); }
+function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 let DATA = loadData();
 
 let currentUser = null;
@@ -1138,33 +1083,19 @@ $("uploadFacultyCsvBtn").addEventListener("click", ()=>{
     const text = e.target.result || "";
     const lines = text.split(/\r?\n/).filter(l=>l.trim());
     const records = [];
-    const defAY = getDefaultAcademicYear();
-
     for(let i=0;i<lines.length;i++){
       const line = lines[i].trim();
       if(i===0 && line.toLowerCase().includes("faculty") && line.toLowerCase().includes("course") && line.toLowerCase().includes("unit")) continue;
 
       const parts = line.split(",").map(p=>p.trim());
-      // supported:
-      // 5 cols: Faculty,Course,Unit,Year,Semester
-      // 6 cols: Faculty,Course,Unit,Year,Semester,AcademicYear
       if(parts.length < 5) continue;
-
-      const faculty = parts[0] || "";
-      const course  = parts[1] || "";
-      const unit    = parts[2] || "";
-      const year    = parts[3] || "";
-      const semester= parts[4] || "";
-      const academicYear = (parts[5] && parts[5].trim()) ? parts[5].trim() : defAY;
-
+      const [faculty, course, unit, year, semester] = parts;
       if(!faculty || !course || !unit || !year || !semester) continue;
-      records.push({ faculty, course, unit, year, semester, academicYear });
+      records.push({ faculty, course, unit, year, semester });
     }
-
     DATA = loadData();
     DATA.facultyConfig = records;
     saveData(DATA);
-
     setAlert(msgEl, `Uploaded ${records.length} entries successfully.`, "success");
     renderFacultySummary();
     refreshAllDropdowns();
@@ -1192,15 +1123,13 @@ function renderFacultySummary(){
   }
   const total = DATA.facultyConfig.length;
   const faculties = [...new Set(DATA.facultyConfig.map(r=>r.faculty))];
-  const acYears = [...new Set(DATA.facultyConfig.map(r=>r.academicYear || ""))].filter(Boolean).sort();
   wrap.innerHTML = `<p class="muted" style="margin:.2rem 0 0;">
     Total entries: <b>${total}</b><br/>
-    Academic Years: <b>${acYears.join(", ") || "N/A"}</b><br/>
     Faculties: ${faculties.join(", ")}
   </p>`;
 }
 
-function unique(arr){ return [...new Set(arr)].filter(x=>x!=null && x!=="").sort((a,b)=>a.localeCompare(b)); }
+function unique(arr){ return [...new Set(arr)].sort((a,b)=>a.localeCompare(b)); }
 function setOptions(selectEl, values, placeholder="All / Select"){
   if(!selectEl) return;
   const cur = selectEl.value;
@@ -1224,28 +1153,22 @@ function getMapping(){ DATA = loadData(); return DATA.facultyConfig || []; }
 function refreshAllDropdowns(){
   const m = getMapping();
 
-  // report filters (admin)
-  setOptions($("repAcademicYear"), unique(m.map(x=>x.academicYear)), "All Academic Years");
   setOptions($("repFaculty"), unique(m.map(x=>x.faculty)), "All Faculties");
   setOptions($("repCourse"), unique(m.map(x=>x.course)), "All Courses");
   setOptions($("repUnit"), unique(m.map(x=>x.unit)), "All Units");
-  setOptions($("repYear"), unique(m.map(x=>x.year)), "All Study Years");
+  setOptions($("repYear"), unique(m.map(x=>x.year)), "All Years");
   setOptions($("repSemester"), unique(m.map(x=>x.semester)), "All Semesters");
 
-  // create session (lecturer)
-  setOptions($("lcAcademicYear"), unique(m.map(x=>x.academicYear)).length ? unique(m.map(x=>x.academicYear)) : [getDefaultAcademicYear()], "Select Academic Year");
   setOptions($("lcFaculty"), unique(m.map(x=>x.faculty)), "Select Faculty");
   setOptions($("lcCourse"), unique(m.map(x=>x.course)), "Select Course");
   setOptions($("lcUnit"), unique(m.map(x=>x.unit)), "Select Unit");
-  setOptions($("lcYear"), unique(m.map(x=>x.year)), "Select Study Year");
+  setOptions($("lcYear"), unique(m.map(x=>x.year)), "Select Year");
   setOptions($("lcSemester"), unique(m.map(x=>x.semester)), "Select Semester");
 
-  // report filters (lecturer)
-  setOptions($("repAcademicYearL"), unique(m.map(x=>x.academicYear)), "All Academic Years");
   setOptions($("repFacultyL"), unique(m.map(x=>x.faculty)), "All Faculties");
   setOptions($("repCourseL"), unique(m.map(x=>x.course)), "All Courses");
   setOptions($("repUnitL"), unique(m.map(x=>x.unit)), "All Units");
-  setOptions($("repYearL"), unique(m.map(x=>x.year)), "All Study Years");
+  setOptions($("repYearL"), unique(m.map(x=>x.year)), "All Years");
   setOptions($("repSemesterL"), unique(m.map(x=>x.semester)), "All Semesters");
 
   hookupCascadingCreateClass();
@@ -1253,42 +1176,31 @@ function refreshAllDropdowns(){
 
 function hookupCascadingCreateClass(){
   const m = getMapping();
-  const ay = $("lcAcademicYear"), f = $("lcFaculty"), c = $("lcCourse"), u = $("lcUnit"), y = $("lcYear"), s = $("lcSemester");
-  if(!ay || !f || !c || !u || !y || !s) return;
+  const f = $("lcFaculty"), c = $("lcCourse"), u = $("lcUnit"), y = $("lcYear"), s = $("lcSemester");
+  if(!f || !c || !u || !y || !s) return;
 
   function apply(){
-    const ayv = ay.value, fv = f.value, cv = c.value, uv = u.value, yv = y.value, sv = s.value;
+    const fv = f.value, cv = c.value, uv = u.value, yv = y.value, sv = s.value;
 
-    const m0 = ayv ? m.filter(r=>r.academicYear===ayv) : m;
-    setOptions(f, unique(m0.map(r=>r.faculty)), "Select Faculty");
-
-    const m1 = (ay.value && f.value) ? m.filter(r=>r.academicYear===ay.value && r.faculty===f.value) : (f.value ? m0.filter(r=>r.faculty===f.value) : m0);
+    const m1 = fv ? m.filter(r=>r.faculty===fv) : m;
     setOptions(c, unique(m1.map(r=>r.course)), "Select Course");
 
-    const m2 = (ay.value && f.value && c.value)
-      ? m.filter(r=>r.academicYear===ay.value && r.faculty===f.value && r.course===c.value)
-      : (c.value ? m1.filter(r=>r.course===c.value) : m1);
+    const m2 = (fv && c.value) ? m.filter(r=>r.faculty===fv && r.course===c.value) : (c.value ? m.filter(r=>r.course===c.value) : m1);
     setOptions(u, unique(m2.map(r=>r.unit)), "Select Unit");
 
-    const m3 = (ay.value && f.value && c.value && u.value)
-      ? m.filter(r=>r.academicYear===ay.value && r.faculty===f.value && r.course===c.value && r.unit===u.value)
-      : (u.value ? m2.filter(r=>r.unit===u.value) : m2);
-    setOptions(y, unique(m3.map(r=>r.year)), "Select Study Year");
+    const m3 = (fv && c.value && u.value) ? m.filter(r=>r.faculty===fv && r.course===c.value && r.unit===u.value) : m2;
+    setOptions(y, unique(m3.map(r=>r.year)), "Select Year");
 
-    const m4 = (ay.value && f.value && c.value && u.value && y.value)
-      ? m.filter(r=>r.academicYear===ay.value && r.faculty===f.value && r.course===c.value && r.unit===u.value && r.year===y.value)
-      : (y.value ? m3.filter(r=>r.year===y.value) : m3);
+    const m4 = (fv && c.value && u.value && y.value) ? m.filter(r=>r.faculty===fv && r.course===c.value && r.unit===u.value && r.year===y.value) : m3;
     setOptions(s, unique(m4.map(r=>r.semester)), "Select Semester");
 
-    if(ayv && [...ay.options].some(o=>o.value===ayv)) ay.value = ayv;
-    if(fv && [...f.options].some(o=>o.value===fv)) f.value = fv;
+    if(fv) f.value = fv;
     if(cv && [...c.options].some(o=>o.value===cv)) c.value = cv;
     if(uv && [...u.options].some(o=>o.value===uv)) u.value = uv;
     if(yv && [...y.options].some(o=>o.value===yv)) y.value = yv;
     if(sv && [...s.options].some(o=>o.value===sv)) s.value = sv;
   }
 
-  ay.onchange = apply;
   f.onchange = apply;
   c.onchange = apply;
   u.onchange = apply;
@@ -1307,20 +1219,34 @@ function updateCreateSessionUI(){
 $("lcType").addEventListener("change", updateCreateSessionUI);
 
 /* ===========================
+   Geo helpers (AUTO session center)
+=========================== */
+function getCurrentCoords(){
+  return new Promise((resolve, reject)=>{
+    if(!navigator.geolocation){
+      reject(new Error("Geolocation not supported on this device."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos)=> resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+      (err)=> reject(err),
+      { enableHighAccuracy:true, timeout: 15000, maximumAge: 0 }
+    );
+  });
+}
+
+/* ===========================
    CLASSES/MEETINGS: Lecturer create + view
 =========================== */
-$("createClassBtn").addEventListener("click", ()=>{
+$("createClassBtn").addEventListener("click", async ()=>{
   const type = $("lcType").value;
   const meetingMode = $("lcMeetingMode").value;
-
-  const academicYear = $("lcAcademicYear").value.trim();
   const f = $("lcFaculty").value.trim();
   const c = $("lcCourse").value.trim();
   const u = $("lcUnit").value.trim();
   const unitCode = $("lcUnitCode").value.trim();
   const y = $("lcYear").value.trim();
   const s = $("lcSemester").value.trim();
-
   const v = $("lcVenue").value.trim();
   const dt = $("lcDateTime").value;
   const msgEl = $("createClassMsg");
@@ -1334,14 +1260,10 @@ $("createClassBtn").addEventListener("click", ()=>{
     return;
   }
 
-  // For class: require mapping + unit code + academic year + academic fields
+  // For class: require mapping + unit code + academic fields
   if(type==="class"){
-    if(!academicYear){
-      setAlert(msgEl,"Please select Academic Year.","danger");
-      return;
-    }
     if(!f || !c || !u || !y || !s){
-      setAlert(msgEl,"Please select Faculty/Course/Unit/Study Year/Semester for classes.","danger");
+      setAlert(msgEl,"Please select Faculty/Course/Unit/Year/Semester for classes.","danger");
       return;
     }
     if(!unitCode){
@@ -1359,7 +1281,6 @@ $("createClassBtn").addEventListener("click", ()=>{
     id: classId,
     type, // "class" | "meeting"
     meetingMode: type==="meeting" ? meetingMode : "physical",
-    academicYear: type==="meeting" ? (academicYear || "") : academicYear,
     unitCode: unitCode || "",
     lecturerId: lec.id,
     faculty: f || "",
@@ -1373,8 +1294,33 @@ $("createClassBtn").addEventListener("click", ()=>{
     lecturerName: lec.salutation + " " + lec.fullName,
     lecturerSignature: null,
     hodName: "",
-    hodSignature: null
+    hodSignature: null,
+
+    // NEW: session-based geofence center (auto from organizer GPS on physical sessions)
+    geoCenterLat: null,
+    geoCenterLon: null,
+    geoRadiusKm: GEOFENCE_RADIUS_KM,
+    geoAccuracyM: null
   };
+
+  // Auto-pick geofence location from organizer GPS when PHYSICAL
+  const needsGeoCenter =
+    (type === "class") || (type === "meeting" && meetingMode === "physical");
+
+  if(needsGeoCenter){
+    try{
+      setAlert(msgEl,"Requesting GPS to set meeting location… Please allow Location permission.", "info");
+      const loc = await getCurrentCoords();
+      cls.geoCenterLat = loc.lat;
+      cls.geoCenterLon = loc.lon;
+      cls.geoAccuracyM = loc.accuracy;
+    } catch(e){
+      // fallback so system still works
+      cls.geoCenterLat = FALLBACK_CENTER.lat;
+      cls.geoCenterLon = FALLBACK_CENTER.lon;
+      cls.geoAccuracyM = null;
+    }
+  }
 
   DATA.classes.push(cls);
   saveData(DATA);
@@ -1383,30 +1329,30 @@ $("createClassBtn").addEventListener("click", ()=>{
   refreshClassPickers();
 
   const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
-  setAlert(msgEl, "Session created. Share this sign-in link:\n" + link, "success");
+  const geoLine = needsGeoCenter
+    ? `\nGeofence center set: ${cls.geoCenterLat?.toFixed?.(6)}, ${cls.geoCenterLon?.toFixed?.(6)} (Radius: ${cls.geoRadiusKm} km)`
+    : "";
+  setAlert(msgEl, "Session created. Share this sign-in link:\n" + link + geoLine, "success");
 });
 
 function classFilterMatch(cls, filterValue){
-  const v = (filterValue||"").toLowerCase();
+  const v = filterValue.toLowerCase();
   return (
     (cls.unit||"").toLowerCase().includes(v) ||
     (cls.unitCode||"").toLowerCase().includes(v) ||
     (cls.course||"").toLowerCase().includes(v) ||
     (cls.faculty||"").toLowerCase().includes(v) ||
-    (cls.academicYear||"").toLowerCase().includes(v) ||
     (cls.status||"").toLowerCase().includes(v) ||
     (cls.lecturerName||"").toLowerCase().includes(v) ||
     (cls.type||"").toLowerCase().includes(v) ||
     (cls.meetingMode||"").toLowerCase().includes(v)
   );
 }
-
 function setClassFilterOptions(selectId, classes, includeStatusHint){
   const sel = $(selectId);
   if(!sel) return;
   const old = sel.value;
 
-  const acYears = unique(classes.map(c=>c.academicYear).filter(Boolean));
   const units = unique(classes.map(c=>c.unit).filter(Boolean));
   const codes = unique(classes.map(c=>c.unitCode).filter(Boolean));
   const courses = unique(classes.map(c=>c.course).filter(Boolean));
@@ -1428,18 +1374,6 @@ function setClassFilterOptions(selectId, classes, includeStatusHint){
     grpT.appendChild(o);
   });
   sel.appendChild(grpT);
-
-  if(acYears.length){
-    const grpAY = document.createElement("optgroup");
-    grpAY.label = "By Academic Year";
-    acYears.forEach(x=>{
-      const o = document.createElement("option");
-      o.value = x;
-      o.textContent = x;
-      grpAY.appendChild(o);
-    });
-    sel.appendChild(grpAY);
-  }
 
   if(codes.length){
     const grpC = document.createElement("optgroup");
@@ -1523,8 +1457,8 @@ function renderLecturerClasses(){
       ? `<b>STAFF MEETING</b> <span class="chip">${(cls.meetingMode||"").toUpperCase()}</span>`
       : `<b>${cls.unitCode ? (cls.unitCode + " — ") : ""}${cls.unit}</b>`;
     const sub = cls.type==="meeting"
-      ? `<span class="small muted">Mode: ${(cls.meetingMode||"").toUpperCase()}</span>${cls.academicYear ? `<br><span class="small muted">Academic Year: ${cls.academicYear}</span>` : ""}`
-      : `<span class="small">${cls.course}</span><br><span class="small">${cls.faculty}</span><br><span class="small">${cls.year}, ${cls.semester}</span><br><span class="small muted">Academic Year: ${cls.academicYear || ""}</span>`;
+      ? `<span class="small muted">Mode: ${(cls.meetingMode||"").toUpperCase()}</span>`
+      : `<span class="small">${cls.course}</span><br><span class="small">${cls.faculty}</span><br><span class="small">${cls.year}, ${cls.semester}</span>`;
 
     html += `<tr>
       <td>${title}<br>${sub}</td>
@@ -1605,8 +1539,8 @@ function renderAdminClasses(){
       ? `<b>STAFF MEETING</b> <span class="chip">${(cls.meetingMode||"").toUpperCase()}</span>`
       : `<b>${cls.unitCode ? (cls.unitCode + " — ") : ""}${cls.unit}</b>`;
     const sub = cls.type==="meeting"
-      ? `<span class="small muted">Mode: ${(cls.meetingMode||"").toUpperCase()}</span>${cls.academicYear ? `<br><span class="small muted">Academic Year: ${cls.academicYear}</span>` : ""}`
-      : `<span class="small">${cls.course}</span><br><span class="small">${cls.faculty}</span><br><span class="small">${cls.year}, ${cls.semester}</span><br><span class="small muted">Academic Year: ${cls.academicYear || ""}</span>`;
+      ? `<span class="small muted">Mode: ${(cls.meetingMode||"").toUpperCase()}</span>`
+      : `<span class="small">${cls.course}</span><br><span class="small">${cls.faculty}</span><br><span class="small">${cls.year}, ${cls.semester}</span>`;
 
     html += `<tr>
       <td>${title}<br>${sub}</td>
@@ -1721,8 +1655,12 @@ function openClassDetailDialog(classId, callerRole){
 
   const sessionTitle = cls.type==="meeting" ? "Staff Meeting Attendance" : "Class Attendance";
   const metaLine = cls.type==="meeting"
-    ? `Mode: <b>${(cls.meetingMode||"").toUpperCase()}</b>${cls.academicYear ? ` · Academic Year: <b>${cls.academicYear}</b>` : ""}`
-    : `Academic Year: <b>${cls.academicYear || ""}</b> · Unit Code: <b>${cls.unitCode || ""}</b> · Unit: <b>${cls.unit || ""}</b>`;
+    ? `Mode: <b>${(cls.meetingMode||"").toUpperCase()}</b>`
+    : `Unit Code: <b>${cls.unitCode || ""}</b> · Unit: <b>${cls.unit || ""}</b>`;
+
+  const geoInfo = (cls.type==="meeting" && cls.meetingMode==="online")
+    ? `<div class="small muted">Geofence: <b>OFF</b> (Online meeting)</div>`
+    : `<div class="small muted">Geofence: <b>ON</b> · Radius: <b>${cls.geoRadiusKm || GEOFENCE_RADIUS_KM} km</b> · Center: <b>${(cls.geoCenterLat!=null?Number(cls.geoCenterLat).toFixed(5):"N/A")}, ${(cls.geoCenterLon!=null?Number(cls.geoCenterLon).toFixed(5):"N/A")}</b></div>`;
 
   card.innerHTML = `
     <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start;">
@@ -1731,9 +1669,10 @@ function openClassDetailDialog(classId, callerRole){
         <div class="muted">
           <b>${sessionTitle}</b><br/>
           ${metaLine}<br/>
-          ${cls.type==="meeting" ? "" : `Course: <b>${cls.course}</b> · Faculty: <b>${cls.faculty}</b> · Study Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>`}
+          ${cls.type==="meeting" ? "" : `Course: <b>${cls.course}</b> · Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>`}
           Venue/Platform: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
-          Lecturer: <b>${cls.lecturerName || ""}</b> · Status: <b>${(cls.status||"").toUpperCase()}</b>
+          Lecturer: <b>${cls.lecturerName || ""}</b> · Status: <b>${(cls.status||"").toUpperCase()}</b><br/>
+          ${geoInfo}
         </div>
       </div>
 
@@ -1762,7 +1701,6 @@ function openClassDetailDialog(classId, callerRole){
             <th>Surname</th>
             <th>Middle</th>
             <th>First</th>
-            <th>Signature</th>
             <th>Timestamp</th>
           </tr>
         </thead>
@@ -1774,7 +1712,6 @@ function openClassDetailDialog(classId, callerRole){
               <td>${a.surname||""}</td>
               <td>${a.middle||""}</td>
               <td>${a.first||""}</td>
-              <td>${a.signature ? `<img src="${a.signature}" style="height:28px;border-radius:8px;border:1px solid rgba(0,0,0,.12);" />` : ""}</td>
               <td>${formatDateTime(a.createdAt)}</td>
             </tr>
           `).join("")}
@@ -1883,7 +1820,7 @@ function openClassDetailDialog(classId, callerRole){
 }
 
 /* ===========================
-   Geofence
+   Geofence math + per-session check
 =========================== */
 function haversineKm(lat1, lon1, lat2, lon2){
   const R = 6371;
@@ -1895,7 +1832,16 @@ function haversineKm(lat1, lon1, lat2, lon2){
     Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.sqrt(a));
 }
-async function checkGeofence(){
+
+async function checkGeofenceForSession(cls){
+  const centerLat = Number(cls.geoCenterLat);
+  const centerLon = Number(cls.geoCenterLon);
+  const radiusKm  = Number(cls.geoRadiusKm || GEOFENCE_RADIUS_KM);
+
+  if(!isFinite(centerLat) || !isFinite(centerLon)){
+    return { ok:false, reason:"Geofence center not set for this session. Ask organizer to recreate session with GPS enabled." };
+  }
+
   return new Promise((resolve)=>{
     if(!navigator.geolocation){
       resolve({ ok:false, reason:"Geolocation not supported on this device." });
@@ -1904,8 +1850,8 @@ async function checkGeofence(){
     navigator.geolocation.getCurrentPosition(
       (pos)=>{
         const { latitude, longitude } = pos.coords;
-        const dist = haversineKm(latitude, longitude, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
-        resolve({ ok: dist <= GEOFENCE_RADIUS_KM, distKm: dist });
+        const dist = haversineKm(latitude, longitude, centerLat, centerLon);
+        resolve({ ok: dist <= radiusKm, distKm: dist, radiusKm });
       },
       ()=>{
         resolve({ ok:false, reason: "Location access denied/unavailable. Please allow GPS permission." });
@@ -1945,19 +1891,21 @@ function setupStudentView(){
   $("idLabel").textContent = isMeeting ? "National ID (optional)" : "Admission Number";
   $("stAdmission").placeholder = isMeeting ? "Optional" : "";
 
-  $("geoNote").textContent = (isMeeting && cls.meetingMode==="online")
+  const needsGeo = (!isMeeting) || (isMeeting && cls.meetingMode==="physical");
+
+  $("geoNote").textContent = (!needsGeo)
     ? "Note: This is an ONLINE meeting. Location (GPS) is not required."
-    : "Note: Physical sessions may ask for location access (GPS) to confirm you are within JOOUST (1km radius).";
+    : "Note: This is a PHYSICAL session. You must allow GPS and be within the allowed radius of the meeting location.";
 
   infoEl.innerHTML = isMeeting
     ? `
-      <b>STAFF MEETING</b> — Mode: <b>${(cls.meetingMode||"").toUpperCase()}</b>${cls.academicYear ? ` · Academic Year: <b>${cls.academicYear}</b>` : ""}<br/>
+      <b>STAFF MEETING</b> — Mode: <b>${(cls.meetingMode||"").toUpperCase()}</b><br/>
       Venue/Platform: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
       Organizer: <b>${cls.lecturerName || "N/A"}</b>
     `
     : `
       <b>${cls.unitCode ? (cls.unitCode + " — ") : ""}${cls.unit}</b> — ${cls.course}<br/>
-      Academic Year: <b>${cls.academicYear || ""}</b> · Faculty: <b>${cls.faculty}</b> · Study Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>
+      Faculty: <b>${cls.faculty}</b> · Year: <b>${cls.year}</b> · Semester: <b>${cls.semester}</b><br/>
       Venue: <b>${cls.venue}</b> · Date/Time: <b>${formatDateTime(cls.dateTime)}</b><br/>
       Lecturer: <b>${cls.lecturerName || "N/A"}</b>
     `;
@@ -1997,21 +1945,19 @@ function setupStudentView(){
       return;
     }
 
-    const needsGeo = (!isMeeting) || (isMeeting && cls.meetingMode==="physical");
-
     const geoEl = $("studentGeoInfo");
     if(needsGeo){
-      const geo = await checkGeofence();
+      const geo = await checkGeofenceForSession(cls);
       geoEl.classList.remove("hidden");
 
       if(!geo.ok){
         setAlert(geoEl, geo.distKm != null
-          ? `You are ${geo.distKm.toFixed(2)} km away. You must be within ${GEOFENCE_RADIUS_KM} km of JOOUST to sign attendance.`
+          ? `You are ${geo.distKm.toFixed(2)} km away. You must be within ${geo.radiusKm} km of the meeting location to sign attendance.`
           : (geo.reason || "Location check failed."), "danger");
-        setAlert(msgEl,"Attendance blocked by location rule (1km).","danger");
+        setAlert(msgEl,"Attendance blocked by location rule.","danger");
         return;
       } else {
-        setAlert(geoEl, `Location verified: ${geo.distKm.toFixed(2)} km from JOOUST (Allowed).`, "success");
+        setAlert(geoEl, `Location verified: ${geo.distKm.toFixed(2)} km from meeting location (Allowed).`, "success");
       }
     } else {
       geoEl.classList.add("hidden");
@@ -2057,12 +2003,11 @@ function setupStudentView(){
 /* ===========================
    REPORTING (Admin + Lecturer)
 =========================== */
-function buildReportRows({ academicYear, faculty, course, unit, year, semester, status, lecturerOnlyId=null }){
+function buildReportRows({ faculty, course, unit, year, semester, status, lecturerOnlyId=null }){
   DATA = loadData();
 
   const filteredClasses = DATA.classes.filter(cls=>{
     if(lecturerOnlyId && cls.lecturerId !== lecturerOnlyId) return false;
-    if(academicYear && (cls.academicYear||"") !== academicYear) return false;
     if(faculty && cls.faculty !== faculty) return false;
     if(course && cls.course !== course) return false;
     if(unit && cls.unit !== unit) return false;
@@ -2079,7 +2024,6 @@ function buildReportRows({ academicYear, faculty, course, unit, year, semester, 
       classId: cls.id,
       type: cls.type || "class",
       meetingMode: cls.meetingMode || "",
-      academicYear: cls.academicYear || "",
       unitCode: cls.unitCode || "",
       faculty: cls.faculty,
       course: cls.course,
@@ -2107,7 +2051,7 @@ function renderReportTable(rows, tableEl){
   let html = `
     <thead>
       <tr>
-        <th>#</th><th>Type</th><th>Academic Year</th><th>Unit Code</th><th>Faculty</th><th>Course</th><th>Unit/Meeting</th><th>Study Year</th><th>Sem</th>
+        <th>#</th><th>Type</th><th>Unit Code</th><th>Faculty</th><th>Course</th><th>Unit/Meeting</th><th>Year</th><th>Sem</th>
         <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Count</th><th>Status</th>
       </tr>
     </thead>
@@ -2118,7 +2062,6 @@ function renderReportTable(rows, tableEl){
       <tr>
         <td>${i+1}</td>
         <td>${(r.type||"").toUpperCase()}${r.type==="meeting" ? (" ("+(r.meetingMode||"")+")") : ""}</td>
-        <td>${r.academicYear || ""}</td>
         <td>${r.unitCode || ""}</td>
         <td>${r.faculty||""}</td>
         <td>${r.course||""}</td>
@@ -2139,7 +2082,6 @@ function renderReportTable(rows, tableEl){
 
 $("generateReportBtn").addEventListener("click", ()=>{
   const rows = buildReportRows({
-    academicYear: $("repAcademicYear").value,
     faculty: $("repFaculty").value,
     course: $("repCourse").value,
     unit: $("repUnit").value,
@@ -2156,7 +2098,6 @@ $("generateReportBtn").addEventListener("click", ()=>{
 $("generateReportLecturerBtn").addEventListener("click", ()=>{
   if(!currentUser || currentUser.role!=="lecturer") return;
   const rows = buildReportRows({
-    academicYear: $("repAcademicYearL").value,
     faculty: $("repFacultyL").value,
     course: $("repCourseL").value,
     unit: $("repUnitL").value,
@@ -2200,7 +2141,6 @@ async function exportToPdfReport(rows, title){
   const body = rows.map((r,i)=>[
     i+1,
     (r.type||"").toUpperCase() + (r.type==="meeting" ? (" ("+(r.meetingMode||"")+")") : ""),
-    r.academicYear || "",
     r.unitCode || "",
     r.faculty || "",
     r.course || "",
@@ -2216,7 +2156,7 @@ async function exportToPdfReport(rows, title){
 
   doc.autoTable({
     startY: 92,
-    head:[["#","Type","Academic Year","Unit Code","Faculty","Course","Unit/Meeting","Study Year","Sem","Venue","Date/Time","Lecturer","Count","Status"]],
+    head:[["#","Type","Unit Code","Faculty","Course","Unit/Meeting","Year","Sem","Venue","Date/Time","Lecturer","Count","Status"]],
     body,
     styles:{ fontSize: 8, cellPadding: 3 },
     headStyles:{ fillColor:[0,82,204], textColor:255 }
@@ -2235,7 +2175,6 @@ function exportToWordReport(rows, title){
     <tr>
       <td>${i+1}</td>
       <td>${(r.type||"").toUpperCase()}${r.type==="meeting" ? " ("+(r.meetingMode||"")+")" : ""}</td>
-      <td>${r.academicYear||""}</td>
       <td>${r.unitCode||""}</td>
       <td>${r.faculty||""}</td>
       <td>${r.course||""}</td>
@@ -2269,11 +2208,11 @@ function exportToWordReport(rows, title){
     <table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:11px;">
       <thead>
         <tr style="background:#eff6ff;color:#1d4ed8;font-weight:700;">
-          <th>#</th><th>Type</th><th>Academic Year</th><th>Unit Code</th><th>Faculty</th><th>Course</th><th>Unit/Meeting</th><th>Study Year</th><th>Sem</th>
+          <th>#</th><th>Type</th><th>Unit Code</th><th>Faculty</th><th>Course</th><th>Unit/Meeting</th><th>Year</th><th>Sem</th>
           <th>Venue</th><th>Date/Time</th><th>Lecturer</th><th>Count</th><th>Status</th>
         </tr>
       </thead>
-      <tbody>${tableRows || "<tr><td colspan='14'>No records.</td></tr>"}</tbody>
+      <tbody>${tableRows || "<tr><td colspan='13'>No records.</td></tr>"}</tbody>
     </table>
     <p style="margin-top:14px;font-size:11px;color:#555;">
       System created by <b>Gerotech</b> — <b>Dan Otieno</b>.
@@ -2297,13 +2236,12 @@ async function exportToExcelReport(rows, filename="jooust-attendance-report.xlsx
   }
 
   const wsData = [[
-    "#","Type","Academic Year","Unit Code","Faculty","Course","Unit/Meeting","Study Year","Semester","Venue","Date/Time","Lecturer","Count","Status"
+    "#","Type","Unit Code","Faculty","Course","Unit/Meeting","Year","Semester","Venue","Date/Time","Lecturer","Count","Status"
   ]];
   rows.forEach((r,i)=>{
     wsData.push([
       i+1,
       (r.type||"").toUpperCase() + (r.type==="meeting" ? (" ("+(r.meetingMode||"")+")") : ""),
-      r.academicYear||"",
       r.unitCode||"",
       r.faculty||"",
       r.course||"",
@@ -2378,7 +2316,7 @@ function exportRawAttendanceCsv(cls, rows){
   }
   const header = Object.keys(rows[0]);
   const csv = [
-    ["JOOUST Attendance (Raw)", `${cls.type||""}`, `${cls.academicYear||""}`, `${cls.unitCode||""}`, `${cls.unit||""}`, `${cls.course||""}`, `${cls.faculty||""}`].join(","),
+    ["JOOUST Attendance (Raw)", `${cls.type||""}`, `${cls.unitCode||""}`, `${cls.unit||""}`, `${cls.course||""}`, `${cls.faculty||""}`].join(","),
     "",
     header.join(","),
     ...rows.map(r=> header.map(h=>{
@@ -2414,12 +2352,11 @@ async function exportClassAttendanceExcel(cls, rows){
     [""],
     ["Type", (cls.type||"").toUpperCase()],
     ["Meeting Mode", cls.type==="meeting" ? (cls.meetingMode||"") : ""],
-    ["Academic Year", cls.academicYear || ""],
     ["Unit Code", cls.unitCode || ""],
     ["Unit/Meeting", cls.unit || ""],
     ["Course", cls.course || ""],
     ["Faculty", cls.faculty || ""],
-    ["Study Year", cls.year || ""],
+    ["Year", cls.year || ""],
     ["Semester", cls.semester || ""],
     ["Venue/Platform", cls.venue || ""],
     ["Date/Time", formatDateTime(cls.dateTime)],
@@ -2464,24 +2401,22 @@ async function exportClassAttendancePdf(cls, rows){
   doc.setTextColor(71,85,105);
   const metaY = 82;
   doc.text(`Type: ${(cls.type||"").toUpperCase()}${cls.type==="meeting" ? (" ("+(cls.meetingMode||"")+")") : ""}`, margin, metaY);
-  doc.text(`Academic Year: ${cls.academicYear || ""}`, margin, metaY+14);
-  doc.text(`Unit Code: ${cls.unitCode || ""}`, margin, metaY+28);
-  doc.text(`Unit/Meeting: ${cls.unit || ""}`, margin, metaY+42);
-
+  doc.text(`Unit Code: ${cls.unitCode || ""}`, margin, metaY+14);
+  doc.text(`Unit/Meeting: ${cls.unit || ""}`, margin, metaY+28);
   if(cls.type!=="meeting"){
-    doc.text(`Course: ${cls.course}`, margin, metaY+56);
-    doc.text(`Faculty: ${cls.faculty}`, margin, metaY+70);
-    doc.text(`Study Year/Sem: ${cls.year} / ${cls.semester}`, margin, metaY+84);
-    doc.text(`Venue: ${cls.venue}`, margin, metaY+98);
-    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+112);
-    doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin, metaY+126);
+    doc.text(`Course: ${cls.course}`, margin, metaY+42);
+    doc.text(`Faculty: ${cls.faculty}`, margin, metaY+56);
+    doc.text(`Year/Sem: ${cls.year} / ${cls.semester}`, margin, metaY+70);
+    doc.text(`Venue: ${cls.venue}`, margin, metaY+84);
+    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+98);
+    doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin, metaY+112);
   } else {
-    doc.text(`Venue/Platform: ${cls.venue}`, margin, metaY+56);
-    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+70);
-    doc.text(`Organizer: ${cls.lecturerName || ""}`, margin, metaY+84);
+    doc.text(`Venue/Platform: ${cls.venue}`, margin, metaY+42);
+    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+56);
+    doc.text(`Organizer: ${cls.lecturerName || ""}`, margin, metaY+70);
   }
 
-  const startY = cls.type==="meeting" ? (metaY + 105) : (metaY + 150);
+  const startY = cls.type==="meeting" ? (metaY + 95) : (metaY + 135);
 
   const body = rows.map(r=>[
     r["#"], r.Role, r.ID, r.Surname, r.Middle, r.First, "", r.Timestamp
@@ -2561,16 +2496,14 @@ async function exportClassAttendanceWord(cls, rows){
 
   const metaBlock = cls.type==="meeting"
     ? `
-      <tr><td><b>Type:</b> STAFF MEETING (${(cls.meetingMode||"").toUpperCase()})</td><td><b>Academic Year:</b> ${cls.academicYear || ""}</td></tr>
-      <tr><td><b>Venue/Platform:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
-      <tr><td colspan="2"><b>Organizer:</b> ${cls.lecturerName || ""}</td></tr>
+      <tr><td><b>Type:</b> STAFF MEETING (${(cls.meetingMode||"").toUpperCase()})</td><td><b>Venue/Platform:</b> ${cls.venue}</td></tr>
+      <tr><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td><td><b>Organizer:</b> ${cls.lecturerName || ""}</td></tr>
     `
     : `
-      <tr><td><b>Academic Year:</b> ${cls.academicYear || ""}</td><td><b>Unit Code:</b> ${cls.unitCode || ""}</td></tr>
-      <tr><td><b>Unit:</b> ${cls.unit}</td><td><b>Course:</b> ${cls.course}</td></tr>
-      <tr><td><b>Faculty:</b> ${cls.faculty}</td><td><b>Study Year/Sem:</b> ${cls.year} / ${cls.semester}</td></tr>
-      <tr><td><b>Venue:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
-      <tr><td colspan="2"><b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
+      <tr><td><b>Unit Code:</b> ${cls.unitCode || ""}</td><td><b>Unit:</b> ${cls.unit}</td></tr>
+      <tr><td><b>Course:</b> ${cls.course}</td><td><b>Faculty:</b> ${cls.faculty}</td></tr>
+      <tr><td><b>Year/Sem:</b> ${cls.year} / ${cls.semester}</td><td><b>Venue:</b> ${cls.venue}</td></tr>
+      <tr><td colspan="2"><b>Date/Time:</b> ${formatDateTime(cls.dateTime)} · <b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
     `;
 
   const html = `
@@ -2651,10 +2584,9 @@ function refreshClassPickers(){
       all.forEach(cls=>{
         const o = document.createElement("option");
         o.value = cls.id;
-        const ay = cls.academicYear ? ` · ${cls.academicYear}` : "";
         const label = cls.type==="meeting"
-          ? `STAFF MEETING${ay} · ${formatDateTime(cls.dateTime)} · (${cls.status}) · ${cls.meetingMode}`
-          : `${(cls.unitCode||"")} ${cls.unit}${ay} · ${formatDateTime(cls.dateTime)} · (${cls.status})`;
+          ? `STAFF MEETING · ${formatDateTime(cls.dateTime)} · (${cls.status}) · ${cls.meetingMode}`
+          : `${(cls.unitCode||"")} ${cls.unit} · ${formatDateTime(cls.dateTime)} · (${cls.status})`;
         o.textContent = label;
         sel.appendChild(o);
       });
@@ -2705,9 +2637,6 @@ document.querySelectorAll("[data-admin-tab]").forEach(btn=>{
    INIT
 =========================== */
 window.addEventListener("load", async ()=>{
-  DATA = loadData();
-  saveData(DATA); // persist migration
-
   loadLogoAsDataUrl();
   setupStudentView();
 
