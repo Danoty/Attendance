@@ -192,6 +192,9 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- ✅ Charts (Student % + Graphs) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -511,6 +514,82 @@
         <div id="reportMeta" class="muted" style="margin-top:.6rem;"></div>
         <table id="reportTable"></table>
       </div>
+
+      <!-- ✅ NEW: Student Report (percentage + chart) -->
+      <hr style="margin:1.2rem 0;border:none;border-top:1px solid #e5e7eb;"/>
+
+      <h3 style="margin:.1rem 0 .25rem;">Student Report (With % + Chart)</h3>
+      <div class="muted" style="margin-bottom:.8rem;">
+        Generate an individual student attendance report for a particular period (date range) and get attendance percentage + chart.
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="stuReportIdType">ID Type</label>
+          <select id="stuReportIdType">
+            <option value="admission">Admission No (Class)</option>
+            <option value="staffNo">Staff No (Meeting)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="stuReportId">Student/Staff ID</label>
+          <input id="stuReportId" type="text" placeholder="e.g. BIT/1234/2024 or PF12345" />
+        </div>
+
+        <div>
+          <label for="stuReportFrom">From</label>
+          <input id="stuReportFrom" type="date" />
+        </div>
+
+        <div>
+          <label for="stuReportTo">To</label>
+          <input id="stuReportTo" type="date" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="stuReportGrouping">Chart Grouping</label>
+          <select id="stuReportGrouping">
+            <option value="day">By Day</option>
+            <option value="week">By Week</option>
+            <option value="unit">By Unit</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="stuReportOnlyOpenClosed">Include Sessions</label>
+          <select id="stuReportOnlyOpenClosed">
+            <option value="">Open + Closed</option>
+            <option value="open">Open only</option>
+            <option value="closed">Closed only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="generateStudentReportBtn">Generate Student Report</button>
+      </div>
+
+      <div id="studentReportMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+
+      <div id="studentReportArea" class="hidden" style="margin-top:1rem;">
+        <div class="kpi-grid" style="margin-top:.2rem;">
+          <div class="kpi"><div class="v" id="srTotalSessions">0</div><div class="t">Total sessions in period</div></div>
+          <div class="kpi"><div class="v" id="srAttendedSessions">0</div><div class="t">Attended sessions</div></div>
+          <div class="kpi"><div class="v" id="srPercent">0%</div><div class="t">Attendance percentage</div></div>
+        </div>
+
+        <div class="card" style="margin-top:1rem;">
+          <h4 style="margin:.1rem 0 .6rem;">Attendance Chart</h4>
+          <canvas id="studentReportChart" style="width:100%;max-height:340px;"></canvas>
+        </div>
+
+        <h4 style="margin:1rem 0 .35rem;">Sessions Breakdown</h4>
+        <table id="studentReportTable"></table>
+      </div>
+      <!-- /Student report -->
     </section>
 
     <!-- Raw exports -->
@@ -921,38 +1000,6 @@ let currentUser = null;
 let jooustLogoDataUrl = null;
 
 function $(id){ return document.getElementById(id); }
-
-/* ===========================
-   SECURITY + CSV HELPERS
-=========================== */
-function escapeHtml(s = "") {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-// Prevent Excel/CSV formula injection
-function safeForCsv(v) {
-  const s = String(v ?? "");
-  return /^[=+\-@]/.test(s) ? "'" + s : s;
-}
-// CSV parser that supports quoted commas
-function parseCsvLine(line) {
-  const out = [];
-  let cur = "", inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; continue; }
-    if (ch === '"') { inQ = !inQ; continue; }
-    if (ch === "," && !inQ) { out.push(cur.trim()); cur = ""; continue; }
-    cur += ch;
-  }
-  out.push(cur.trim());
-  return out;
-}
-
 function showSection(id){
   ["loginSection","lecturerRegistrationSection","adminDashboard","lecturerDashboard","studentSection"].forEach(sid=>{
     const el = $(sid); if(!el) return;
@@ -969,6 +1016,15 @@ function setAlert(el, msg, type="info"){
   else el.classList.add("alert-info");
 }
 function clearAlert(el){ el.classList.add("hidden"); }
+
+function escapeHtml(str){
+  return String(str ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
 
 function formatDateTime(dt){
   if(!dt) return "";
@@ -1072,13 +1128,9 @@ function setupSignaturePad(canvas, opts={}){
     clear: ()=> ctx.clearRect(0,0, canvas.width, canvas.height),
     toDataUrl: ()=> canvas.toDataURL("image/png"),
     isBlank: ()=> {
-      const ctx2 = canvas.getContext("2d");
-      const img = ctx2.getImageData(0, 0, canvas.width, canvas.height);
-      const data = img.data;
-      for (let i = 3; i < data.length; i += 4) {
-        if (data[i] !== 0) return false; // alpha channel
-      }
-      return true;
+      const tmp = document.createElement("canvas");
+      tmp.width = canvas.width; tmp.height = canvas.height;
+      return tmp.toDataURL() === canvas.toDataURL();
     }
   };
 }
@@ -1109,7 +1161,7 @@ function updateTopBar(){
   } else {
     const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
     const name = lec ? `${lec.salutation} ${lec.fullName}` : currentUser.username;
-    summary.innerHTML = `Logged in as <b>Lecturer</b> · <b>${escapeHtml(name)}</b>`;
+    summary.innerHTML = `Logged in as <b>Lecturer</b> · <b>${name}</b>`;
   }
 }
 $("logoutBtn").addEventListener("click", ()=>{
@@ -1331,7 +1383,7 @@ $("uploadFacultyCsvBtn").addEventListener("click", ()=>{
       const line = lines[i].trim();
       if(i===0 && line.toLowerCase().includes("faculty") && line.toLowerCase().includes("course") && line.toLowerCase().includes("unit")) continue;
 
-      const parts = parseCsvLine(line);
+      const parts = line.split(",").map(p=>p.trim());
       if(parts.length < 5) continue;
 
       const faculty = parts[0] || "";
@@ -1375,13 +1427,12 @@ function renderFacultySummary(){
     return;
   }
   const total = DATA.facultyConfig.length;
-  const faculties = unique(DATA.facultyConfig.map(r=>r.faculty)).map(escapeHtml);
-  const acYears = unique(DATA.facultyConfig.map(r=>r.academicYear || "")).map(escapeHtml);
-
+  const faculties = unique(DATA.facultyConfig.map(r=>r.faculty));
+  const acYears = unique(DATA.facultyConfig.map(r=>r.academicYear || ""));
   wrap.innerHTML = `<p class="muted" style="margin:.2rem 0 0;">
     Total entries: <b>${total}</b><br/>
-    Academic Years: <b>${acYears.join(", ") || "N/A"}</b><br/>
-    Faculties: ${faculties.join(", ")}
+    Academic Years: <b>${escapeHtml(acYears.join(", ") || "N/A")}</b><br/>
+    Faculties: ${escapeHtml(faculties.join(", "))}
   </p>`;
 }
 
@@ -1524,13 +1575,6 @@ $("createClassBtn").addEventListener("click", ()=>{
     return;
   }
 
-  DATA = loadData();
-
-  if(type==="class" && (!DATA.facultyConfig || !DATA.facultyConfig.length)){
-    setAlert(msgEl,"Admin must upload Faculty/Course/Unit mappings first (CSV).","danger");
-    return;
-  }
-
   if(type==="class"){
     if(!academicYear){ setAlert(msgEl,"Please select Academic Year.","danger"); return; }
     if(!f || !c || !u || !y || !s){
@@ -1543,6 +1587,7 @@ $("createClassBtn").addEventListener("click", ()=>{
     }
   }
 
+  DATA = loadData();
   const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
   if(!lec){ setAlert(msgEl,"Lecturer not found.","danger"); return; }
 
@@ -1682,7 +1727,7 @@ function renderLecturerClasses(){
   list.forEach(cls=>{
     const badge = `<span class="badge ${cls.status}">${(cls.status||"").toUpperCase()}</span>`;
     html += `<tr>
-      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${escapeHtml((cls.meetingMode||"").toUpperCase())}</span>` : "CLASS"}</td>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${(cls.meetingMode||"").toUpperCase()}</span>` : "CLASS"}</td>
       <td>${escapeHtml(cls.academicYear || "")}</td>
       <td>${escapeHtml(cls.unitCode || "")}</td>
       <td><b>${escapeHtml(cls.unit || "")}</b><div class="small">${escapeHtml(cls.course || "")} ${cls.faculty ? "· "+escapeHtml(cls.faculty) : ""}</div></td>
@@ -1733,7 +1778,7 @@ function renderAdminClasses(){
   list.forEach(cls=>{
     const badge = `<span class="badge ${cls.status}">${(cls.status||"").toUpperCase()}</span>`;
     html += `<tr>
-      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${escapeHtml((cls.meetingMode||"").toUpperCase())}</span>` : "CLASS"}</td>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${(cls.meetingMode||"").toUpperCase()}</span>` : "CLASS"}</td>
       <td>${escapeHtml(cls.academicYear || "")}</td>
       <td>${escapeHtml(cls.unitCode || "")}</td>
       <td><b>${escapeHtml(cls.unit || "")}</b><div class="small">${escapeHtml(cls.course || "")} ${cls.faculty ? "· "+escapeHtml(cls.faculty) : ""}</div></td>
@@ -1888,7 +1933,7 @@ function openSessionModal(classId){
   $("hodSignBtn").classList.toggle("hidden", !(currentUser && currentUser.role==="admin"));
 
   $("sessionModalTitle").textContent = `${cls.type==="meeting" ? "Staff Meeting" : "Class"} · ${cls.academicYear || ""} · ${cls.unitCode || ""} · ${cls.unit || ""}`;
-  $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${String(cls.status||"").toUpperCase()}`;
+  $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${(cls.status||"").toUpperCase()}`;
 
   const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(cls.id);
   $("sessionLinkText").textContent = link;
@@ -2016,11 +2061,11 @@ async function loadStudentMode(){
   $("stAdmission").placeholder = "Enter Admission Number";
 
   const meta = isMeeting
-    ? `Meeting Mode: ${String(cls.meetingMode||"").toUpperCase()}
+    ? `Meeting Mode: ${(cls.meetingMode||"").toUpperCase()}
 Venue/Platform: ${cls.venue}
 Date/Time: ${formatDateTime(cls.dateTime)}
 Organizer: ${cls.lecturerName}
-Status: ${String(cls.status||"").toUpperCase()}`
+Status: ${(cls.status||"").toUpperCase()}`
     : `Academic Year: ${cls.academicYear}
 Unit Code: ${cls.unitCode}
 Unit Name: ${cls.unit}
@@ -2030,7 +2075,7 @@ Study Year/Semester: ${cls.year} / ${cls.semester}
 Venue: ${cls.venue}
 Date/Time: ${formatDateTime(cls.dateTime)}
 Lecturer: ${cls.lecturerName}
-Status: ${String(cls.status||"").toUpperCase()}`;
+Status: ${(cls.status||"").toUpperCase()}`;
 
   $("studentClassInfo").textContent = meta;
   $("studentFormWrapper").classList.remove("hidden");
@@ -2053,11 +2098,14 @@ Status: ${String(cls.status||"").toUpperCase()}`;
   }
 
   const requireGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
+  let geoNoteEl = $("geoNote");
   if(requireGeo){
     $("studentGeoInfo").classList.remove("hidden");
     $("studentGeoInfo").textContent = "This is a PHYSICAL session. Location verification is required (within 1km of JOOUST). When you submit, the system will verify your location.";
+    if(geoNoteEl) geoNoteEl.classList.remove("hidden");
   }else{
     $("studentGeoInfo").classList.add("hidden");
+    if(geoNoteEl) geoNoteEl.classList.add("hidden");
   }
 
   return true;
@@ -2104,16 +2152,10 @@ $("stSubmit").addEventListener("click", async ()=>{
     try{
       const g = await getGeo();
       const distKm = haversineKm(g.lat, g.lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
-
-      const allowedKm = (g.acc && g.acc > 150) ? (GEOFENCE_RADIUS_KM + 0.3) : GEOFENCE_RADIUS_KM;
-
       geoObj = { lat:g.lat, lon:g.lon, acc:g.acc, distKm: +distKm.toFixed(3) };
 
-      if(distKm > allowedKm){
-        setAlert($("studentSubmitMsg"),
-          `Location check failed. You are ${distKm.toFixed(2)} km away (GPS accuracy ~${Math.round(g.acc)}m).\nRequired within ${allowedKm.toFixed(1)} km of JOOUST.`,
-          "danger"
-        );
+      if(distKm > GEOFENCE_RADIUS_KM){
+        setAlert($("studentSubmitMsg"), `Location check failed. You are ${distKm.toFixed(2)} km away. Required within ${GEOFENCE_RADIUS_KM} km of JOOUST.`, "danger");
         return;
       }
     }catch(e){
@@ -2155,11 +2197,11 @@ function exportRawAttendanceCsv(cls, rows){
   }
   const header = Object.keys(rows[0]);
   const csv = [
-    ["JOOUST Attendance (Raw)", safeForCsv(`${cls.type||""}`), safeForCsv(`${cls.academicYear||""}`), safeForCsv(`${cls.unitCode||""}`), safeForCsv(`${cls.unit||""}`), safeForCsv(`${cls.course||""}`), safeForCsv(`${cls.faculty||""}`)].join(","),
+    ["JOOUST Attendance (Raw)", `${cls.type||""}`, `${cls.academicYear||""}`, `${cls.unitCode||""}`, `${cls.unit||""}`, `${cls.course||""}`, `${cls.faculty||""}`].join(","),
     "",
     header.join(","),
     ...rows.map(r=> header.map(h=>{
-      const val = safeForCsv(r[h] ?? "").toString().replaceAll('"','""');
+      const val = (r[h] ?? "").toString().replaceAll('"','""');
       return `"${val}"`;
     }).join(","))
   ].join("\n");
@@ -2335,7 +2377,7 @@ async function exportClassAttendanceWord(cls, rows){
     const sig = r.SignatureDataURL ? `<img src="${r.SignatureDataURL}" style="height:32px;border:1px solid #ddd;border-radius:8px;" />` : "";
     return `
       <tr>
-        <td>${escapeHtml(r["#"])}</td>
+        <td>${r["#"]}</td>
         <td>${escapeHtml(r.ID)}</td>
         <td>${escapeHtml(r.Surname)}</td>
         <td>${escapeHtml(r.Middle)}</td>
@@ -2351,15 +2393,15 @@ async function exportClassAttendanceWord(cls, rows){
 
   const metaBlock = cls.type==="meeting"
     ? `
-      <tr><td><b>Type:</b> STAFF MEETING (${escapeHtml(String(cls.meetingMode||"").toUpperCase())})</td><td><b>Academic Year:</b> ${escapeHtml(cls.academicYear || "")}</td></tr>
-      <tr><td><b>Venue/Platform:</b> ${escapeHtml(cls.venue || "")}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
+      <tr><td><b>Type:</b> STAFF MEETING (${escapeHtml((cls.meetingMode||"").toUpperCase())})</td><td><b>Academic Year:</b> ${escapeHtml(cls.academicYear || "")}</td></tr>
+      <tr><td><b>Venue/Platform:</b> ${escapeHtml(cls.venue)}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
       <tr><td colspan="2"><b>Organizer:</b> ${escapeHtml(cls.lecturerName || "")}</td></tr>
     `
     : `
       <tr><td><b>Academic Year:</b> ${escapeHtml(cls.academicYear || "")}</td><td><b>Unit Code:</b> ${escapeHtml(cls.unitCode || "")}</td></tr>
-      <tr><td><b>Unit Name:</b> ${escapeHtml(cls.unit || "")}</td><td><b>Course:</b> ${escapeHtml(cls.course || "")}</td></tr>
-      <tr><td><b>Faculty:</b> ${escapeHtml(cls.faculty || "")}</td><td><b>Study Year/Sem:</b> ${escapeHtml(cls.year || "")} / ${escapeHtml(cls.semester || "")}</td></tr>
-      <tr><td><b>Venue:</b> ${escapeHtml(cls.venue || "")}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
+      <tr><td><b>Unit Name:</b> ${escapeHtml(cls.unit)}</td><td><b>Course:</b> ${escapeHtml(cls.course)}</td></tr>
+      <tr><td><b>Faculty:</b> ${escapeHtml(cls.faculty)}</td><td><b>Study Year/Sem:</b> ${escapeHtml(cls.year)} / ${escapeHtml(cls.semester)}</td></tr>
+      <tr><td><b>Venue:</b> ${escapeHtml(cls.venue)}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
       <tr><td colspan="2"><b>Lecturer:</b> ${escapeHtml(cls.lecturerName || "")}</td></tr>
     `;
 
@@ -2459,14 +2501,14 @@ function renderReportTable(tableElId, classes){
     const count = counts.get(c.id) || 0;
     body += `<tr>
       <td>${i+1}</td>
-      <td>${escapeHtml(c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS")}</td>
+      <td>${c.type==="meeting" ? `MEETING (${escapeHtml(c.meetingMode||"")})` : "CLASS"}</td>
       <td>${escapeHtml(c.academicYear||"")}</td>
       <td>${escapeHtml(c.unitCode||"")}</td>
       <td><b>${escapeHtml(c.unit||"")}</b></td>
       <td>${escapeHtml(c.lecturerName||"")}</td>
       <td>${escapeHtml(c.venue||"")}</td>
       <td>${escapeHtml(formatDateTime(c.dateTime))}</td>
-      <td><span class="badge ${c.status}">${escapeHtml(String(c.status||"").toUpperCase())}</span></td>
+      <td><span class="badge ${c.status}">${escapeHtml((c.status||"").toUpperCase())}</span></td>
       <td><b>${count}</b></td>
     </tr>`;
   });
@@ -2562,14 +2604,7 @@ function exportReportCsv(classes, filename){
     counts.get(c.id)||0
   ]);
   const header = ["#","Type","AcademicYear","UnitCode","UnitName","Lecturer","Venue","DateTime","Status","AttendanceCount"];
-  const csv = [
-    header.join(","),
-    ...rows.map(r=>r.map(x=>{
-      const val = safeForCsv(x).toString().replaceAll('"','""');
-      return `"${val}"`;
-    }).join(","))
-  ].join("\n");
-
+  const csv = [header.join(","), ...rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(","))].join("\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -2579,65 +2614,24 @@ function exportReportCsv(classes, filename){
   URL.revokeObjectURL(url);
 }
 
-/* REAL PDF for Sessions List */
-function exportSessionsListPdf(classes, filename="jooust-sessions-report.pdf"){
-  if(!(window.jspdf && window.jspdf.jsPDF)){
-    alert("PDF library not loaded.");
-    return;
-  }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF("p","pt","a4");
-  const margin = 40;
-
-  doc.setFontSize(14);
-  doc.setTextColor(0,82,204);
-  doc.text("JOOUST Sessions Report", margin, 40);
-
-  doc.setFontSize(10);
-  doc.setTextColor(71,85,105);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 58);
-
-  const d = loadData();
-  const counts = new Map();
-  d.attendance.forEach(a => counts.set(a.classId, (counts.get(a.classId)||0)+1));
-
-  const body = classes.map((c,i)=>[
-    i+1,
-    c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
-    c.academicYear||"",
-    c.unitCode||"",
-    c.unit||"",
-    c.lecturerName||"",
-    c.venue||"",
-    formatDateTime(c.dateTime),
-    (c.status||"").toUpperCase(),
-    String(counts.get(c.id)||0)
-  ]);
-
-  doc.autoTable({
-    startY: 80,
-    head: [[ "#","Type","AY","Code","Unit/Meeting","Lecturer","Venue","Date/Time","Status","Count" ]],
-    body,
-    styles:{ fontSize: 8, cellPadding: 3 },
-    headStyles:{ fillColor:[0,82,204], textColor:255 }
-  });
-
-  doc.save(filename);
-}
-
 $("exportExcelBtn").addEventListener("click", ()=> exportReportExcel(lastReport.classes, "jooust-report-sessions.xlsx"));
 $("exportExcelBtnL").addEventListener("click", ()=> exportReportExcel(lastReport.classes, "jooust-my-report-sessions.xlsx"));
 
-$("exportPdfBtn").addEventListener("click", ()=> exportSessionsListPdf(lastReport.classes, "jooust-report-sessions.pdf"));
-$("exportPdfBtnL").addEventListener("click", ()=> exportSessionsListPdf(lastReport.classes, "jooust-my-report-sessions.pdf"));
-
+$("exportPdfBtn").addEventListener("click", ()=>{
+  exportReportCsv(lastReport.classes, "jooust-report-sessions.csv");
+  alert("For the sessions-list report, CSV is generated quickly. For attendance sheet PDF, open a session then Download PDF.");
+});
+$("exportPdfBtnL").addEventListener("click", ()=>{
+  exportReportCsv(lastReport.classes, "jooust-my-report-sessions.csv");
+  alert("For the sessions-list report, CSV is generated quickly. For attendance sheet PDF, open a session then Download PDF.");
+});
 $("exportWordBtn").addEventListener("click", ()=>{
   exportReportCsv(lastReport.classes, "jooust-report-sessions.csv");
-  alert("Sessions list Word: use CSV/Excel. Attendance Word is inside each session (View → Download Word).");
+  alert("For sessions-list Word export, use CSV/Excel. Attendance sheet Word is available inside each session (View → Download Word).");
 });
 $("exportWordBtnL").addEventListener("click", ()=>{
   exportReportCsv(lastReport.classes, "jooust-my-report-sessions.csv");
-  alert("Sessions list Word: use CSV/Excel. Attendance Word is inside each session (View → Download Word).");
+  alert("For sessions-list Word export, use CSV/Excel. Attendance sheet Word is available inside each session (View → Download Word).");
 });
 
 // Download ALL Reports (Excel workbook)
@@ -2708,6 +2702,215 @@ $("downloadAllReportsBtn").addEventListener("click", ()=>{
   });
 
   XLSX.writeFile(wb, "jooust-all-session-reports.xlsx");
+});
+
+/* ===========================
+   ✅ STUDENT % REPORT + CHART
+=========================== */
+let studentChartInstance = null;
+
+function toDateOnly(tsOrIso){
+  const d = new Date(tsOrIso);
+  if (isNaN(d)) return null;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function withinRange(d, fromD, toD){
+  if(!d) return false;
+  const t = d.getTime();
+  if(fromD && t < fromD.getTime()) return false;
+  if(toD && t > toD.getTime()) return false;
+  return true;
+}
+
+function weekKey(dateObj){
+  const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,"0")}`;
+}
+
+function safePct(attended, total){
+  if(!total) return 0;
+  return Math.round((attended / total) * 1000) / 10; // 1 decimal
+}
+
+function buildStudentReportRows(classesInRange, attendanceRecords, idType, idValue){
+  const attendedSet = new Set();
+  attendanceRecords.forEach(a=>{
+    if(idType==="admission" && (a.admission||"").trim()===idValue) attendedSet.add(a.classId);
+    if(idType==="staffNo" && (a.staffNo||"").trim()===idValue) attendedSet.add(a.classId);
+  });
+
+  const rows = classesInRange
+    .sort((a,b)=> new Date(a.dateTime) - new Date(b.dateTime))
+    .map((cls, idx)=>({
+      "#": idx+1,
+      Type: cls.type==="meeting" ? `MEETING (${(cls.meetingMode||"").toUpperCase()})` : "CLASS",
+      AcademicYear: cls.academicYear || "",
+      UnitCode: cls.unitCode || "",
+      UnitOrMeeting: cls.unit || "",
+      Course: cls.course || "",
+      Faculty: cls.faculty || "",
+      Venue: cls.venue || "",
+      DateTime: formatDateTime(cls.dateTime),
+      Status: (cls.status||"").toUpperCase(),
+      Attended: attendedSet.has(cls.id) ? "YES" : "NO"
+    }));
+
+  return { rows, attendedSet };
+}
+
+function renderStudentReportTable(rows){
+  const table = $("studentReportTable");
+  if(!rows.length){
+    table.innerHTML = `<thead><tr><th>No results</th></tr></thead>
+                       <tbody><tr><td>No sessions found in this period.</td></tr></tbody>`;
+    return;
+  }
+
+  const head = `<thead><tr>
+    <th>#</th><th>Type</th><th>AY</th><th>Code</th><th>Unit/Meeting</th><th>Venue</th><th>Date/Time</th><th>Status</th><th>Attended</th>
+  </tr></thead>`;
+
+  const body = `<tbody>` + rows.map(r=>`
+    <tr>
+      <td>${escapeHtml(r["#"])}</td>
+      <td>${escapeHtml(r.Type)}</td>
+      <td>${escapeHtml(r.AcademicYear)}</td>
+      <td>${escapeHtml(r.UnitCode)}</td>
+      <td><b>${escapeHtml(r.UnitOrMeeting)}</b></td>
+      <td>${escapeHtml(r.Venue)}</td>
+      <td>${escapeHtml(r.DateTime)}</td>
+      <td>${escapeHtml(r.Status)}</td>
+      <td><span class="chip ${r.Attended==="YES"?"green":"red"}">${escapeHtml(r.Attended)}</span></td>
+    </tr>
+  `).join("") + `</tbody>`;
+
+  table.innerHTML = head + body;
+}
+
+function buildStudentChartData(classesInRange, attendedSet, grouping){
+  const bucket = new Map();
+
+  classesInRange.forEach(cls=>{
+    const d = toDateOnly(cls.dateTime);
+    if(!d) return;
+
+    let key = "";
+    if(grouping==="day") key = d.toISOString().slice(0,10);
+    else if(grouping==="week") key = weekKey(d);
+    else if(grouping==="unit") key = (cls.unitCode ? `${cls.unitCode} - ${cls.unit}` : (cls.unit||"UNKNOWN"));
+
+    const cur = bucket.get(key) || { total:0, attended:0 };
+    cur.total += 1;
+    if(attendedSet.has(cls.id)) cur.attended += 1;
+    bucket.set(key, cur);
+  });
+
+  let labels = Array.from(bucket.keys());
+  if(grouping==="day"){
+    labels.sort((a,b)=> new Date(a) - new Date(b));
+  }else{
+    labels.sort((a,b)=> a.localeCompare(b));
+  }
+
+  const attendedVals = labels.map(l=> bucket.get(l).attended);
+  const totalVals = labels.map(l=> bucket.get(l).total);
+
+  return { labels, attendedVals, totalVals };
+}
+
+function renderStudentChart(chartData, idLabel){
+  const canvas = $("studentReportChart");
+  if(!canvas) return;
+
+  if(studentChartInstance){
+    studentChartInstance.destroy();
+    studentChartInstance = null;
+  }
+
+  if(!window.Chart){
+    setAlert($("studentReportMsg"), "Chart.js not loaded. Ensure internet then refresh.", "danger");
+    return;
+  }
+
+  studentChartInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: chartData.labels,
+      datasets: [
+        { label: `Attended (${idLabel})`, data: chartData.attendedVals },
+        { label: "Total Sessions", data: chartData.totalVals }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+}
+
+$("generateStudentReportBtn")?.addEventListener("click", ()=>{
+  const msgEl = $("studentReportMsg");
+  clearAlert(msgEl);
+
+  const idType = $("stuReportIdType").value;
+  const idValue = $("stuReportId").value.trim();
+
+  const fromVal = $("stuReportFrom").value;
+  const toVal = $("stuReportTo").value;
+  const grouping = $("stuReportGrouping").value;
+  const statusFilter = $("stuReportOnlyOpenClosed").value;
+
+  if(!idValue){
+    setAlert(msgEl, "Enter Student/Staff ID first.", "danger");
+    return;
+  }
+
+  const fromD = fromVal ? new Date(fromVal+"T00:00:00") : null;
+  const toD = toVal ? new Date(toVal+"T23:59:59") : null;
+
+  DATA = loadData();
+
+  let sessions = DATA.classes.slice();
+  sessions = (idType==="admission") ? sessions.filter(c=>c.type==="class") : sessions.filter(c=>c.type==="meeting");
+
+  if(statusFilter){
+    sessions = sessions.filter(c=>(c.status||"")===statusFilter);
+  }
+
+  const sessionsInRange = sessions.filter(c=>{
+    const d = new Date(c.dateTime);
+    if(isNaN(d)) return false;
+    return withinRange(d, fromD, toD);
+  });
+
+  const attendanceRecords = DATA.attendance.filter(a=>{
+    if(idType==="admission") return (a.admission||"").trim()===idValue;
+    return (a.staffNo||"").trim()===idValue;
+  });
+
+  const { rows, attendedSet } = buildStudentReportRows(sessionsInRange, attendanceRecords, idType, idValue);
+
+  const total = sessionsInRange.length;
+  const attended = sessionsInRange.filter(s=>attendedSet.has(s.id)).length;
+  const pct = safePct(attended, total);
+
+  $("srTotalSessions").textContent = String(total);
+  $("srAttendedSessions").textContent = String(attended);
+  $("srPercent").textContent = `${pct}%`;
+
+  $("studentReportArea").classList.remove("hidden");
+
+  renderStudentReportTable(rows);
+
+  const chartData = buildStudentChartData(sessionsInRange, attendedSet, grouping);
+  renderStudentChart(chartData, `${idType}:${idValue}`);
 });
 
 /* ===========================
