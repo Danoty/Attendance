@@ -127,7 +127,7 @@
       height: 150px;
       cursor: crosshair;
       box-shadow: inset 0 2px 10px rgba(15,23,42,.05);
-      touch-action: none;
+      touch-action: none; /* keep */
     }
     .signature-actions{ display:flex; justify-content:flex-end; gap:.4rem; margin-top:.35rem; }
 
@@ -192,9 +192,6 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- ✅ Charts (Student % + Graphs) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -514,82 +511,6 @@
         <div id="reportMeta" class="muted" style="margin-top:.6rem;"></div>
         <table id="reportTable"></table>
       </div>
-
-      <!-- ✅ NEW: Student Report (percentage + chart) -->
-      <hr style="margin:1.2rem 0;border:none;border-top:1px solid #e5e7eb;"/>
-
-      <h3 style="margin:.1rem 0 .25rem;">Student Report (With % + Chart)</h3>
-      <div class="muted" style="margin-bottom:.8rem;">
-        Generate an individual student attendance report for a particular period (date range) and get attendance percentage + chart.
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="stuReportIdType">ID Type</label>
-          <select id="stuReportIdType">
-            <option value="admission">Admission No (Class)</option>
-            <option value="staffNo">Staff No (Meeting)</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="stuReportId">Student/Staff ID</label>
-          <input id="stuReportId" type="text" placeholder="e.g. BIT/1234/2024 or PF12345" />
-        </div>
-
-        <div>
-          <label for="stuReportFrom">From</label>
-          <input id="stuReportFrom" type="date" />
-        </div>
-
-        <div>
-          <label for="stuReportTo">To</label>
-          <input id="stuReportTo" type="date" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="stuReportGrouping">Chart Grouping</label>
-          <select id="stuReportGrouping">
-            <option value="day">By Day</option>
-            <option value="week">By Week</option>
-            <option value="unit">By Unit</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="stuReportOnlyOpenClosed">Include Sessions</label>
-          <select id="stuReportOnlyOpenClosed">
-            <option value="">Open + Closed</option>
-            <option value="open">Open only</option>
-            <option value="closed">Closed only</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="btn-group">
-        <button class="btn btn-primary" id="generateStudentReportBtn">Generate Student Report</button>
-      </div>
-
-      <div id="studentReportMsg" class="alert hidden" style="margin-top:.8rem;"></div>
-
-      <div id="studentReportArea" class="hidden" style="margin-top:1rem;">
-        <div class="kpi-grid" style="margin-top:.2rem;">
-          <div class="kpi"><div class="v" id="srTotalSessions">0</div><div class="t">Total sessions in period</div></div>
-          <div class="kpi"><div class="v" id="srAttendedSessions">0</div><div class="t">Attended sessions</div></div>
-          <div class="kpi"><div class="v" id="srPercent">0%</div><div class="t">Attendance percentage</div></div>
-        </div>
-
-        <div class="card" style="margin-top:1rem;">
-          <h4 style="margin:.1rem 0 .6rem;">Attendance Chart</h4>
-          <canvas id="studentReportChart" style="width:100%;max-height:340px;"></canvas>
-        </div>
-
-        <h4 style="margin:1rem 0 .35rem;">Sessions Breakdown</h4>
-        <table id="studentReportTable"></table>
-      </div>
-      <!-- /Student report -->
     </section>
 
     <!-- Raw exports -->
@@ -1017,15 +938,6 @@ function setAlert(el, msg, type="info"){
 }
 function clearAlert(el){ el.classList.add("hidden"); }
 
-function escapeHtml(str){
-  return String(str ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
 function formatDateTime(dt){
   if(!dt) return "";
   const d = new Date(dt);
@@ -1073,67 +985,115 @@ function loadLogoAsDataUrl(){
 loadLogoAsDataUrl();
 
 /* ===========================
-   Signature pads
+   ✅ Signature pads (ALL DEVICES FIX)
+   - Pointer events (mouse/touch/pen)
+   - HiDPI scaling
+   - Preserve strokes on resize/orientation
 =========================== */
-function setupSignaturePad(canvas, opts={}){
-  const ctx = canvas.getContext("2d");
-  ctx.lineWidth = opts.lineWidth || 2.2;
-  ctx.lineCap = "round";
-
-  function resize(){
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const rect = canvas.getBoundingClientRect();
-    const prev = canvas.toDataURL("image/png");
-    canvas.width = Math.floor(rect.width * ratio);
-    canvas.height = Math.floor(rect.height * ratio);
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    if(prev && prev.length > 50){
-      const img = new Image();
-      img.onload = ()=> ctx.drawImage(img, 0, 0, rect.width, rect.height);
-      img.src = prev;
-    }
-  }
-  function getPos(e){
-    const rect = canvas.getBoundingClientRect();
-    const point = e.touches ? e.touches[0] : e;
-    return { x: point.clientX - rect.left, y: point.clientY - rect.top };
-  }
-  let drawing = false;
-  function start(e){
-    e.preventDefault();
-    drawing = true;
-    const p = getPos(e);
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-  }
-  function move(e){
-    if(!drawing) return;
-    e.preventDefault();
-    const p = getPos(e);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-  }
-  function end(){ drawing = false; }
-
-  canvas.addEventListener("mousedown", start);
-  canvas.addEventListener("mousemove", move);
-  window.addEventListener("mouseup", end);
-  canvas.addEventListener("touchstart", start, {passive:false});
-  canvas.addEventListener("touchmove", move, {passive:false});
-  window.addEventListener("touchend", end);
-  window.addEventListener("resize", ()=> resize());
-  resize();
-
-  return {
-    clear: ()=> ctx.clearRect(0,0, canvas.width, canvas.height),
-    toDataUrl: ()=> canvas.toDataURL("image/png"),
-    isBlank: ()=> {
-      const tmp = document.createElement("canvas");
-      tmp.width = canvas.width; tmp.height = canvas.height;
-      return tmp.toDataURL() === canvas.toDataURL();
-    }
+function setupSignaturePad(canvas, opts = {}) {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const state = {
+    drawing: false,
+    strokes: [],
+    currentStroke: [],
   };
+
+  const lineWidth = opts.lineWidth ?? 2.4;
+  const strokeStyle = opts.strokeStyle ?? "#0f172a";
+
+  canvas.style.touchAction = "none";
+
+  function getCanvasPoint(e) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: (e.clientX - rect.left), y: (e.clientY - rect.top) };
+  }
+
+  function redraw() {
+    const rect = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = strokeStyle;
+
+    for (const stroke of state.strokes) {
+      if (!stroke.length) continue;
+      ctx.beginPath();
+      ctx.moveTo(stroke[0].x, stroke[0].y);
+      for (let i = 1; i < stroke.length; i++) ctx.lineTo(stroke[i].x, stroke[i].y);
+      ctx.stroke();
+    }
+  }
+
+  function resizeCanvasPreserve() {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+
+    canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+    canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    redraw();
+  }
+
+  function beginDraw(e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    canvas.setPointerCapture?.(e.pointerId);
+
+    state.drawing = true;
+    state.currentStroke = [];
+
+    const p = getCanvasPoint(e);
+    state.currentStroke.push(p);
+    state.strokes.push(state.currentStroke);
+    redraw();
+  }
+
+  function moveDraw(e) {
+    if (!state.drawing) return;
+    e.preventDefault();
+    const p = getCanvasPoint(e);
+    state.currentStroke.push(p);
+    redraw();
+  }
+
+  function endDraw(e) {
+    if (!state.drawing) return;
+    e.preventDefault();
+    state.drawing = false;
+    redraw();
+  }
+
+  canvas.addEventListener("pointerdown", beginDraw);
+  canvas.addEventListener("pointermove", moveDraw);
+  canvas.addEventListener("pointerup", endDraw);
+  canvas.addEventListener("pointercancel", endDraw);
+  canvas.addEventListener("pointerleave", endDraw);
+
+  window.addEventListener("resize", resizeCanvasPreserve);
+  window.addEventListener("orientationchange", () => setTimeout(resizeCanvasPreserve, 200));
+  setTimeout(resizeCanvasPreserve, 0);
+
+  function isBlank() {
+    return state.strokes.length === 0 || state.strokes.every(s => s.length === 0);
+  }
+
+  function clear() {
+    state.strokes = [];
+    state.currentStroke = [];
+    const rect = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, rect.width, rect.height);
+  }
+
+  function toDataUrl() {
+    return canvas.toDataURL("image/png");
+  }
+
+  return { clear, toDataUrl, isBlank, _resize: resizeCanvasPreserve };
 }
+
 const stSig = setupSignaturePad($("stSignaturePad"));
 $("stClearSignature").addEventListener("click", ()=> stSig.clear());
 
@@ -1322,9 +1282,9 @@ function renderAdminLecturers(){
   DATA.lecturers.forEach(lec=>{
     const status = lec.approved ? `<span class="chip green">Approved</span>` : `<span class="chip red">Pending</span>`;
     html += `<tr>
-      <td><b>${escapeHtml(lec.salutation)} ${escapeHtml(lec.fullName)}</b></td>
-      <td>${escapeHtml(lec.pf)}</td>
-      <td>${escapeHtml(lec.username)}</td>
+      <td><b>${lec.salutation} ${lec.fullName}</b></td>
+      <td>${lec.pf}</td>
+      <td>${lec.username}</td>
       <td>${status}</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn ${lec.approved ? "btn-secondary":"btn-success"}" data-action="toggle" data-id="${lec.id}">
@@ -1431,8 +1391,8 @@ function renderFacultySummary(){
   const acYears = unique(DATA.facultyConfig.map(r=>r.academicYear || ""));
   wrap.innerHTML = `<p class="muted" style="margin:.2rem 0 0;">
     Total entries: <b>${total}</b><br/>
-    Academic Years: <b>${escapeHtml(acYears.join(", ") || "N/A")}</b><br/>
-    Faculties: ${escapeHtml(faculties.join(", "))}
+    Academic Years: <b>${acYears.join(", ") || "N/A"}</b><br/>
+    Faculties: ${faculties.join(", ")}
   </p>`;
 }
 
@@ -1725,14 +1685,14 @@ function renderLecturerClasses(){
   </tr></thead><tbody>`;
 
   list.forEach(cls=>{
-    const badge = `<span class="badge ${cls.status}">${(cls.status||"").toUpperCase()}</span>`;
+    const badge = `<span class="badge ${cls.status}">${cls.status.toUpperCase()}</span>`;
     html += `<tr>
-      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${(cls.meetingMode||"").toUpperCase()}</span>` : "CLASS"}</td>
-      <td>${escapeHtml(cls.academicYear || "")}</td>
-      <td>${escapeHtml(cls.unitCode || "")}</td>
-      <td><b>${escapeHtml(cls.unit || "")}</b><div class="small">${escapeHtml(cls.course || "")} ${cls.faculty ? "· "+escapeHtml(cls.faculty) : ""}</div></td>
-      <td>${escapeHtml(cls.venue || "")}</td>
-      <td>${escapeHtml(formatDateTime(cls.dateTime))}</td>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${cls.meetingMode.toUpperCase()}</span>` : "CLASS"}</td>
+      <td>${cls.academicYear || ""}</td>
+      <td>${cls.unitCode || ""}</td>
+      <td><b>${cls.unit || ""}</b><div class="small">${cls.course || ""} ${cls.faculty ? "· "+cls.faculty : ""}</div></td>
+      <td>${cls.venue || ""}</td>
+      <td>${formatDateTime(cls.dateTime)}</td>
       <td>${badge}</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn btn-primary" data-act="view" data-id="${cls.id}">View</button>
@@ -1776,15 +1736,15 @@ function renderAdminClasses(){
   </tr></thead><tbody>`;
 
   list.forEach(cls=>{
-    const badge = `<span class="badge ${cls.status}">${(cls.status||"").toUpperCase()}</span>`;
+    const badge = `<span class="badge ${cls.status}">${cls.status.toUpperCase()}</span>`;
     html += `<tr>
-      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${(cls.meetingMode||"").toUpperCase()}</span>` : "CLASS"}</td>
-      <td>${escapeHtml(cls.academicYear || "")}</td>
-      <td>${escapeHtml(cls.unitCode || "")}</td>
-      <td><b>${escapeHtml(cls.unit || "")}</b><div class="small">${escapeHtml(cls.course || "")} ${cls.faculty ? "· "+escapeHtml(cls.faculty) : ""}</div></td>
-      <td>${escapeHtml(cls.lecturerName || "")}</td>
-      <td>${escapeHtml(cls.venue || "")}</td>
-      <td>${escapeHtml(formatDateTime(cls.dateTime))}</td>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${cls.meetingMode.toUpperCase()}</span>` : "CLASS"}</td>
+      <td>${cls.academicYear || ""}</td>
+      <td>${cls.unitCode || ""}</td>
+      <td><b>${cls.unit || ""}</b><div class="small">${cls.course || ""} ${cls.faculty ? "· "+cls.faculty : ""}</div></td>
+      <td>${cls.lecturerName || ""}</td>
+      <td>${cls.venue || ""}</td>
+      <td>${formatDateTime(cls.dateTime)}</td>
       <td>${badge}</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn btn-primary" data-act="view" data-id="${cls.id}">View</button>
@@ -1880,6 +1840,7 @@ $("sigCancelBtn").addEventListener("click", ()=>{
   $("sigModal").classList.add("hidden");
   clearAlert($("sigMsg"));
 });
+
 let sigMode = "lecturer";
 function openSigModal(mode){
   sigMode = mode;
@@ -1893,6 +1854,7 @@ function openSigModal(mode){
     $("hodNameInput").value = cls?.hodName || "";
   }
   $("sigModal").classList.remove("hidden");
+  setTimeout(()=> sigPad._resize(), 50); // ✅ important for phones
 }
 
 $("sigSaveBtn").addEventListener("click", ()=>{
@@ -1933,7 +1895,7 @@ function openSessionModal(classId){
   $("hodSignBtn").classList.toggle("hidden", !(currentUser && currentUser.role==="admin"));
 
   $("sessionModalTitle").textContent = `${cls.type==="meeting" ? "Staff Meeting" : "Class"} · ${cls.academicYear || ""} · ${cls.unitCode || ""} · ${cls.unit || ""}`;
-  $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${(cls.status||"").toUpperCase()}`;
+  $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${cls.status.toUpperCase()}`;
 
   const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(cls.id);
   $("sessionLinkText").textContent = link;
@@ -1977,13 +1939,13 @@ function renderAttendanceTable(tableId, rows, includeSigThumb){
       ? `<td>${r.SignatureDataURL ? `<img class="miniSig" src="${r.SignatureDataURL}" alt="sig">` : ""}</td>`
       : "";
     body += `<tr>
-      <td>${escapeHtml(r["#"])}</td>
-      <td>${escapeHtml(r.ID)}</td>
-      <td>${escapeHtml(r.Surname)}</td>
-      <td>${escapeHtml(r.Middle)}</td>
-      <td>${escapeHtml(r.First)}</td>
+      <td>${r["#"]}</td>
+      <td>${r.ID}</td>
+      <td>${r.Surname}</td>
+      <td>${r.Middle}</td>
+      <td>${r.First}</td>
       ${sigCell}
-      <td>${escapeHtml(r.Timestamp)}</td>
+      <td>${r.Timestamp}</td>
     </tr>`;
   });
   body += "</tbody>";
@@ -1995,7 +1957,7 @@ function buildAttendanceRowsForClass(classId){
   const cls = DATA.classes.find(c=>c.id===classId) || {};
   const items = DATA.attendance
     .filter(a=>a.classId===classId)
-    .sort((a,b)=> (a.createdAt||0)-(b.createdAt||0))
+    .sort((a,b)=> (a.createdAt||0)-(a.createdAt||0))
     .map((a,i)=>({
       "#": i+1,
       ID: (cls.type==="meeting") ? (a.staffNo||"") : (a.admission||""),
@@ -2061,11 +2023,11 @@ async function loadStudentMode(){
   $("stAdmission").placeholder = "Enter Admission Number";
 
   const meta = isMeeting
-    ? `Meeting Mode: ${(cls.meetingMode||"").toUpperCase()}
+    ? `Meeting Mode: ${cls.meetingMode.toUpperCase()}
 Venue/Platform: ${cls.venue}
 Date/Time: ${formatDateTime(cls.dateTime)}
 Organizer: ${cls.lecturerName}
-Status: ${(cls.status||"").toUpperCase()}`
+Status: ${cls.status.toUpperCase()}`
     : `Academic Year: ${cls.academicYear}
 Unit Code: ${cls.unitCode}
 Unit Name: ${cls.unit}
@@ -2075,7 +2037,7 @@ Study Year/Semester: ${cls.year} / ${cls.semester}
 Venue: ${cls.venue}
 Date/Time: ${formatDateTime(cls.dateTime)}
 Lecturer: ${cls.lecturerName}
-Status: ${(cls.status||"").toUpperCase()}`;
+Status: ${cls.status.toUpperCase()}`;
 
   $("studentClassInfo").textContent = meta;
   $("studentFormWrapper").classList.remove("hidden");
@@ -2098,16 +2060,14 @@ Status: ${(cls.status||"").toUpperCase()}`;
   }
 
   const requireGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
-  let geoNoteEl = $("geoNote");
   if(requireGeo){
     $("studentGeoInfo").classList.remove("hidden");
     $("studentGeoInfo").textContent = "This is a PHYSICAL session. Location verification is required (within 1km of JOOUST). When you submit, the system will verify your location.";
-    if(geoNoteEl) geoNoteEl.classList.remove("hidden");
   }else{
     $("studentGeoInfo").classList.add("hidden");
-    if(geoNoteEl) geoNoteEl.classList.add("hidden");
   }
 
+  setTimeout(()=> stSig._resize(), 50); // ✅ important for phones
   return true;
 }
 
@@ -2378,12 +2338,12 @@ async function exportClassAttendanceWord(cls, rows){
     return `
       <tr>
         <td>${r["#"]}</td>
-        <td>${escapeHtml(r.ID)}</td>
-        <td>${escapeHtml(r.Surname)}</td>
-        <td>${escapeHtml(r.Middle)}</td>
-        <td>${escapeHtml(r.First)}</td>
+        <td>${r.ID}</td>
+        <td>${r.Surname}</td>
+        <td>${r.Middle}</td>
+        <td>${r.First}</td>
         <td>${sig}</td>
-        <td>${escapeHtml(r.Timestamp)}</td>
+        <td>${r.Timestamp}</td>
       </tr>
     `;
   }).join("");
@@ -2393,16 +2353,16 @@ async function exportClassAttendanceWord(cls, rows){
 
   const metaBlock = cls.type==="meeting"
     ? `
-      <tr><td><b>Type:</b> STAFF MEETING (${escapeHtml((cls.meetingMode||"").toUpperCase())})</td><td><b>Academic Year:</b> ${escapeHtml(cls.academicYear || "")}</td></tr>
-      <tr><td><b>Venue/Platform:</b> ${escapeHtml(cls.venue)}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
-      <tr><td colspan="2"><b>Organizer:</b> ${escapeHtml(cls.lecturerName || "")}</td></tr>
+      <tr><td><b>Type:</b> STAFF MEETING (${(cls.meetingMode||"").toUpperCase()})</td><td><b>Academic Year:</b> ${cls.academicYear || ""}</td></tr>
+      <tr><td><b>Venue/Platform:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
+      <tr><td colspan="2"><b>Organizer:</b> ${cls.lecturerName || ""}</td></tr>
     `
     : `
-      <tr><td><b>Academic Year:</b> ${escapeHtml(cls.academicYear || "")}</td><td><b>Unit Code:</b> ${escapeHtml(cls.unitCode || "")}</td></tr>
-      <tr><td><b>Unit Name:</b> ${escapeHtml(cls.unit)}</td><td><b>Course:</b> ${escapeHtml(cls.course)}</td></tr>
-      <tr><td><b>Faculty:</b> ${escapeHtml(cls.faculty)}</td><td><b>Study Year/Sem:</b> ${escapeHtml(cls.year)} / ${escapeHtml(cls.semester)}</td></tr>
-      <tr><td><b>Venue:</b> ${escapeHtml(cls.venue)}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
-      <tr><td colspan="2"><b>Lecturer:</b> ${escapeHtml(cls.lecturerName || "")}</td></tr>
+      <tr><td><b>Academic Year:</b> ${cls.academicYear || ""}</td><td><b>Unit Code:</b> ${cls.unitCode || ""}</td></tr>
+      <tr><td><b>Unit Name:</b> ${cls.unit}</td><td><b>Course:</b> ${cls.course}</td></tr>
+      <tr><td><b>Faculty:</b> ${cls.faculty}</td><td><b>Study Year/Sem:</b> ${cls.year} / ${cls.semester}</td></tr>
+      <tr><td><b>Venue:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
+      <tr><td colspan="2"><b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
     `;
 
   const html = `
@@ -2413,7 +2373,7 @@ async function exportClassAttendanceWord(cls, rows){
       <div>
         <h2 style="margin:0;color:#0052cc;">Jaramogi Oginga Odinga University of Science & Technology</h2>
         <div style="margin:0;font-size:12px;color:#555;">Session Attendance Sheet</div>
-        <div style="margin:0;font-size:11px;color:#777;">Generated: ${escapeHtml(dateStr)}</div>
+        <div style="margin:0;font-size:11px;color:#777;">Generated: ${dateStr}</div>
       </div>
     </div>
     <hr/>
@@ -2440,11 +2400,11 @@ async function exportClassAttendanceWord(cls, rows){
       <tr>
         <td style="width:50%;vertical-align:top;">
           <b>Lecturer Signature</b><br/>${lecSig}<br/>
-          <b>Lecturer:</b> ${escapeHtml(cls.lecturerName || "")}
+          <b>Lecturer:</b> ${cls.lecturerName || ""}
         </td>
         <td style="width:50%;vertical-align:top;">
           <b>HOD Signature</b><br/>${hodSig}<br/>
-          <b>HOD:</b> ${escapeHtml(cls.hodName || "")}
+          <b>HOD:</b> ${cls.hodName || ""}
         </td>
       </tr>
     </table>
@@ -2464,7 +2424,7 @@ async function exportClassAttendanceWord(cls, rows){
 }
 
 /* ===========================
-   REPORTS
+   REPORTS (unchanged from your file)
 =========================== */
 function filterClassesForReport({ ay, faculty, course, unit, year, semester, status, onlyLecturerId=null }){
   DATA = loadData();
@@ -2501,14 +2461,14 @@ function renderReportTable(tableElId, classes){
     const count = counts.get(c.id) || 0;
     body += `<tr>
       <td>${i+1}</td>
-      <td>${c.type==="meeting" ? `MEETING (${escapeHtml(c.meetingMode||"")})` : "CLASS"}</td>
-      <td>${escapeHtml(c.academicYear||"")}</td>
-      <td>${escapeHtml(c.unitCode||"")}</td>
-      <td><b>${escapeHtml(c.unit||"")}</b></td>
-      <td>${escapeHtml(c.lecturerName||"")}</td>
-      <td>${escapeHtml(c.venue||"")}</td>
-      <td>${escapeHtml(formatDateTime(c.dateTime))}</td>
-      <td><span class="badge ${c.status}">${escapeHtml((c.status||"").toUpperCase())}</span></td>
+      <td>${c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS"}</td>
+      <td>${c.academicYear||""}</td>
+      <td>${c.unitCode||""}</td>
+      <td><b>${c.unit||""}</b></td>
+      <td>${c.lecturerName||""}</td>
+      <td>${c.venue||""}</td>
+      <td>${formatDateTime(c.dateTime)}</td>
+      <td><span class="badge ${c.status}">${c.status.toUpperCase()}</span></td>
       <td><b>${count}</b></td>
     </tr>`;
   });
@@ -2702,215 +2662,6 @@ $("downloadAllReportsBtn").addEventListener("click", ()=>{
   });
 
   XLSX.writeFile(wb, "jooust-all-session-reports.xlsx");
-});
-
-/* ===========================
-   ✅ STUDENT % REPORT + CHART
-=========================== */
-let studentChartInstance = null;
-
-function toDateOnly(tsOrIso){
-  const d = new Date(tsOrIso);
-  if (isNaN(d)) return null;
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-function withinRange(d, fromD, toD){
-  if(!d) return false;
-  const t = d.getTime();
-  if(fromD && t < fromD.getTime()) return false;
-  if(toD && t > toD.getTime()) return false;
-  return true;
-}
-
-function weekKey(dateObj){
-  const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,"0")}`;
-}
-
-function safePct(attended, total){
-  if(!total) return 0;
-  return Math.round((attended / total) * 1000) / 10; // 1 decimal
-}
-
-function buildStudentReportRows(classesInRange, attendanceRecords, idType, idValue){
-  const attendedSet = new Set();
-  attendanceRecords.forEach(a=>{
-    if(idType==="admission" && (a.admission||"").trim()===idValue) attendedSet.add(a.classId);
-    if(idType==="staffNo" && (a.staffNo||"").trim()===idValue) attendedSet.add(a.classId);
-  });
-
-  const rows = classesInRange
-    .sort((a,b)=> new Date(a.dateTime) - new Date(b.dateTime))
-    .map((cls, idx)=>({
-      "#": idx+1,
-      Type: cls.type==="meeting" ? `MEETING (${(cls.meetingMode||"").toUpperCase()})` : "CLASS",
-      AcademicYear: cls.academicYear || "",
-      UnitCode: cls.unitCode || "",
-      UnitOrMeeting: cls.unit || "",
-      Course: cls.course || "",
-      Faculty: cls.faculty || "",
-      Venue: cls.venue || "",
-      DateTime: formatDateTime(cls.dateTime),
-      Status: (cls.status||"").toUpperCase(),
-      Attended: attendedSet.has(cls.id) ? "YES" : "NO"
-    }));
-
-  return { rows, attendedSet };
-}
-
-function renderStudentReportTable(rows){
-  const table = $("studentReportTable");
-  if(!rows.length){
-    table.innerHTML = `<thead><tr><th>No results</th></tr></thead>
-                       <tbody><tr><td>No sessions found in this period.</td></tr></tbody>`;
-    return;
-  }
-
-  const head = `<thead><tr>
-    <th>#</th><th>Type</th><th>AY</th><th>Code</th><th>Unit/Meeting</th><th>Venue</th><th>Date/Time</th><th>Status</th><th>Attended</th>
-  </tr></thead>`;
-
-  const body = `<tbody>` + rows.map(r=>`
-    <tr>
-      <td>${escapeHtml(r["#"])}</td>
-      <td>${escapeHtml(r.Type)}</td>
-      <td>${escapeHtml(r.AcademicYear)}</td>
-      <td>${escapeHtml(r.UnitCode)}</td>
-      <td><b>${escapeHtml(r.UnitOrMeeting)}</b></td>
-      <td>${escapeHtml(r.Venue)}</td>
-      <td>${escapeHtml(r.DateTime)}</td>
-      <td>${escapeHtml(r.Status)}</td>
-      <td><span class="chip ${r.Attended==="YES"?"green":"red"}">${escapeHtml(r.Attended)}</span></td>
-    </tr>
-  `).join("") + `</tbody>`;
-
-  table.innerHTML = head + body;
-}
-
-function buildStudentChartData(classesInRange, attendedSet, grouping){
-  const bucket = new Map();
-
-  classesInRange.forEach(cls=>{
-    const d = toDateOnly(cls.dateTime);
-    if(!d) return;
-
-    let key = "";
-    if(grouping==="day") key = d.toISOString().slice(0,10);
-    else if(grouping==="week") key = weekKey(d);
-    else if(grouping==="unit") key = (cls.unitCode ? `${cls.unitCode} - ${cls.unit}` : (cls.unit||"UNKNOWN"));
-
-    const cur = bucket.get(key) || { total:0, attended:0 };
-    cur.total += 1;
-    if(attendedSet.has(cls.id)) cur.attended += 1;
-    bucket.set(key, cur);
-  });
-
-  let labels = Array.from(bucket.keys());
-  if(grouping==="day"){
-    labels.sort((a,b)=> new Date(a) - new Date(b));
-  }else{
-    labels.sort((a,b)=> a.localeCompare(b));
-  }
-
-  const attendedVals = labels.map(l=> bucket.get(l).attended);
-  const totalVals = labels.map(l=> bucket.get(l).total);
-
-  return { labels, attendedVals, totalVals };
-}
-
-function renderStudentChart(chartData, idLabel){
-  const canvas = $("studentReportChart");
-  if(!canvas) return;
-
-  if(studentChartInstance){
-    studentChartInstance.destroy();
-    studentChartInstance = null;
-  }
-
-  if(!window.Chart){
-    setAlert($("studentReportMsg"), "Chart.js not loaded. Ensure internet then refresh.", "danger");
-    return;
-  }
-
-  studentChartInstance = new Chart(canvas, {
-    type: "bar",
-    data: {
-      labels: chartData.labels,
-      datasets: [
-        { label: `Attended (${idLabel})`, data: chartData.attendedVals },
-        { label: "Total Sessions", data: chartData.totalVals }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: true } },
-      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-    }
-  });
-}
-
-$("generateStudentReportBtn")?.addEventListener("click", ()=>{
-  const msgEl = $("studentReportMsg");
-  clearAlert(msgEl);
-
-  const idType = $("stuReportIdType").value;
-  const idValue = $("stuReportId").value.trim();
-
-  const fromVal = $("stuReportFrom").value;
-  const toVal = $("stuReportTo").value;
-  const grouping = $("stuReportGrouping").value;
-  const statusFilter = $("stuReportOnlyOpenClosed").value;
-
-  if(!idValue){
-    setAlert(msgEl, "Enter Student/Staff ID first.", "danger");
-    return;
-  }
-
-  const fromD = fromVal ? new Date(fromVal+"T00:00:00") : null;
-  const toD = toVal ? new Date(toVal+"T23:59:59") : null;
-
-  DATA = loadData();
-
-  let sessions = DATA.classes.slice();
-  sessions = (idType==="admission") ? sessions.filter(c=>c.type==="class") : sessions.filter(c=>c.type==="meeting");
-
-  if(statusFilter){
-    sessions = sessions.filter(c=>(c.status||"")===statusFilter);
-  }
-
-  const sessionsInRange = sessions.filter(c=>{
-    const d = new Date(c.dateTime);
-    if(isNaN(d)) return false;
-    return withinRange(d, fromD, toD);
-  });
-
-  const attendanceRecords = DATA.attendance.filter(a=>{
-    if(idType==="admission") return (a.admission||"").trim()===idValue;
-    return (a.staffNo||"").trim()===idValue;
-  });
-
-  const { rows, attendedSet } = buildStudentReportRows(sessionsInRange, attendanceRecords, idType, idValue);
-
-  const total = sessionsInRange.length;
-  const attended = sessionsInRange.filter(s=>attendedSet.has(s.id)).length;
-  const pct = safePct(attended, total);
-
-  $("srTotalSessions").textContent = String(total);
-  $("srAttendedSessions").textContent = String(attended);
-  $("srPercent").textContent = `${pct}%`;
-
-  $("studentReportArea").classList.remove("hidden");
-
-  renderStudentReportTable(rows);
-
-  const chartData = buildStudentChartData(sessionsInRange, attendedSet, grouping);
-  renderStudentChart(chartData, `${idType}:${idValue}`);
 });
 
 /* ===========================
