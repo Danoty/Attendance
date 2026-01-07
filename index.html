@@ -921,6 +921,38 @@ let currentUser = null;
 let jooustLogoDataUrl = null;
 
 function $(id){ return document.getElementById(id); }
+
+/* ===========================
+   SECURITY + CSV HELPERS
+=========================== */
+function escapeHtml(s = "") {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+// Prevent Excel/CSV formula injection
+function safeForCsv(v) {
+  const s = String(v ?? "");
+  return /^[=+\-@]/.test(s) ? "'" + s : s;
+}
+// CSV parser that supports quoted commas
+function parseCsvLine(line) {
+  const out = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; continue; }
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (ch === "," && !inQ) { out.push(cur.trim()); cur = ""; continue; }
+    cur += ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
 function showSection(id){
   ["loginSection","lecturerRegistrationSection","adminDashboard","lecturerDashboard","studentSection"].forEach(sid=>{
     const el = $(sid); if(!el) return;
@@ -1040,9 +1072,13 @@ function setupSignaturePad(canvas, opts={}){
     clear: ()=> ctx.clearRect(0,0, canvas.width, canvas.height),
     toDataUrl: ()=> canvas.toDataURL("image/png"),
     isBlank: ()=> {
-      const tmp = document.createElement("canvas");
-      tmp.width = canvas.width; tmp.height = canvas.height;
-      return tmp.toDataURL() === canvas.toDataURL();
+      const ctx2 = canvas.getContext("2d");
+      const img = ctx2.getImageData(0, 0, canvas.width, canvas.height);
+      const data = img.data;
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] !== 0) return false; // alpha channel
+      }
+      return true;
     }
   };
 }
@@ -1073,7 +1109,7 @@ function updateTopBar(){
   } else {
     const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
     const name = lec ? `${lec.salutation} ${lec.fullName}` : currentUser.username;
-    summary.innerHTML = `Logged in as <b>Lecturer</b> · <b>${name}</b>`;
+    summary.innerHTML = `Logged in as <b>Lecturer</b> · <b>${escapeHtml(name)}</b>`;
   }
 }
 $("logoutBtn").addEventListener("click", ()=>{
@@ -1234,9 +1270,9 @@ function renderAdminLecturers(){
   DATA.lecturers.forEach(lec=>{
     const status = lec.approved ? `<span class="chip green">Approved</span>` : `<span class="chip red">Pending</span>`;
     html += `<tr>
-      <td><b>${lec.salutation} ${lec.fullName}</b></td>
-      <td>${lec.pf}</td>
-      <td>${lec.username}</td>
+      <td><b>${escapeHtml(lec.salutation)} ${escapeHtml(lec.fullName)}</b></td>
+      <td>${escapeHtml(lec.pf)}</td>
+      <td>${escapeHtml(lec.username)}</td>
       <td>${status}</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn ${lec.approved ? "btn-secondary":"btn-success"}" data-action="toggle" data-id="${lec.id}">
@@ -1295,7 +1331,7 @@ $("uploadFacultyCsvBtn").addEventListener("click", ()=>{
       const line = lines[i].trim();
       if(i===0 && line.toLowerCase().includes("faculty") && line.toLowerCase().includes("course") && line.toLowerCase().includes("unit")) continue;
 
-      const parts = line.split(",").map(p=>p.trim());
+      const parts = parseCsvLine(line);
       if(parts.length < 5) continue;
 
       const faculty = parts[0] || "";
@@ -1339,8 +1375,9 @@ function renderFacultySummary(){
     return;
   }
   const total = DATA.facultyConfig.length;
-  const faculties = unique(DATA.facultyConfig.map(r=>r.faculty));
-  const acYears = unique(DATA.facultyConfig.map(r=>r.academicYear || ""));
+  const faculties = unique(DATA.facultyConfig.map(r=>r.faculty)).map(escapeHtml);
+  const acYears = unique(DATA.facultyConfig.map(r=>r.academicYear || "")).map(escapeHtml);
+
   wrap.innerHTML = `<p class="muted" style="margin:.2rem 0 0;">
     Total entries: <b>${total}</b><br/>
     Academic Years: <b>${acYears.join(", ") || "N/A"}</b><br/>
@@ -1487,6 +1524,13 @@ $("createClassBtn").addEventListener("click", ()=>{
     return;
   }
 
+  DATA = loadData();
+
+  if(type==="class" && (!DATA.facultyConfig || !DATA.facultyConfig.length)){
+    setAlert(msgEl,"Admin must upload Faculty/Course/Unit mappings first (CSV).","danger");
+    return;
+  }
+
   if(type==="class"){
     if(!academicYear){ setAlert(msgEl,"Please select Academic Year.","danger"); return; }
     if(!f || !c || !u || !y || !s){
@@ -1499,7 +1543,6 @@ $("createClassBtn").addEventListener("click", ()=>{
     }
   }
 
-  DATA = loadData();
   const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
   if(!lec){ setAlert(msgEl,"Lecturer not found.","danger"); return; }
 
@@ -1637,14 +1680,14 @@ function renderLecturerClasses(){
   </tr></thead><tbody>`;
 
   list.forEach(cls=>{
-    const badge = `<span class="badge ${cls.status}">${cls.status.toUpperCase()}</span>`;
+    const badge = `<span class="badge ${cls.status}">${(cls.status||"").toUpperCase()}</span>`;
     html += `<tr>
-      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${cls.meetingMode.toUpperCase()}</span>` : "CLASS"}</td>
-      <td>${cls.academicYear || ""}</td>
-      <td>${cls.unitCode || ""}</td>
-      <td><b>${cls.unit || ""}</b><div class="small">${cls.course || ""} ${cls.faculty ? "· "+cls.faculty : ""}</div></td>
-      <td>${cls.venue || ""}</td>
-      <td>${formatDateTime(cls.dateTime)}</td>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${escapeHtml((cls.meetingMode||"").toUpperCase())}</span>` : "CLASS"}</td>
+      <td>${escapeHtml(cls.academicYear || "")}</td>
+      <td>${escapeHtml(cls.unitCode || "")}</td>
+      <td><b>${escapeHtml(cls.unit || "")}</b><div class="small">${escapeHtml(cls.course || "")} ${cls.faculty ? "· "+escapeHtml(cls.faculty) : ""}</div></td>
+      <td>${escapeHtml(cls.venue || "")}</td>
+      <td>${escapeHtml(formatDateTime(cls.dateTime))}</td>
       <td>${badge}</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn btn-primary" data-act="view" data-id="${cls.id}">View</button>
@@ -1688,15 +1731,15 @@ function renderAdminClasses(){
   </tr></thead><tbody>`;
 
   list.forEach(cls=>{
-    const badge = `<span class="badge ${cls.status}">${cls.status.toUpperCase()}</span>`;
+    const badge = `<span class="badge ${cls.status}">${(cls.status||"").toUpperCase()}</span>`;
     html += `<tr>
-      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${cls.meetingMode.toUpperCase()}</span>` : "CLASS"}</td>
-      <td>${cls.academicYear || ""}</td>
-      <td>${cls.unitCode || ""}</td>
-      <td><b>${cls.unit || ""}</b><div class="small">${cls.course || ""} ${cls.faculty ? "· "+cls.faculty : ""}</div></td>
-      <td>${cls.lecturerName || ""}</td>
-      <td>${cls.venue || ""}</td>
-      <td>${formatDateTime(cls.dateTime)}</td>
+      <td>${cls.type==="meeting" ? `MEETING <span class="chip ${cls.meetingMode==="online"?"green":"red"}">${escapeHtml((cls.meetingMode||"").toUpperCase())}</span>` : "CLASS"}</td>
+      <td>${escapeHtml(cls.academicYear || "")}</td>
+      <td>${escapeHtml(cls.unitCode || "")}</td>
+      <td><b>${escapeHtml(cls.unit || "")}</b><div class="small">${escapeHtml(cls.course || "")} ${cls.faculty ? "· "+escapeHtml(cls.faculty) : ""}</div></td>
+      <td>${escapeHtml(cls.lecturerName || "")}</td>
+      <td>${escapeHtml(cls.venue || "")}</td>
+      <td>${escapeHtml(formatDateTime(cls.dateTime))}</td>
       <td>${badge}</td>
       <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
         <button class="btn btn-primary" data-act="view" data-id="${cls.id}">View</button>
@@ -1728,7 +1771,6 @@ function toggleSessionStatus(classId){
   renderAdminClasses();
   refreshClassPickers();
 
-  // ✅ fixed: use $("sessionModal") not $("#sessionModal")
   if($("sessionModal") && !$("sessionModal").classList.contains("hidden")) openSessionModal(classId, true);
 }
 
@@ -1846,7 +1888,7 @@ function openSessionModal(classId){
   $("hodSignBtn").classList.toggle("hidden", !(currentUser && currentUser.role==="admin"));
 
   $("sessionModalTitle").textContent = `${cls.type==="meeting" ? "Staff Meeting" : "Class"} · ${cls.academicYear || ""} · ${cls.unitCode || ""} · ${cls.unit || ""}`;
-  $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${cls.status.toUpperCase()}`;
+  $("sessionModalMeta").textContent = `${cls.lecturerName || ""} · ${cls.venue || ""} · ${formatDateTime(cls.dateTime)} · Status: ${String(cls.status||"").toUpperCase()}`;
 
   const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(cls.id);
   $("sessionLinkText").textContent = link;
@@ -1890,13 +1932,13 @@ function renderAttendanceTable(tableId, rows, includeSigThumb){
       ? `<td>${r.SignatureDataURL ? `<img class="miniSig" src="${r.SignatureDataURL}" alt="sig">` : ""}</td>`
       : "";
     body += `<tr>
-      <td>${r["#"]}</td>
-      <td>${r.ID}</td>
-      <td>${r.Surname}</td>
-      <td>${r.Middle}</td>
-      <td>${r.First}</td>
+      <td>${escapeHtml(r["#"])}</td>
+      <td>${escapeHtml(r.ID)}</td>
+      <td>${escapeHtml(r.Surname)}</td>
+      <td>${escapeHtml(r.Middle)}</td>
+      <td>${escapeHtml(r.First)}</td>
       ${sigCell}
-      <td>${r.Timestamp}</td>
+      <td>${escapeHtml(r.Timestamp)}</td>
     </tr>`;
   });
   body += "</tbody>";
@@ -1967,7 +2009,6 @@ async function loadStudentMode(){
   showSection("studentSection");
   $("participantTitle").textContent = (cls.type==="meeting") ? "Staff Meeting Sign-In" : "Class Attendance Sign-In";
 
-  // ✅ only ONE ID field depending on type
   const isMeeting = cls.type === "meeting";
   $("staffNoRow").classList.toggle("hidden", !isMeeting);
   $("idRow").classList.toggle("hidden", isMeeting);
@@ -1975,11 +2016,11 @@ async function loadStudentMode(){
   $("stAdmission").placeholder = "Enter Admission Number";
 
   const meta = isMeeting
-    ? `Meeting Mode: ${cls.meetingMode.toUpperCase()}
+    ? `Meeting Mode: ${String(cls.meetingMode||"").toUpperCase()}
 Venue/Platform: ${cls.venue}
 Date/Time: ${formatDateTime(cls.dateTime)}
 Organizer: ${cls.lecturerName}
-Status: ${cls.status.toUpperCase()}`
+Status: ${String(cls.status||"").toUpperCase()}`
     : `Academic Year: ${cls.academicYear}
 Unit Code: ${cls.unitCode}
 Unit Name: ${cls.unit}
@@ -1989,7 +2030,7 @@ Study Year/Semester: ${cls.year} / ${cls.semester}
 Venue: ${cls.venue}
 Date/Time: ${formatDateTime(cls.dateTime)}
 Lecturer: ${cls.lecturerName}
-Status: ${cls.status.toUpperCase()}`;
+Status: ${String(cls.status||"").toUpperCase()}`;
 
   $("studentClassInfo").textContent = meta;
   $("studentFormWrapper").classList.remove("hidden");
@@ -2063,10 +2104,16 @@ $("stSubmit").addEventListener("click", async ()=>{
     try{
       const g = await getGeo();
       const distKm = haversineKm(g.lat, g.lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
+
+      const allowedKm = (g.acc && g.acc > 150) ? (GEOFENCE_RADIUS_KM + 0.3) : GEOFENCE_RADIUS_KM;
+
       geoObj = { lat:g.lat, lon:g.lon, acc:g.acc, distKm: +distKm.toFixed(3) };
 
-      if(distKm > GEOFENCE_RADIUS_KM){
-        setAlert($("studentSubmitMsg"), `Location check failed. You are ${distKm.toFixed(2)} km away. Required within ${GEOFENCE_RADIUS_KM} km of JOOUST.`, "danger");
+      if(distKm > allowedKm){
+        setAlert($("studentSubmitMsg"),
+          `Location check failed. You are ${distKm.toFixed(2)} km away (GPS accuracy ~${Math.round(g.acc)}m).\nRequired within ${allowedKm.toFixed(1)} km of JOOUST.`,
+          "danger"
+        );
         return;
       }
     }catch(e){
@@ -2108,11 +2155,11 @@ function exportRawAttendanceCsv(cls, rows){
   }
   const header = Object.keys(rows[0]);
   const csv = [
-    ["JOOUST Attendance (Raw)", `${cls.type||""}`, `${cls.academicYear||""}`, `${cls.unitCode||""}`, `${cls.unit||""}`, `${cls.course||""}`, `${cls.faculty||""}`].join(","),
+    ["JOOUST Attendance (Raw)", safeForCsv(`${cls.type||""}`), safeForCsv(`${cls.academicYear||""}`), safeForCsv(`${cls.unitCode||""}`), safeForCsv(`${cls.unit||""}`), safeForCsv(`${cls.course||""}`), safeForCsv(`${cls.faculty||""}`)].join(","),
     "",
     header.join(","),
     ...rows.map(r=> header.map(h=>{
-      const val = (r[h] ?? "").toString().replaceAll('"','""');
+      const val = safeForCsv(r[h] ?? "").toString().replaceAll('"','""');
       return `"${val}"`;
     }).join(","))
   ].join("\n");
@@ -2288,13 +2335,13 @@ async function exportClassAttendanceWord(cls, rows){
     const sig = r.SignatureDataURL ? `<img src="${r.SignatureDataURL}" style="height:32px;border:1px solid #ddd;border-radius:8px;" />` : "";
     return `
       <tr>
-        <td>${r["#"]}</td>
-        <td>${r.ID}</td>
-        <td>${r.Surname}</td>
-        <td>${r.Middle}</td>
-        <td>${r.First}</td>
+        <td>${escapeHtml(r["#"])}</td>
+        <td>${escapeHtml(r.ID)}</td>
+        <td>${escapeHtml(r.Surname)}</td>
+        <td>${escapeHtml(r.Middle)}</td>
+        <td>${escapeHtml(r.First)}</td>
         <td>${sig}</td>
-        <td>${r.Timestamp}</td>
+        <td>${escapeHtml(r.Timestamp)}</td>
       </tr>
     `;
   }).join("");
@@ -2304,16 +2351,16 @@ async function exportClassAttendanceWord(cls, rows){
 
   const metaBlock = cls.type==="meeting"
     ? `
-      <tr><td><b>Type:</b> STAFF MEETING (${(cls.meetingMode||"").toUpperCase()})</td><td><b>Academic Year:</b> ${cls.academicYear || ""}</td></tr>
-      <tr><td><b>Venue/Platform:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
-      <tr><td colspan="2"><b>Organizer:</b> ${cls.lecturerName || ""}</td></tr>
+      <tr><td><b>Type:</b> STAFF MEETING (${escapeHtml(String(cls.meetingMode||"").toUpperCase())})</td><td><b>Academic Year:</b> ${escapeHtml(cls.academicYear || "")}</td></tr>
+      <tr><td><b>Venue/Platform:</b> ${escapeHtml(cls.venue || "")}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
+      <tr><td colspan="2"><b>Organizer:</b> ${escapeHtml(cls.lecturerName || "")}</td></tr>
     `
     : `
-      <tr><td><b>Academic Year:</b> ${cls.academicYear || ""}</td><td><b>Unit Code:</b> ${cls.unitCode || ""}</td></tr>
-      <tr><td><b>Unit Name:</b> ${cls.unit}</td><td><b>Course:</b> ${cls.course}</td></tr>
-      <tr><td><b>Faculty:</b> ${cls.faculty}</td><td><b>Study Year/Sem:</b> ${cls.year} / ${cls.semester}</td></tr>
-      <tr><td><b>Venue:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
-      <tr><td colspan="2"><b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
+      <tr><td><b>Academic Year:</b> ${escapeHtml(cls.academicYear || "")}</td><td><b>Unit Code:</b> ${escapeHtml(cls.unitCode || "")}</td></tr>
+      <tr><td><b>Unit Name:</b> ${escapeHtml(cls.unit || "")}</td><td><b>Course:</b> ${escapeHtml(cls.course || "")}</td></tr>
+      <tr><td><b>Faculty:</b> ${escapeHtml(cls.faculty || "")}</td><td><b>Study Year/Sem:</b> ${escapeHtml(cls.year || "")} / ${escapeHtml(cls.semester || "")}</td></tr>
+      <tr><td><b>Venue:</b> ${escapeHtml(cls.venue || "")}</td><td><b>Date/Time:</b> ${escapeHtml(formatDateTime(cls.dateTime))}</td></tr>
+      <tr><td colspan="2"><b>Lecturer:</b> ${escapeHtml(cls.lecturerName || "")}</td></tr>
     `;
 
   const html = `
@@ -2324,7 +2371,7 @@ async function exportClassAttendanceWord(cls, rows){
       <div>
         <h2 style="margin:0;color:#0052cc;">Jaramogi Oginga Odinga University of Science & Technology</h2>
         <div style="margin:0;font-size:12px;color:#555;">Session Attendance Sheet</div>
-        <div style="margin:0;font-size:11px;color:#777;">Generated: ${dateStr}</div>
+        <div style="margin:0;font-size:11px;color:#777;">Generated: ${escapeHtml(dateStr)}</div>
       </div>
     </div>
     <hr/>
@@ -2351,11 +2398,11 @@ async function exportClassAttendanceWord(cls, rows){
       <tr>
         <td style="width:50%;vertical-align:top;">
           <b>Lecturer Signature</b><br/>${lecSig}<br/>
-          <b>Lecturer:</b> ${cls.lecturerName || ""}
+          <b>Lecturer:</b> ${escapeHtml(cls.lecturerName || "")}
         </td>
         <td style="width:50%;vertical-align:top;">
           <b>HOD Signature</b><br/>${hodSig}<br/>
-          <b>HOD:</b> ${cls.hodName || ""}
+          <b>HOD:</b> ${escapeHtml(cls.hodName || "")}
         </td>
       </tr>
     </table>
@@ -2399,7 +2446,6 @@ function renderReportTable(tableElId, classes){
     return;
   }
 
-  // ✅ faster counts
   const d = loadData();
   const counts = new Map();
   d.attendance.forEach(a => counts.set(a.classId, (counts.get(a.classId)||0)+1));
@@ -2413,14 +2459,14 @@ function renderReportTable(tableElId, classes){
     const count = counts.get(c.id) || 0;
     body += `<tr>
       <td>${i+1}</td>
-      <td>${c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS"}</td>
-      <td>${c.academicYear||""}</td>
-      <td>${c.unitCode||""}</td>
-      <td><b>${c.unit||""}</b></td>
-      <td>${c.lecturerName||""}</td>
-      <td>${c.venue||""}</td>
-      <td>${formatDateTime(c.dateTime)}</td>
-      <td><span class="badge ${c.status}">${c.status.toUpperCase()}</span></td>
+      <td>${escapeHtml(c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS")}</td>
+      <td>${escapeHtml(c.academicYear||"")}</td>
+      <td>${escapeHtml(c.unitCode||"")}</td>
+      <td><b>${escapeHtml(c.unit||"")}</b></td>
+      <td>${escapeHtml(c.lecturerName||"")}</td>
+      <td>${escapeHtml(c.venue||"")}</td>
+      <td>${escapeHtml(formatDateTime(c.dateTime))}</td>
+      <td><span class="badge ${c.status}">${escapeHtml(String(c.status||"").toUpperCase())}</span></td>
       <td><b>${count}</b></td>
     </tr>`;
   });
@@ -2458,7 +2504,6 @@ $("generateReportLecturerBtn").addEventListener("click", ()=>{
     semester: $("repSemesterL").value,
     status: $("repStatusL").value
   };
-  // ✅ fixed syntax + simplest: filter all then pick mine
   const classes = filterClassesForReport(filters);
   const mine = classes.filter(c=>c.lecturerId===currentUser?.id);
   lastReport = { classes: mine, scope:"lecturer" };
@@ -2517,7 +2562,14 @@ function exportReportCsv(classes, filename){
     counts.get(c.id)||0
   ]);
   const header = ["#","Type","AcademicYear","UnitCode","UnitName","Lecturer","Venue","DateTime","Status","AttendanceCount"];
-  const csv = [header.join(","), ...rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(","))].join("\n");
+  const csv = [
+    header.join(","),
+    ...rows.map(r=>r.map(x=>{
+      const val = safeForCsv(x).toString().replaceAll('"','""');
+      return `"${val}"`;
+    }).join(","))
+  ].join("\n");
+
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -2527,24 +2579,65 @@ function exportReportCsv(classes, filename){
   URL.revokeObjectURL(url);
 }
 
+/* REAL PDF for Sessions List */
+function exportSessionsListPdf(classes, filename="jooust-sessions-report.pdf"){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    alert("PDF library not loaded.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p","pt","a4");
+  const margin = 40;
+
+  doc.setFontSize(14);
+  doc.setTextColor(0,82,204);
+  doc.text("JOOUST Sessions Report", margin, 40);
+
+  doc.setFontSize(10);
+  doc.setTextColor(71,85,105);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 58);
+
+  const d = loadData();
+  const counts = new Map();
+  d.attendance.forEach(a => counts.set(a.classId, (counts.get(a.classId)||0)+1));
+
+  const body = classes.map((c,i)=>[
+    i+1,
+    c.type==="meeting" ? `MEETING (${c.meetingMode||""})` : "CLASS",
+    c.academicYear||"",
+    c.unitCode||"",
+    c.unit||"",
+    c.lecturerName||"",
+    c.venue||"",
+    formatDateTime(c.dateTime),
+    (c.status||"").toUpperCase(),
+    String(counts.get(c.id)||0)
+  ]);
+
+  doc.autoTable({
+    startY: 80,
+    head: [[ "#","Type","AY","Code","Unit/Meeting","Lecturer","Venue","Date/Time","Status","Count" ]],
+    body,
+    styles:{ fontSize: 8, cellPadding: 3 },
+    headStyles:{ fillColor:[0,82,204], textColor:255 }
+  });
+
+  doc.save(filename);
+}
+
 $("exportExcelBtn").addEventListener("click", ()=> exportReportExcel(lastReport.classes, "jooust-report-sessions.xlsx"));
 $("exportExcelBtnL").addEventListener("click", ()=> exportReportExcel(lastReport.classes, "jooust-my-report-sessions.xlsx"));
 
-$("exportPdfBtn").addEventListener("click", ()=>{
-  exportReportCsv(lastReport.classes, "jooust-report-sessions.csv");
-  alert("For the sessions-list report, CSV is generated quickly. For attendance sheet PDF, open a session then Download PDF.");
-});
-$("exportPdfBtnL").addEventListener("click", ()=>{
-  exportReportCsv(lastReport.classes, "jooust-my-report-sessions.csv");
-  alert("For the sessions-list report, CSV is generated quickly. For attendance sheet PDF, open a session then Download PDF.");
-});
+$("exportPdfBtn").addEventListener("click", ()=> exportSessionsListPdf(lastReport.classes, "jooust-report-sessions.pdf"));
+$("exportPdfBtnL").addEventListener("click", ()=> exportSessionsListPdf(lastReport.classes, "jooust-my-report-sessions.pdf"));
+
 $("exportWordBtn").addEventListener("click", ()=>{
   exportReportCsv(lastReport.classes, "jooust-report-sessions.csv");
-  alert("For sessions-list Word export, use CSV/Excel. Attendance sheet Word is available inside each session (View → Download Word).");
+  alert("Sessions list Word: use CSV/Excel. Attendance Word is inside each session (View → Download Word).");
 });
 $("exportWordBtnL").addEventListener("click", ()=>{
   exportReportCsv(lastReport.classes, "jooust-my-report-sessions.csv");
-  alert("For sessions-list Word export, use CSV/Excel. Attendance sheet Word is available inside each session (View → Download Word).");
+  alert("Sessions list Word: use CSV/Excel. Attendance Word is inside each session (View → Download Word).");
 });
 
 // Download ALL Reports (Excel workbook)
