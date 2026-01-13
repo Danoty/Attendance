@@ -127,7 +127,7 @@
       height: 150px;
       cursor: crosshair;
       box-shadow: inset 0 2px 10px rgba(15,23,42,.05);
-      touch-action: none; /* keep */
+      touch-action: none;
     }
     .signature-actions{ display:flex; justify-content:flex-end; gap:.4rem; margin-top:.35rem; }
 
@@ -192,6 +192,9 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- ✅ Charts -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -222,7 +225,7 @@
     </p>
 
     <div class="kpi-grid">
-      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions can enforce within 1km of JOOUST</div></div>
+      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions enforce within <b>30m</b> of selected session location</div></div>
       <div class="kpi"><div class="v">Online Meetings</div><div class="t">Staff can sign remotely for online meetings</div></div>
       <div class="kpi"><div class="v">Signatures</div><div class="t">Finger or mouse on phone/laptop</div></div>
       <div class="kpi"><div class="v">Academic Year</div><div class="t">Filters + reports include academic year (e.g. 2025/2026)</div></div>
@@ -375,7 +378,7 @@
     </div>
 
     <div class="small" id="geoNote" style="margin-top:.8rem;">
-      Note: Physical sessions may ask for location access (GPS) to confirm you are within JOOUST (1km radius).
+      Note: Physical sessions require GPS location access to confirm you are within <b>30 meters</b> of the session location.
     </div>
   </section>
 
@@ -510,6 +513,44 @@
 
         <div id="reportMeta" class="muted" style="margin-top:.6rem;"></div>
         <table id="reportTable"></table>
+
+        <!-- ✅ Person % + Chart -->
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0;" />
+
+        <h4 style="margin:.2rem 0 .35rem;">Student/Staff Attendance % (Selected Period)</h4>
+        <div class="small" style="margin-bottom:.6rem;">
+          Enter a Student Admission No (class) or Staff No/PF (meeting) to compute attendance percentage across matching sessions.
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="repPersonId">Student/Staff ID</label>
+            <input id="repPersonId" type="text" placeholder="e.g. SCI/1234/2024 or PF12345" />
+          </div>
+          <div>
+            <label for="repDateFrom">From Date</label>
+            <input id="repDateFrom" type="date" />
+          </div>
+          <div>
+            <label for="repDateTo">To Date</label>
+            <input id="repDateTo" type="date" />
+          </div>
+        </div>
+
+        <div id="personStatsBox" class="alert hidden" style="margin-top:.6rem;"></div>
+
+        <div class="card" style="margin-top:.7rem;">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+            <div>
+              <b>Chart</b>
+              <div class="small">Shows attended vs missed sessions over time (based on your selected filters).</div>
+            </div>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-secondary" id="clearPersonChartBtn" type="button">Clear Chart</button>
+            </div>
+          </div>
+          <canvas id="personChart" style="width:100%;max-height:320px;margin-top:.5rem;"></canvas>
+        </div>
       </div>
     </section>
 
@@ -625,6 +666,37 @@
         </div>
       </div>
 
+      <!-- ✅ Geofence center picker (Physical only) -->
+      <div id="geoPickWrap" class="card" style="padding:.85rem;margin-top:.7rem;border:1px dashed rgba(0,82,204,.25);">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+          <div>
+            <b>Geofence Center (Physical only)</b>
+            <div class="small">Pick current location and geofence within <b>30m</b>.</div>
+          </div>
+          <div class="btn-group" style="margin:0;">
+            <button class="btn btn-secondary" type="button" id="pickSessionGeoBtn">Use My Current Location</button>
+            <button class="btn btn-secondary" type="button" id="clearSessionGeoBtn">Clear</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:.6rem;">
+          <div>
+            <label for="lcGeoLat">Latitude</label>
+            <input id="lcGeoLat" type="text" placeholder="Auto-filled" readonly />
+          </div>
+          <div>
+            <label for="lcGeoLon">Longitude</label>
+            <input id="lcGeoLon" type="text" placeholder="Auto-filled" readonly />
+          </div>
+          <div>
+            <label for="lcGeoAcc">Accuracy (m)</label>
+            <input id="lcGeoAcc" type="text" placeholder="Auto-filled" readonly />
+          </div>
+        </div>
+
+        <div id="geoPickMsg" class="alert hidden" style="margin-top:.6rem;"></div>
+      </div>
+
       <div class="btn-group">
         <button class="btn btn-success" id="createClassBtn">Create / Start</button>
       </div>
@@ -687,6 +759,41 @@
 
         <div id="reportMetaL" class="muted" style="margin-top:.6rem;"></div>
         <table id="reportTableL"></table>
+
+        <!-- ✅ Person % + Chart (Lecturer scope) -->
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0;" />
+
+        <h4 style="margin:.2rem 0 .35rem;">Student/Staff Attendance % (My Sessions)</h4>
+
+        <div class="row">
+          <div>
+            <label for="repPersonIdL">Student/Staff ID</label>
+            <input id="repPersonIdL" type="text" placeholder="Admission No or Staff/PF No" />
+          </div>
+          <div>
+            <label for="repDateFromL">From Date</label>
+            <input id="repDateFromL" type="date" />
+          </div>
+          <div>
+            <label for="repDateToL">To Date</label>
+            <input id="repDateToL" type="date" />
+          </div>
+        </div>
+
+        <div id="personStatsBoxL" class="alert hidden" style="margin-top:.6rem;"></div>
+
+        <div class="card" style="margin-top:.7rem;">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+            <div>
+              <b>Chart</b>
+              <div class="small">Attended vs missed sessions over time (My Sessions + selected filters).</div>
+            </div>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-secondary" id="clearPersonChartBtnL" type="button">Clear Chart</button>
+            </div>
+          </div>
+          <canvas id="personChartL" style="width:100%;max-height:320px;margin-top:.5rem;"></canvas>
+        </div>
       </div>
     </section>
   </section>
@@ -801,9 +908,11 @@
 =========================== */
 const STORAGE_KEY = "jooust_attendance_data_v6_merged";
 
-/* JOOUST Center (Approx) */
+/* Fallback center (only used if a legacy session lacks geoCenter) */
 const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 };
-const GEOFENCE_RADIUS_KM = 1.0;
+
+/* ✅ 30m radius */
+const GEOFENCE_RADIUS_KM = 0.03;
 
 /* Session timeout (frontend-only) */
 const SESSION_TIMEOUT_MIN = 20;
@@ -878,7 +987,11 @@ function migrateData(d){
     lecturerSignature: c.lecturerSignature || null,
     hodName: c.hodName || "",
     hodSignature: c.hodSignature || null,
-    createdAt: c.createdAt || Date.now()
+    createdAt: c.createdAt || Date.now(),
+
+    /* ✅ NEW: per-session geofence center + radius */
+    geoCenter: c.geoCenter || null,
+    geoRadiusKm: (typeof c.geoRadiusKm === "number") ? c.geoRadiusKm : GEOFENCE_RADIUS_KM
   }));
 
   d.attendance = d.attendance.map(a=>({
@@ -986,9 +1099,6 @@ loadLogoAsDataUrl();
 
 /* ===========================
    ✅ Signature pads (ALL DEVICES FIX)
-   - Pointer events (mouse/touch/pen)
-   - HiDPI scaling
-   - Preserve strokes on resize/orientation
 =========================== */
 function setupSignaturePad(canvas, opts = {}) {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -1260,6 +1370,7 @@ $("loginBtn").addEventListener("click", ()=>{
     refreshAllDropdowns();
     renderLecturerClasses();
     refreshClassPickers();
+    updateCreateSessionUI();
   }
 });
 
@@ -1476,17 +1587,24 @@ function hookupCascadingCreateClass(){
 }
 
 /* ===========================
-   Session type UI
+   Session type UI (includes geo picker)
 =========================== */
 function updateCreateSessionUI(){
   const type = $("lcType")?.value || "class";
   const meetingWrap = $("meetingModeWrap");
   if(meetingWrap) meetingWrap.classList.toggle("hidden", type !== "meeting");
+
+  // ✅ Show geo picker only if session is PHYSICAL
+  const geoWrap = $("geoPickWrap");
+  const mode = (type==="meeting") ? ($("lcMeetingMode")?.value || "online") : "physical";
+  const isPhysical = (type==="class") || (type==="meeting" && mode==="physical");
+  if(geoWrap) geoWrap.classList.toggle("hidden", !isPhysical);
 }
 $("lcType").addEventListener("change", updateCreateSessionUI);
+$("lcMeetingMode")?.addEventListener("change", updateCreateSessionUI);
 
 /* ===========================
-   GEO helpers
+   GEO helpers + session geo picker
 =========================== */
 function haversineKm(lat1, lon1, lat2, lon2){
   const R = 6371;
@@ -1507,81 +1625,164 @@ function getGeo(){
   });
 }
 
+function setSessionGeoInputs(g){
+  $("lcGeoLat").value = g ? g.lat.toFixed(6) : "";
+  $("lcGeoLon").value = g ? g.lon.toFixed(6) : "";
+  $("lcGeoAcc").value = g ? Math.round(g.acc) : "";
+}
+function getSessionGeoFromInputs(){
+  const lat = parseFloat(($("lcGeoLat").value || "").trim());
+  const lon = parseFloat(($("lcGeoLon").value || "").trim());
+  const acc = parseFloat(($("lcGeoAcc").value || "").trim());
+  if(!isFinite(lat) || !isFinite(lon)) return null;
+  return { lat, lon, acc: isFinite(acc) ? acc : null };
+}
+
+$("pickSessionGeoBtn")?.addEventListener("click", async ()=>{
+  const msgEl = $("geoPickMsg");
+  try{
+    const g = await getGeo();
+    setSessionGeoInputs(g);
+    setAlert(msgEl, `Geofence center set.\nLat: ${g.lat.toFixed(6)}\nLon: ${g.lon.toFixed(6)}\nAccuracy: ${Math.round(g.acc)} m`, "success");
+  }catch(e){
+    setAlert(msgEl, "Failed to get location. Please enable GPS/location permission and try again.", "danger");
+  }
+});
+$("clearSessionGeoBtn")?.addEventListener("click", ()=>{
+  setSessionGeoInputs(null);
+  const msgEl = $("geoPickMsg");
+  if(msgEl) msgEl.classList.add("hidden");
+});
+
 /* ===========================
-   CLASSES/MEETINGS: Lecturer create
+   ✅ Student/Staff Attendance % + Chart
 =========================== */
-$("createClassBtn").addEventListener("click", ()=>{
-  const type = $("lcType").value;
-  const meetingMode = $("lcMeetingMode").value;
+function parseDateInput(v){
+  if(!v) return null;
+  const d = new Date(v + "T00:00:00");
+  return isNaN(d) ? null : d.getTime();
+}
+function classInDateRange(cls, fromTs, toTs){
+  if(!fromTs && !toTs) return true;
+  const t = new Date(cls.dateTime || "").getTime();
+  if(isNaN(t)) return false;
+  if(fromTs && t < fromTs) return false;
+  if(toTs){
+    const end = toTs + (24*60*60*1000) - 1;
+    if(t > end) return false;
+  }
+  return true;
+}
+function getAttendanceKeyByClass(cls){
+  return (cls.type === "meeting") ? "staffNo" : "admission";
+}
+function computePersonStats({ personId, classesScope, fromTs, toTs }){
+  const d = loadData();
+  const pid = (personId || "").trim();
+  if(!pid) return null;
 
-  const academicYear = $("lcAcademicYear").value.trim();
-  const f = $("lcFaculty").value.trim();
-  const c = $("lcCourse").value.trim();
-  const u = $("lcUnit").value.trim();
-  const unitCode = $("lcUnitCode").value.trim();
-  const y = $("lcYear").value.trim();
-  const s = $("lcSemester").value.trim();
+  const scoped = (classesScope || []).filter(c=> classInDateRange(c, fromTs, toTs));
+  const total = scoped.length;
 
-  const v = $("lcVenue").value.trim();
-  const dt = $("lcDateTime").value;
-  const msgEl = $("createClassMsg");
+  const att = d.attendance || [];
+  let attended = 0;
 
-  if(!currentUser || currentUser.role!=="lecturer"){
-    setAlert(msgEl,"You must be logged in as lecturer to create sessions.","danger");
+  const timeline = scoped
+    .slice()
+    .sort((a,b)=> new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+    .map(cls=>{
+      const key = getAttendanceKeyByClass(cls);
+      const present = att.some(a => a.classId === cls.id && String(a[key]||"").trim() === pid);
+      if(present) attended++;
+      return { date: formatDateTime(cls.dateTime), present };
+    });
+
+  const missed = Math.max(0, total - attended);
+  const pct = total > 0 ? Math.round((attended / total) * 1000) / 10 : 0;
+
+  return { total, attended, missed, pct, timeline };
+}
+function showPersonStats(boxId, stats, personId){
+  const box = $(boxId);
+  if(!box) return;
+  const pid = (personId || "").trim();
+
+  if(!pid){
+    box.classList.add("hidden");
     return;
   }
-  if(!v || !dt){
-    setAlert(msgEl,"Please fill Venue/Platform and Date & Time.","danger");
+  if(!stats){
+    setAlert(box, "Enter a Student/Staff ID to compute attendance %.", "info");
     return;
   }
-
-  if(type==="class"){
-    if(!academicYear){ setAlert(msgEl,"Please select Academic Year.","danger"); return; }
-    if(!f || !c || !u || !y || !s){
-      setAlert(msgEl,"Please select Faculty/Course/Unit/Study Year/Semester for classes.","danger");
-      return;
-    }
-    if(!unitCode){
-      setAlert(msgEl,"Unit Code is required for classes.","danger");
-      return;
-    }
+  if(stats.total === 0){
+    setAlert(box, `No sessions match your filters for ID: ${pid}`, "danger");
+    return;
   }
+  setAlert(
+    box,
+    `ID: ${pid}\nSessions in scope: ${stats.total}\nAttended: ${stats.attended}\nMissed: ${stats.missed}\nAttendance %: ${stats.pct}%`,
+    "success"
+  );
+}
+function chartRef(){
+  let ref = null;
+  return { get: ()=>ref, set: (v)=>{ ref=v; } };
+}
+const chartA = chartRef();
+const chartL = chartRef();
 
-  DATA = loadData();
-  const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
-  if(!lec){ setAlert(msgEl,"Lecturer not found.","danger"); return; }
+function renderPersonChart(canvasId, stats, chartRefSetter){
+  const canvas = $(canvasId);
+  if(!canvas) return;
 
-  const classId = uuid();
-  const cls = {
-    id: classId,
-    type,
-    meetingMode: type==="meeting" ? meetingMode : "physical",
-    academicYear: type==="meeting" ? (academicYear || "") : academicYear,
-    unitCode: unitCode || "",
-    lecturerId: lec.id,
-    faculty: f || "",
-    course: c || "",
-    unit: type==="meeting" ? "Staff Meeting" : (u || ""),
-    year: y || "",
-    semester: s || "",
-    venue: v,
-    dateTime: dt,
-    status: "open",
-    lecturerName: lec.salutation + " " + lec.fullName,
-    lecturerSignature: null,
-    hodName: "",
-    hodSignature: null,
-    createdAt: Date.now()
-  };
+  const old = chartRefSetter.get();
+  if(old){ old.destroy(); chartRefSetter.set(null); }
 
-  DATA.classes.push(cls);
-  saveData(DATA);
+  if(!stats || !stats.timeline.length || !window.Chart) return;
 
-  renderLecturerClasses();
-  refreshClassPickers();
+  const labels = stats.timeline.map(x=>x.date);
+  const presentData = stats.timeline.map(x=> x.present ? 1 : 0);
+  const missedData  = stats.timeline.map(x=> x.present ? 0 : 1);
 
-  const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
-  setAlert(msgEl, "Session created. Share this sign-in link:\n" + link, "success");
+  const ch = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label: "Present", data: presentData, stack: "s" },
+        { label: "Absent", data: missedData, stack: "s" }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+      },
+      plugins: { legend: { display: true } }
+    }
+  });
+
+  chartRefSetter.set(ch);
+}
+
+$("clearPersonChartBtn")?.addEventListener("click", ()=>{
+  const old = chartA.get();
+  if(old){ old.destroy(); chartA.set(null); }
+  $("personStatsBox")?.classList.add("hidden");
+  $("repPersonId").value = "";
+  $("repDateFrom").value = "";
+  $("repDateTo").value = "";
+});
+
+$("clearPersonChartBtnL")?.addEventListener("click", ()=>{
+  const old = chartL.get();
+  if(old){ old.destroy(); chartL.set(null); }
+  $("personStatsBoxL")?.classList.add("hidden");
+  $("repPersonIdL").value = "";
+  $("repDateFromL").value = "";
+  $("repDateToL").value = "";
 });
 
 /* ===========================
@@ -1660,6 +1861,94 @@ function refreshClassPickers(){
     });
   }
 }
+
+/* ===========================
+   CLASSES/MEETINGS: Lecturer create
+=========================== */
+$("createClassBtn").addEventListener("click", ()=>{
+  const type = $("lcType").value;
+  const meetingMode = $("lcMeetingMode").value;
+
+  const academicYear = $("lcAcademicYear").value.trim();
+  const f = $("lcFaculty").value.trim();
+  const c = $("lcCourse").value.trim();
+  const u = $("lcUnit").value.trim();
+  const unitCode = $("lcUnitCode").value.trim();
+  const y = $("lcYear").value.trim();
+  const s = $("lcSemester").value.trim();
+
+  const v = $("lcVenue").value.trim();
+  const dt = $("lcDateTime").value;
+  const msgEl = $("createClassMsg");
+
+  if(!currentUser || currentUser.role!=="lecturer"){
+    setAlert(msgEl,"You must be logged in as lecturer to create sessions.","danger");
+    return;
+  }
+  if(!v || !dt){
+    setAlert(msgEl,"Please fill Venue/Platform and Date & Time.","danger");
+    return;
+  }
+
+  if(type==="class"){
+    if(!academicYear){ setAlert(msgEl,"Please select Academic Year.","danger"); return; }
+    if(!f || !c || !u || !y || !s){
+      setAlert(msgEl,"Please select Faculty/Course/Unit/Study Year/Semester for classes.","danger");
+      return;
+    }
+    if(!unitCode){
+      setAlert(msgEl,"Unit Code is required for classes.","danger");
+      return;
+    }
+  }
+
+  const isPhysical = (type==="class") || (type==="meeting" && meetingMode==="physical");
+  const geoCenter = isPhysical ? getSessionGeoFromInputs() : null;
+  if(isPhysical && !geoCenter){
+    setAlert(msgEl,"Physical sessions require a geofence center. Click 'Use My Current Location'.","danger");
+    return;
+  }
+
+  DATA = loadData();
+  const lec = DATA.lecturers.find(l=>l.id===currentUser.id);
+  if(!lec){ setAlert(msgEl,"Lecturer not found.","danger"); return; }
+
+  const classId = uuid();
+  const cls = {
+    id: classId,
+    type,
+    meetingMode: type==="meeting" ? meetingMode : "physical",
+    academicYear: type==="meeting" ? (academicYear || "") : academicYear,
+    unitCode: unitCode || "",
+    lecturerId: lec.id,
+    faculty: f || "",
+    course: c || "",
+    unit: type==="meeting" ? "Staff Meeting" : (u || ""),
+    year: y || "",
+    semester: s || "",
+    venue: v,
+    dateTime: dt,
+    status: "open",
+    lecturerName: lec.salutation + " " + lec.fullName,
+    lecturerSignature: null,
+    hodName: "",
+    hodSignature: null,
+    createdAt: Date.now(),
+
+    /* ✅ NEW */
+    geoCenter: geoCenter,
+    geoRadiusKm: GEOFENCE_RADIUS_KM
+  };
+
+  DATA.classes.push(cls);
+  saveData(DATA);
+
+  renderLecturerClasses();
+  refreshClassPickers();
+
+  const link = window.location.origin + window.location.pathname + "?mode=student&classId=" + encodeURIComponent(classId);
+  setAlert(msgEl, "Session created. Share this sign-in link:\n" + link, "success");
+});
 
 /* ===========================
    Lecturer sessions table
@@ -1854,7 +2143,7 @@ function openSigModal(mode){
     $("hodNameInput").value = cls?.hodName || "";
   }
   $("sigModal").classList.remove("hidden");
-  setTimeout(()=> sigPad._resize(), 50); // ✅ important for phones
+  setTimeout(()=> sigPad._resize(), 50);
 }
 
 $("sigSaveBtn").addEventListener("click", ()=>{
@@ -2061,13 +2350,18 @@ Status: ${cls.status.toUpperCase()}`;
 
   const requireGeo = (cls.type==="class") || (cls.type==="meeting" && cls.meetingMode==="physical");
   if(requireGeo){
+    const center = cls.geoCenter || JOOUST_CENTER;
+    const radiusKm = (typeof cls.geoRadiusKm === "number") ? cls.geoRadiusKm : GEOFENCE_RADIUS_KM;
     $("studentGeoInfo").classList.remove("hidden");
-    $("studentGeoInfo").textContent = "This is a PHYSICAL session. Location verification is required (within 1km of JOOUST). When you submit, the system will verify your location.";
+    $("studentGeoInfo").textContent =
+      `This is a PHYSICAL session. Location verification is required within ${(radiusKm*1000).toFixed(0)}m.\n`+
+      `Session Center: ${center.lat.toFixed(6)}, ${center.lon.toFixed(6)}\n`+
+      `Tip: Turn on GPS for best accuracy.`;
   }else{
     $("studentGeoInfo").classList.add("hidden");
   }
 
-  setTimeout(()=> stSig._resize(), 50); // ✅ important for phones
+  setTimeout(()=> stSig._resize(), 50);
   return true;
 }
 
@@ -2111,11 +2405,18 @@ $("stSubmit").addEventListener("click", async ()=>{
   if(requireGeo){
     try{
       const g = await getGeo();
-      const distKm = haversineKm(g.lat, g.lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
+      const center = cls.geoCenter || JOOUST_CENTER;
+      const radiusKm = (typeof cls.geoRadiusKm === "number") ? cls.geoRadiusKm : GEOFENCE_RADIUS_KM;
+
+      const distKm = haversineKm(g.lat, g.lon, center.lat, center.lon);
       geoObj = { lat:g.lat, lon:g.lon, acc:g.acc, distKm: +distKm.toFixed(3) };
 
-      if(distKm > GEOFENCE_RADIUS_KM){
-        setAlert($("studentSubmitMsg"), `Location check failed. You are ${distKm.toFixed(2)} km away. Required within ${GEOFENCE_RADIUS_KM} km of JOOUST.`, "danger");
+      if(distKm > radiusKm){
+        setAlert(
+          $("studentSubmitMsg"),
+          `Location check failed. You are ${(distKm*1000).toFixed(0)} m away. Required within ${(radiusKm*1000).toFixed(0)} m of the session location.`,
+          "danger"
+        );
         return;
       }
     }catch(e){
@@ -2219,6 +2520,8 @@ async function exportClassAttendanceExcel(cls, rows){
     ["Date/Time", formatDateTime(cls.dateTime)],
     ["Lecturer", cls.lecturerName || ""],
     ["Status", cls.status || ""],
+    ["Geofence Radius (m)", Math.round(((cls.geoRadiusKm ?? GEOFENCE_RADIUS_KM) * 1000))],
+    ["Geofence Center", (cls.geoCenter ? `${cls.geoCenter.lat.toFixed(6)}, ${cls.geoCenter.lon.toFixed(6)}` : "N/A")],
     [""],
     ["System created by Gerotech — Dan Otieno."]
   ];
@@ -2261,20 +2564,24 @@ async function exportClassAttendancePdf(cls, rows){
   doc.text(`Unit Code: ${cls.unitCode || ""}`, margin, metaY+28);
   doc.text(`Unit/Meeting: ${cls.unit || ""}`, margin, metaY+42);
 
+  const rKm = (typeof cls.geoRadiusKm === "number") ? cls.geoRadiusKm : GEOFENCE_RADIUS_KM;
+  const c0 = cls.geoCenter ? `${cls.geoCenter.lat.toFixed(6)}, ${cls.geoCenter.lon.toFixed(6)}` : "N/A";
+  doc.text(`Geofence: ${Math.round(rKm*1000)}m · Center: ${c0}`, margin, metaY+56);
+
   if(cls.type!=="meeting"){
-    doc.text(`Course: ${cls.course}`, margin, metaY+56);
-    doc.text(`Faculty: ${cls.faculty}`, margin, metaY+70);
-    doc.text(`Study Year/Sem: ${cls.year} / ${cls.semester}`, margin, metaY+84);
-    doc.text(`Venue: ${cls.venue}`, margin, metaY+98);
-    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+112);
-    doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin, metaY+126);
+    doc.text(`Course: ${cls.course}`, margin, metaY+70);
+    doc.text(`Faculty: ${cls.faculty}`, margin, metaY+84);
+    doc.text(`Study Year/Sem: ${cls.year} / ${cls.semester}`, margin, metaY+98);
+    doc.text(`Venue: ${cls.venue}`, margin, metaY+112);
+    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+126);
+    doc.text(`Lecturer: ${cls.lecturerName || ""}`, margin, metaY+140);
   } else {
-    doc.text(`Venue/Platform: ${cls.venue}`, margin, metaY+56);
-    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+70);
-    doc.text(`Organizer: ${cls.lecturerName || ""}`, margin, metaY+84);
+    doc.text(`Venue/Platform: ${cls.venue}`, margin, metaY+70);
+    doc.text(`Date/Time: ${formatDateTime(cls.dateTime)}`, margin, metaY+84);
+    doc.text(`Organizer: ${cls.lecturerName || ""}`, margin, metaY+98);
   }
 
-  const startY = cls.type==="meeting" ? (metaY + 105) : (metaY + 150);
+  const startY = (cls.type==="meeting") ? (metaY + 120) : (metaY + 165);
 
   const body = rows.map(r=>[
     r["#"], r.ID, r.Surname, r.Middle, r.First, "", r.Timestamp
@@ -2351,11 +2658,15 @@ async function exportClassAttendanceWord(cls, rows){
   const lecSig = cls.lecturerSignature ? `<img src="${cls.lecturerSignature}" style="height:70px;border:1px solid #ddd;border-radius:10px;" />` : `<i>Not provided</i>`;
   const hodSig = cls.hodSignature ? `<img src="${cls.hodSignature}" style="height:70px;border:1px solid #ddd;border-radius:10px;" />` : `<i>Not provided</i>`;
 
+  const rKm = (typeof cls.geoRadiusKm === "number") ? cls.geoRadiusKm : GEOFENCE_RADIUS_KM;
+  const c0 = cls.geoCenter ? `${cls.geoCenter.lat.toFixed(6)}, ${cls.geoCenter.lon.toFixed(6)}` : "N/A";
+
   const metaBlock = cls.type==="meeting"
     ? `
       <tr><td><b>Type:</b> STAFF MEETING (${(cls.meetingMode||"").toUpperCase()})</td><td><b>Academic Year:</b> ${cls.academicYear || ""}</td></tr>
       <tr><td><b>Venue/Platform:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
       <tr><td colspan="2"><b>Organizer:</b> ${cls.lecturerName || ""}</td></tr>
+      <tr><td colspan="2"><b>Geofence:</b> ${Math.round(rKm*1000)}m · <b>Center:</b> ${c0}</td></tr>
     `
     : `
       <tr><td><b>Academic Year:</b> ${cls.academicYear || ""}</td><td><b>Unit Code:</b> ${cls.unitCode || ""}</td></tr>
@@ -2363,6 +2674,7 @@ async function exportClassAttendanceWord(cls, rows){
       <tr><td><b>Faculty:</b> ${cls.faculty}</td><td><b>Study Year/Sem:</b> ${cls.year} / ${cls.semester}</td></tr>
       <tr><td><b>Venue:</b> ${cls.venue}</td><td><b>Date/Time:</b> ${formatDateTime(cls.dateTime)}</td></tr>
       <tr><td colspan="2"><b>Lecturer:</b> ${cls.lecturerName || ""}</td></tr>
+      <tr><td colspan="2"><b>Geofence:</b> ${Math.round(rKm*1000)}m · <b>Center:</b> ${c0}</td></tr>
     `;
 
   const html = `
@@ -2424,7 +2736,7 @@ async function exportClassAttendanceWord(cls, rows){
 }
 
 /* ===========================
-   REPORTS (unchanged from your file)
+   REPORTS (sessions list) + Person % chart
 =========================== */
 function filterClassesForReport({ ay, faculty, course, unit, year, semester, status, onlyLecturerId=null }){
   DATA = loadData();
@@ -2494,6 +2806,14 @@ $("generateReportBtn").addEventListener("click", ()=>{
   $("reportArea").classList.remove("hidden");
   $("reportMeta").textContent = `Matched sessions: ${classes.length}`;
   renderReportTable("reportTable", classes);
+
+  // ✅ Person % + Chart (Admin)
+  const personId = $("repPersonId")?.value || "";
+  const fromTs = parseDateInput($("repDateFrom")?.value || "");
+  const toTs   = parseDateInput($("repDateTo")?.value || "");
+  const stats = computePersonStats({ personId, classesScope: classes, fromTs, toTs });
+  showPersonStats("personStatsBox", stats, personId);
+  renderPersonChart("personChart", stats, chartA);
 });
 
 $("generateReportLecturerBtn").addEventListener("click", ()=>{
@@ -2513,6 +2833,14 @@ $("generateReportLecturerBtn").addEventListener("click", ()=>{
   $("reportAreaLecturer").classList.remove("hidden");
   $("reportMetaL").textContent = `Matched my sessions: ${mine.length}`;
   renderReportTable("reportTableL", mine);
+
+  // ✅ Person % + Chart (Lecturer)
+  const personId = $("repPersonIdL")?.value || "";
+  const fromTs = parseDateInput($("repDateFromL")?.value || "");
+  const toTs   = parseDateInput($("repDateToL")?.value || "");
+  const stats = computePersonStats({ personId, classesScope: mine, fromTs, toTs });
+  showPersonStats("personStatsBoxL", stats, personId);
+  renderPersonChart("personChartL", stats, chartL);
 });
 
 // Export report list (sessions list)
@@ -2652,6 +2980,8 @@ $("downloadAllReportsBtn").addEventListener("click", ()=>{
       ["DateTime", formatDateTime(cls.dateTime)],
       ["Lecturer", cls.lecturerName||""],
       ["Status", (cls.status||"").toUpperCase()],
+      ["GeoRadiusMeters", Math.round(((cls.geoRadiusKm ?? GEOFENCE_RADIUS_KM) * 1000))],
+      ["GeoCenter", (cls.geoCenter ? `${cls.geoCenter.lat.toFixed(6)}, ${cls.geoCenter.lon.toFixed(6)}` : "N/A")],
       [""],
       ["#","ID","Surname","Middle","First","Timestamp","SignatureDataURL"]
     ];
@@ -2674,6 +3004,7 @@ $("downloadAllReportsBtn").addEventListener("click", ()=>{
   showSection("loginSection");
   refreshAllDropdowns();
   refreshClassPickers();
+  updateCreateSessionUI();
 })();
 </script>
 </body>
