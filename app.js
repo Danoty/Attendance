@@ -1632,3 +1632,421 @@ async function exportClassAttendanceExcel(cls, rows){
 
   XLSX.writeFile(wb, `jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.xlsx`);
 }
+
+/* ===========================
+   CONTINUE FROM HERE (NEXT PART)
+   Paste this directly under exportClassAttendanceExcel(...)
+=========================== */
+
+/* ===========================
+   PDF Export (jsPDF + autoTable)
+=========================== */
+async function exportClassAttendancePdf(cls, rows){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    alert("PDF library not loaded. Ensure internet is available, then refresh.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
+
+  // Header (logo if available)
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 12;
+
+  if(jooustLogoDataUrl){
+    try{
+      doc.addImage(jooustLogoDataUrl, "JPEG", 10, 8, 18, 18);
+    }catch(e){ /* ignore */ }
+  }
+
+  doc.setFontSize(12);
+  doc.text("Jaramogi Oginga Odinga University of Science & Technology", 34, y);
+  y += 7;
+  doc.setFontSize(11);
+  doc.text("Session Attendance Export", 34, y);
+  y += 8;
+
+  doc.setFontSize(10);
+
+  const isMeeting = cls.type === "meeting";
+  const geoRadiusM = Math.round(((cls.geoRadiusKm ?? GEOFENCE_RADIUS_KM) * 1000));
+  const geoCenterTxt = cls.geoCenter ? `${cls.geoCenter.lat.toFixed(6)}, ${cls.geoCenter.lon.toFixed(6)}` : "N/A";
+
+  const metaLines = [
+    `Type: ${(cls.type||"").toUpperCase()}${isMeeting ? ` | Mode: ${(cls.meetingMode||"").toUpperCase()}` : ""}`,
+    `Academic Year: ${cls.academicYear || ""}`,
+    `Unit Code: ${cls.unitCode || ""}`,
+    `Unit/Meeting: ${cls.unit || ""}`,
+    `Course: ${cls.course || ""}`,
+    `Faculty: ${cls.faculty || ""}`,
+    `Study Year/Semester: ${cls.year || ""} / ${cls.semester || ""}`,
+    `Venue/Platform: ${cls.venue || ""}`,
+    `Date/Time: ${formatDateTime(cls.dateTime)}`,
+    `Lecturer: ${cls.lecturerName || ""}`,
+    `Status: ${(cls.status||"").toUpperCase()}`,
+    `Geofence: ${geoRadiusM}m | Center: ${geoCenterTxt}`
+  ];
+
+  metaLines.forEach(line=>{
+    doc.text(line, 10, y);
+    y += 5;
+  });
+
+  y += 2;
+
+  // Attendance table
+  const body = rows.map(r=>[
+    r["#"],
+    r.ID,
+    r.Surname,
+    r.Middle,
+    r.First,
+    r.Timestamp
+  ]);
+
+  doc.autoTable({
+    startY: y,
+    head: [["#", "ID", "Surname", "Middle", "First", "Timestamp"]],
+    body,
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [15, 23, 42] },
+    margin: { left: 10, right: 10 }
+  });
+
+  // Signatures block
+  const endY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : (y + 10);
+  let sy = endY;
+
+  doc.setFontSize(10);
+  doc.text("Signatures", 10, sy);
+  sy += 6;
+
+  const blockW = (pageWidth - 20 - 10) / 2; // 2 blocks + spacing
+  const blockH = 32;
+
+  // Lecturer
+  doc.rect(10, sy, blockW, blockH);
+  doc.text("Lecturer", 12, sy + 5);
+  doc.text(cls.lecturerName || "", 12, sy + 10);
+
+  if(cls.lecturerSignature){
+    try{
+      doc.addImage(cls.lecturerSignature, "JPEG", 12, sy + 12, blockW - 4, 14);
+    }catch(e){ /* ignore */ }
+  } else {
+    doc.setFontSize(9);
+    doc.text("(Not signed)", 12, sy + 22);
+    doc.setFontSize(10);
+  }
+
+  // HOD
+  const x2 = 10 + blockW + 10;
+  doc.rect(x2, sy, blockW, blockH);
+  doc.text("HOD", x2 + 2, sy + 5);
+  doc.text(cls.hodName || "", x2 + 2, sy + 10);
+
+  if(cls.hodSignature){
+    try{
+      doc.addImage(cls.hodSignature, "JPEG", x2 + 2, sy + 12, blockW - 4, 14);
+    }catch(e){ /* ignore */ }
+  } else {
+    doc.setFontSize(9);
+    doc.text("(Not signed)", x2 + 2, sy + 22);
+    doc.setFontSize(10);
+  }
+
+  sy += blockH + 8;
+
+  doc.setFontSize(9);
+  doc.text("System created by Gerotech — Dan Otieno.", 10, sy);
+
+  doc.save(`jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.pdf`);
+}
+
+/* ===========================
+   Word Export (docx)
+=========================== */
+async function exportClassAttendanceWord(cls, rows){
+  if(!window.docx){
+    alert("Word library not loaded. Ensure internet is available, then refresh.");
+    return;
+  }
+
+  const {
+    Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+    WidthType, AlignmentType, HeadingLevel
+  } = window.docx;
+
+  const isMeeting = cls.type === "meeting";
+  const geoRadiusM = Math.round(((cls.geoRadiusKm ?? GEOFENCE_RADIUS_KM) * 1000));
+  const geoCenterTxt = cls.geoCenter ? `${cls.geoCenter.lat.toFixed(6)}, ${cls.geoCenter.lon.toFixed(6)}` : "N/A";
+
+  const metaPairs = [
+    ["Type", (cls.type||"").toUpperCase()],
+    ["Meeting Mode", isMeeting ? (cls.meetingMode||"") : ""],
+    ["Academic Year", cls.academicYear || ""],
+    ["Unit Code", cls.unitCode || ""],
+    ["Unit/Meeting", cls.unit || ""],
+    ["Course", cls.course || ""],
+    ["Faculty", cls.faculty || ""],
+    ["Study Year", cls.year || ""],
+    ["Semester", cls.semester || ""],
+    ["Venue/Platform", cls.venue || ""],
+    ["Date/Time", formatDateTime(cls.dateTime)],
+    ["Lecturer", cls.lecturerName || ""],
+    ["Status", (cls.status||"").toUpperCase()],
+    ["Geofence Radius (m)", String(geoRadiusM)],
+    ["Geofence Center", geoCenterTxt]
+  ];
+
+  const metaTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: metaPairs.map(([k,v]) => new TableRow({
+      children: [
+        new TableCell({ children:[new Paragraph({ children:[new TextRun({text:k, bold:true})] })] }),
+        new TableCell({ children:[new Paragraph(String(v||""))] })
+      ]
+    }))
+  });
+
+  const headerRow = new TableRow({
+    children: ["#","ID","Surname","Middle","First","Timestamp"].map(h =>
+      new TableCell({
+        children: [new Paragraph({ children:[new TextRun({text:h, bold:true})] })]
+      })
+    )
+  });
+
+  const dataRows = rows.map(r=> new TableRow({
+    children: [
+      r["#"], r.ID, r.Surname, r.Middle, r.First, r.Timestamp
+    ].map(val => new TableCell({ children:[new Paragraph(String(val ?? ""))] }))
+  }));
+
+  const attTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [headerRow, ...dataRows]
+  });
+
+  const doc = new Document({
+    sections: [{
+      children: [
+        new Paragraph({ text: "Jaramogi Oginga Odinga University of Science & Technology", heading: HeadingLevel.HEADING_2 }),
+        new Paragraph({ text: "Session Attendance Export", heading: HeadingLevel.HEADING_3 }),
+        new Paragraph(""),
+        metaTable,
+        new Paragraph(""),
+        new Paragraph({ text: "Attendance List", heading: HeadingLevel.HEADING_3 }),
+        attTable,
+        new Paragraph(""),
+        new Paragraph({ text: "Signatures", heading: HeadingLevel.HEADING_3 }),
+        new Paragraph({ text: `Lecturer: ${cls.lecturerName || ""}` }),
+        new Paragraph({ text: `HOD: ${cls.hodName || ""}` }),
+        new Paragraph(""),
+        new Paragraph({
+          alignment: AlignmentType.LEFT,
+          children: [new TextRun({ text: "System created by Gerotech — Dan Otieno.", size: 18 })]
+        })
+      ]
+    }]
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.docx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ===========================
+   ADMIN REPORT (filter + export)
+=========================== */
+function getFilteredSessionsForReport(isLecturer){
+  DATA = loadData();
+  const all = DATA.classes || [];
+  const mine = (isLecturer && currentUser?.role==="lecturer")
+    ? all.filter(c=>c.lecturerId===currentUser.id)
+    : all.slice();
+
+  const ay = $(isLecturer ? "repAcademicYearL" : "repAcademicYear").value;
+  const fac = $(isLecturer ? "repFacultyL" : "repFaculty").value;
+  const course = $(isLecturer ? "repCourseL" : "repCourse").value;
+  const unit = $(isLecturer ? "repUnitL" : "repUnit").value;
+  const year = $(isLecturer ? "repYearL" : "repYear").value;
+  const sem = $(isLecturer ? "repSemesterL" : "repSemester").value;
+
+  return mine.filter(cls=>{
+    if(ay && (cls.academicYear||"") !== ay) return false;
+    if(fac && (cls.faculty||"") !== fac) return false;
+    if(course && (cls.course||"") !== course) return false;
+    if(unit && (cls.unit||"") !== unit) return false;
+    if(year && (cls.year||"") !== year) return false;
+    if(sem && (cls.semester||"") !== sem) return false;
+    return true;
+  });
+}
+
+function collectReportRowsForSessions(sessions){
+  DATA = loadData();
+  const rows = [];
+  sessions
+    .slice()
+    .sort((a,b)=> new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+    .forEach((cls, idx)=>{
+      const count = DATA.attendance.filter(a=>a.classId===cls.id).length;
+      rows.push({
+        "#": idx+1,
+        Type: (cls.type||"").toUpperCase(),
+        Mode: cls.type==="meeting" ? (cls.meetingMode||"").toUpperCase() : "PHYSICAL",
+        AcademicYear: cls.academicYear || "",
+        UnitCode: cls.unitCode || "",
+        Unit: cls.unit || "",
+        Course: cls.course || "",
+        Faculty: cls.faculty || "",
+        Year: cls.year || "",
+        Semester: cls.semester || "",
+        Venue: cls.venue || "",
+        DateTime: formatDateTime(cls.dateTime),
+        Lecturer: cls.lecturerName || "",
+        Status: (cls.status||"").toUpperCase(),
+        AttendanceCount: count
+      });
+    });
+  return rows;
+}
+
+function renderReportTable(tableId, rows){
+  const table = $(tableId);
+  if(!table) return;
+
+  if(!rows.length){
+    table.innerHTML = `<thead><tr><th>No data</th></tr></thead><tbody><tr><td>No sessions match your filters.</td></tr></tbody>`;
+    return;
+  }
+
+  const headKeys = Object.keys(rows[0]);
+  let thead = "<thead><tr>" + headKeys.map(k=>`<th>${k}</th>`).join("") + "</tr></thead>";
+  let tbody = "<tbody>";
+  rows.forEach(r=>{
+    tbody += "<tr>" + headKeys.map(k=>`<td>${String(r[k] ?? "")}</td>`).join("") + "</tr>";
+  });
+  tbody += "</tbody>";
+  table.innerHTML = thead + tbody;
+}
+
+$("generateReportBtn").addEventListener("click", ()=>{
+  const sessions = getFilteredSessionsForReport(false);
+  const rows = collectReportRowsForSessions(sessions);
+  renderReportTable("reportTable", rows);
+
+  // ✅ attendance % + chart
+  const pid = $("repPersonId").value.trim();
+  const fromTs = parseDateInput($("repDateFrom").value);
+  const toTs = parseDateInput($("repDateTo").value);
+  const stats = computePersonStats({ personId: pid, classesScope: sessions, fromTs, toTs });
+  showPersonStats("personStatsBox", stats, pid);
+  renderPersonChart("personChart", stats, chartA);
+});
+
+$("generateReportBtnL").addEventListener("click", ()=>{
+  const sessions = getFilteredSessionsForReport(true);
+  const rows = collectReportRowsForSessions(sessions);
+  renderReportTable("reportTableL", rows);
+
+  // ✅ attendance % + chart
+  const pid = $("repPersonIdL").value.trim();
+  const fromTs = parseDateInput($("repDateFromL").value);
+  const toTs = parseDateInput($("repDateToL").value);
+  const stats = computePersonStats({ personId: pid, classesScope: sessions, fromTs, toTs });
+  showPersonStats("personStatsBoxL", stats, pid);
+  renderPersonChart("personChartL", stats, chartL);
+});
+
+function exportJsonToCsv(filename, rows){
+  if(!rows.length){
+    alert("No data to export.");
+    return;
+  }
+  const header = Object.keys(rows[0]);
+  const csv = [
+    header.join(","),
+    ...rows.map(r=> header.map(h=>{
+      const val = (r[h] ?? "").toString().replaceAll('"','""');
+      return `"${val}"`;
+    }).join(","))
+  ].join("\n");
+
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportReportExcel(rows, filename){
+  if(!window.XLSX){
+    alert("Excel library not loaded.");
+    return;
+  }
+  if(!rows.length){
+    alert("No data to export.");
+    return;
+  }
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+  XLSX.writeFile(wb, filename);
+}
+
+/* Admin exports */
+$("exportReportCsvBtn").addEventListener("click", ()=>{
+  const sessions = getFilteredSessionsForReport(false);
+  const rows = collectReportRowsForSessions(sessions);
+  exportJsonToCsv("jooust-report.csv", rows);
+});
+$("exportReportExcelBtn").addEventListener("click", ()=>{
+  const sessions = getFilteredSessionsForReport(false);
+  const rows = collectReportRowsForSessions(sessions);
+  exportReportExcel(rows, "jooust-report.xlsx");
+});
+
+/* Lecturer exports */
+$("exportReportCsvBtnL").addEventListener("click", ()=>{
+  const sessions = getFilteredSessionsForReport(true);
+  const rows = collectReportRowsForSessions(sessions);
+  exportJsonToCsv("jooust-report-lecturer.csv", rows);
+});
+$("exportReportExcelBtnL").addEventListener("click", ()=>{
+  const sessions = getFilteredSessionsForReport(true);
+  const rows = collectReportRowsForSessions(sessions);
+  exportReportExcel(rows, "jooust-report-lecturer.xlsx");
+});
+
+/* ===========================
+   App startup
+=========================== */
+function init(){
+  // Direct student mode?
+  const mode = getQueryParam("mode");
+  if(mode==="student"){
+    loadStudentMode();
+    updateTopBar();
+    return;
+  }
+
+  // Default: login screen
+  showSection("loginSection");
+  updateTopBar();
+
+  // Render admin view if already logged? (we don't persist login)
+  renderFacultySummary();
+  refreshAllDropdowns();
+  refreshClassPickers();
+}
+
+init();
