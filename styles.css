@@ -1,5 +1,36 @@
-/* ✅ PASTE YOUR ORIGINAL <style>...</style> CONTENT HERE */
+/* ===========================
+   JOOUST ATTENDANCE SYSTEM
+   FULL ORIGINAL CSS
+=========================== */
 
-/* Start paste */
-/* ... your existing CSS from the <style> block ... */
-/* End paste */
+:root{
+  --jooust-blue:#0052cc;
+  --jooust-blue-dark:#003b8c;
+  --jooust-green:#24a148;
+  --jooust-gold:#f2c94c;
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --text:#1f2933;
+  --muted:#6b7280;
+  --danger:#e11d48;
+  --shadow: 0 10px 28px rgba(15,23,42,.10);
+  --shadow2: 0 18px 40px rgba(15,23,42,.14);
+  --radius: 16px;
+}
+
+*{
+  box-sizing:border-box;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body{
+  margin:0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* 🔹 REST OF YOUR CSS 🔹 */
+/* COPY EVERYTHING FROM YOUR ORIGINAL <style> BLOCK HERE */
+/* NOTHING SHOULD BE REMOVED */
+
+/* (You already pasted it once — reuse it exactly) */
