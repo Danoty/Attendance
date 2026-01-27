@@ -5,13 +5,13 @@
   <title>JOOUST Attendance Management System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Content Security Policy -->
+  <!-- ✅ CSP tuned for your current app.js (needs inline styles/classes + libs) -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self';
                  img-src 'self' data: https:;
-                 style-src 'self' https://fonts.googleapis.com;
+                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                  font-src https://fonts.gstatic.com data:;
-                 script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+                 script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
                  connect-src 'self' https:;
                  base-uri 'self';
                  frame-ancestors 'none';
@@ -19,6 +19,8 @@
                  upgrade-insecure-requests">
 
   <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
   <!-- App styles -->
@@ -36,158 +38,621 @@
 </head>
 
 <body>
-
-<!-- ================= HEADER ================= -->
-<header id="mainHeader">
-  <div class="header-inner">
-    <div class="brand">
-      <img src="logo.jpg" alt="JOOUST Logo" />
-      <h1>
-        JOOUST Attendance System
-        <span>Lectures · Staff Meetings · Digital Signatures · Smart Reports</span>
-      </h1>
-    </div>
-
-    <div class="top-actions">
-      <div id="userSummary" class="user-pill hidden"></div>
-      <button id="openChangePwdBtn" class="btn btn-outline hidden">Change Password</button>
-      <button id="logoutBtn" class="btn btn-outline hidden">Logout</button>
-    </div>
-  </div>
-</header>
-
-<!-- ================= MAIN ================= -->
-<main>
-
-  <!-- HERO -->
-  <div class="hero">
-    <h2>Smart Attendance for Lectures & Meetings</h2>
-    <p>
-      Fast sign-in, digital signatures, class/meeting links (QR supported),
-      and official exports (PDF/Word/Excel/CSV).
-    </p>
-
-    <div class="kpi-grid">
-      <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions enforce within 30m</div></div>
-      <div class="kpi"><div class="v">Online Meetings</div><div class="t">Remote sign-in supported</div></div>
-      <div class="kpi"><div class="v">Signatures</div><div class="t">Finger or mouse</div></div>
-      <div class="kpi"><div class="v">Academic Year</div><div class="t">Reports by academic year</div></div>
-    </div>
-  </div>
-
-  <!-- LOGIN -->
-  <section id="loginSection" class="card">
-    <h2>Login</h2>
-
-    <div class="row">
-      <label><input type="radio" name="loginRole" value="admin" checked> Admin</label>
-      <label><input type="radio" name="loginRole" value="lecturer"> Lecturer</label>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Username</label>
-        <input id="loginUsername" type="text">
+  <!-- ================= HEADER ================= -->
+  <header id="mainHeader">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="logo.jpg" alt="JOOUST Logo" />
+        <h1>
+          JOOUST Attendance System
+          <span>Lectures · Staff Meetings · Digital Signatures · Smart Reports</span>
+        </h1>
       </div>
-      <div>
-        <label>Password</label>
-        <input id="loginPassword" type="password">
+
+      <div class="top-actions">
+        <div id="userSummary" class="user-pill hidden"></div>
+        <button id="openChangePwdBtn" class="btn btn-outline hidden" type="button">Change Password</button>
+        <button id="logoutBtn" class="btn btn-outline hidden" type="button">Logout</button>
       </div>
     </div>
+  </header>
 
-    <div class="btn-group">
-      <button class="btn btn-primary" id="loginBtn">Login</button>
-      <button class="btn btn-secondary" id="showLecturerRegistration">Register as Lecturer</button>
-    </div>
+  <!-- ================= MAIN ================= -->
+  <main class="app-shell">
+    <!-- HERO -->
+    <section class="hero">
+      <h2>Smart Attendance for Lectures & Meetings</h2>
+      <p>
+        Fast sign-in, digital signatures, class/meeting links (QR supported),
+        and official exports (PDF/Word/Excel/CSV). Works great on phones (finger signature).
+      </p>
 
-    <div id="loginMessage" class="alert hidden"></div>
-  </section>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="v">Geo-Fenced</div><div class="t">Physical sessions enforce within <b>30m</b></div></div>
+        <div class="kpi"><div class="v">Online Meetings</div><div class="t">Remote sign-in supported</div></div>
+        <div class="kpi"><div class="v">Signatures</div><div class="t">Finger or mouse</div></div>
+        <div class="kpi"><div class="v">Academic Year</div><div class="t">Reports by academic year</div></div>
+      </div>
+    </section>
 
-  <!-- LECTURER REGISTRATION -->
-  <section id="lecturerRegistrationSection" class="card hidden">
-    <h2>Lecturer Registration</h2>
-    <div class="alert alert-info">Account requires admin approval.</div>
+    <!-- ================= AUTH ================= -->
+    <!-- LOGIN -->
+    <section id="loginSection" class="card">
+      <h2 style="margin:0 0 .6rem;">Login</h2>
 
-    <div class="row">
-      <select id="regSalutation">
-        <option>Dr.</option>
-        <option>Mr.</option>
-        <option>Mrs.</option>
-        <option>Ms.</option>
-        <option>Prof.</option>
-      </select>
-      <input id="regFullName" placeholder="Full Name">
-    </div>
-
-    <div class="row">
-      <input id="regPF" placeholder="PF / ID">
-      <input id="regUsername" placeholder="Username">
-      <input id="regPassword" type="password" placeholder="Password">
-    </div>
-
-    <div class="btn-group">
-      <button class="btn btn-primary" id="submitLecturerRegistration">Submit</button>
-      <button class="btn btn-secondary" id="backToLogin">Back</button>
-    </div>
-
-    <div id="lecturerRegMessage" class="alert hidden"></div>
-  </section>
-
-  <!-- STUDENT / STAFF SIGN-IN -->
-  <section id="studentSection" class="card hidden">
-    <h2 id="participantTitle">Attendance Sign-In</h2>
-    <div id="studentClassInfo" class="alert alert-info"></div>
-    <div id="studentGeoInfo" class="alert alert-info hidden"></div>
-
-    <div id="studentAlreadySubmitted" class="alert alert-success hidden">
-      Attendance already submitted on this device.
-    </div>
-
-    <div id="studentFormWrapper">
-      <div class="row hidden" id="staffNoRow">
-        <input id="stStaffNo" placeholder="Staff No / PF No">
+      <div class="row">
+        <div>
+          <label>Login as</label>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:.45rem;">
+              <input type="radio" name="loginRole" value="admin" checked />
+              Admin
+            </label>
+            <label style="display:flex;align-items:center;gap:.45rem;">
+              <input type="radio" name="loginRole" value="lecturer" />
+              Lecturer
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="row">
-        <input id="stSurname" placeholder="Surname">
-        <input id="stMiddleName" placeholder="Middle Name">
-        <input id="stFirstName" placeholder="First Name">
+        <div>
+          <label for="loginUsername">Username</label>
+          <input id="loginUsername" type="text" autocomplete="username" placeholder="Enter username" />
+        </div>
+        <div>
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter password" />
+        </div>
       </div>
-
-      <div class="row" id="idRow">
-        <input id="stAdmission" placeholder="Admission Number">
-      </div>
-
-      <label>Signature</label>
-      <canvas id="stSignaturePad" class="signature-pad"></canvas>
-      <button class="btn btn-secondary" id="stClearSignature">Clear</button>
 
       <div class="btn-group">
-        <button class="btn btn-success" id="stSubmit">Submit Attendance</button>
+        <button class="btn btn-primary" id="loginBtn" type="button">Login</button>
+        <button class="btn btn-secondary" id="showLecturerRegistration" type="button">Register as Lecturer</button>
       </div>
 
-      <div id="studentSubmitMsg" class="alert hidden"></div>
+      <div id="loginMessage" class="alert hidden"></div>
+    </section>
+
+    <!-- LECTURER REGISTRATION -->
+    <section id="lecturerRegistrationSection" class="card hidden">
+      <h2 style="margin:0 0 .6rem;">Lecturer Registration</h2>
+      <div class="alert alert-info">
+        Your account will be <b>pending</b> until approved by Admin.
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="regSalutation">Salutation</label>
+          <select id="regSalutation">
+            <option value="Dr.">Dr.</option>
+            <option value="Mr.">Mr.</option>
+            <option value="Mrs.">Mrs.</option>
+            <option value="Ms.">Ms.</option>
+            <option value="Prof.">Prof.</option>
+          </select>
+        </div>
+        <div>
+          <label for="regFullName">Full Name</label>
+          <input id="regFullName" type="text" placeholder="e.g. Jane Doe" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="regPF">PF No / ID</label>
+          <input id="regPF" type="text" placeholder="PF / ID" />
+        </div>
+        <div>
+          <label for="regUsername">Preferred Username</label>
+          <input id="regUsername" type="text" placeholder="Username" />
+        </div>
+        <div>
+          <label for="regPassword">Password</label>
+          <input id="regPassword" type="password" placeholder="Password" />
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="submitLecturerRegistration" type="button">Submit</button>
+        <button class="btn btn-secondary" id="backToLogin" type="button">Back</button>
+      </div>
+
+      <div id="lecturerRegMessage" class="alert hidden"></div>
+    </section>
+
+    <!-- ================= PARTICIPANT SIGN-IN ================= -->
+    <section id="studentSection" class="card hidden">
+      <h2 id="participantTitle" style="margin:0 0 .6rem;">Attendance Sign-In</h2>
+
+      <div id="studentClassInfo" class="alert alert-info"></div>
+      <div id="studentGeoInfo" class="alert alert-info hidden"></div>
+
+      <div id="studentAlreadySubmitted" class="alert alert-success hidden">
+        Attendance already submitted on this device.
+      </div>
+
+      <div id="studentFormWrapper">
+        <div class="row hidden" id="staffNoRow">
+          <div>
+            <label for="stStaffNo">Staff No / PF No</label>
+            <input id="stStaffNo" type="text" placeholder="Staff No / PF No" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="stSurname">Surname</label>
+            <input id="stSurname" type="text" placeholder="Surname" />
+          </div>
+          <div>
+            <label for="stMiddleName">Middle Name</label>
+            <input id="stMiddleName" type="text" placeholder="Middle Name" />
+          </div>
+          <div>
+            <label for="stFirstName">First Name</label>
+            <input id="stFirstName" type="text" placeholder="First Name" />
+          </div>
+        </div>
+
+        <div class="row" id="idRow">
+          <div>
+            <label id="idLabel" for="stAdmission">Admission Number</label>
+            <input id="stAdmission" type="text" placeholder="Admission Number" />
+          </div>
+        </div>
+
+        <label>Signature (finger or mouse)</label>
+        <canvas id="stSignaturePad" class="signature-pad"></canvas>
+        <div class="btn-group" style="justify-content:flex-end;">
+          <button class="btn btn-secondary" id="stClearSignature" type="button">Clear</button>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" id="stSubmit" type="button">Submit Attendance</button>
+        </div>
+
+        <div id="studentSubmitMsg" class="alert hidden"></div>
+      </div>
+    </section>
+
+    <!-- ================= ADMIN DASHBOARD ================= -->
+    <section id="adminDashboard" class="hidden">
+      <div class="card">
+        <h2 style="margin:0;">Admin Dashboard</h2>
+        <div class="tabs">
+          <button class="tab active" data-admin-tab="lecturersTab" type="button">Lecturers</button>
+          <button class="tab" data-admin-tab="facultyTab" type="button">Faculty / Course / Unit Upload</button>
+          <button class="tab" data-admin-tab="classesTab" type="button">Sessions</button>
+          <button class="tab" data-admin-tab="reportsTab" type="button">Reports</button>
+          <button class="tab" data-admin-tab="exportsTab" type="button">Raw Exports</button>
+        </div>
+      </div>
+
+      <!-- Lecturers -->
+      <section id="lecturersTab" class="card admin-tab">
+        <h3 style="margin:.1rem 0;">Lecturer Accounts</h3>
+        <div class="small">Approve new registrations & manage accounts.</div>
+        <div id="lecturersTableWrapper" class="muted" style="margin-top:.6rem;">No lecturers yet.</div>
+      </section>
+
+      <!-- Faculty CSV -->
+      <section id="facultyTab" class="card admin-tab hidden">
+        <h3 style="margin:.1rem 0;">Faculty / Course / Unit Mapping</h3>
+        <div class="small">Upload CSV to populate dropdown lists (Faculty, Course, Unit, Year, Semester, Academic Year).</div>
+
+        <div class="alert alert-info" style="margin-top:.8rem;">
+          CSV Structure: <code>Faculty,Course,Unit,Year,Semester,AcademicYear</code>
+        </div>
+
+        <input type="file" id="facultyCsvInput" accept=".csv" />
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="uploadFacultyCsvBtn" type="button">Upload & Save</button>
+          <button class="btn btn-secondary" id="clearFacultyDataBtn" type="button">Clear All Mappings</button>
+        </div>
+
+        <div id="facultyUploadMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+
+        <h4 style="margin-top:1rem;margin-bottom:.4rem;">Current Records</h4>
+        <div id="facultySummary" class="muted">No mappings uploaded yet.</div>
+      </section>
+
+      <!-- Sessions -->
+      <section id="classesTab" class="card admin-tab hidden">
+        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <h3 style="margin:.1rem 0;">All Sessions</h3>
+            <div class="small">Monitor lectures/meetings and view attendance + signatures.</div>
+          </div>
+          <div style="min-width:260px;">
+            <label for="adminClassFilter">Quick Filter</label>
+            <select id="adminClassFilter"></select>
+          </div>
+        </div>
+
+        <div id="adminClassesTableWrapper" class="muted" style="margin-top:.6rem;">No sessions created yet.</div>
+      </section>
+
+      <!-- Reports -->
+      <section id="reportsTab" class="card admin-tab hidden">
+        <h3 style="margin:.1rem 0 .25rem;">Reports</h3>
+        <div class="muted" style="margin-bottom:.8rem;">
+          Filter sessions and export official reports.
+        </div>
+
+        <div class="row">
+          <div><label for="repAcademicYear">Academic Year</label><select id="repAcademicYear"></select></div>
+          <div><label for="repFaculty">Faculty</label><select id="repFaculty"></select></div>
+          <div><label for="repCourse">Course</label><select id="repCourse"></select></div>
+        </div>
+        <div class="row">
+          <div><label for="repUnit">Unit</label><select id="repUnit"></select></div>
+          <div><label for="repYear">Study Year</label><select id="repYear"></select></div>
+          <div><label for="repSemester">Semester</label><select id="repSemester"></select></div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="repStatus">Status</label>
+            <select id="repStatus">
+              <option value="">All</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="generateReportBtn" type="button">Generate Report</button>
+          <button class="btn btn-secondary" id="downloadAllReportsBtn" type="button">Download ALL Reports (Excel)</button>
+        </div>
+
+        <div id="reportArea" class="hidden" style="margin-top:1rem;">
+          <div class="btn-group">
+            <button class="btn btn-primary" id="exportPdfBtn" type="button">Download PDF</button>
+            <button class="btn btn-secondary" id="exportWordBtn" type="button">Download Word</button>
+            <button class="btn btn-secondary" id="exportExcelBtn" type="button">Download Excel</button>
+          </div>
+
+          <div id="reportMeta" class="muted" style="margin-top:.6rem;"></div>
+          <table id="reportTable"></table>
+
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0;" />
+
+          <h4 style="margin:.2rem 0 .35rem;">Student/Staff Attendance % (Selected Period)</h4>
+
+          <div class="row">
+            <div>
+              <label for="repPersonId">Student/Staff ID</label>
+              <input id="repPersonId" type="text" placeholder="Admission No or Staff/PF No" />
+            </div>
+            <div>
+              <label for="repDateFrom">From Date</label>
+              <input id="repDateFrom" type="date" />
+            </div>
+            <div>
+              <label for="repDateTo">To Date</label>
+              <input id="repDateTo" type="date" />
+            </div>
+          </div>
+
+          <div id="personStatsBox" class="alert hidden" style="margin-top:.6rem;"></div>
+
+          <div class="card" style="margin-top:.7rem;">
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div>
+                <b>Chart</b>
+                <div class="small">Attended vs missed sessions over time (filters applied).</div>
+              </div>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-secondary" id="clearPersonChartBtn" type="button">Clear Chart</button>
+              </div>
+            </div>
+            <canvas id="personChart" style="width:100%;max-height:320px;margin-top:.5rem;"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Raw exports -->
+      <section id="exportsTab" class="card admin-tab hidden">
+        <h3 style="margin:.1rem 0 .25rem;">Raw Attendance Export</h3>
+        <div class="muted" style="margin-bottom:.8rem;">Export attendance including signature data.</div>
+
+        <div class="row">
+          <div>
+            <label for="rawClassPick">Pick Session</label>
+            <select id="rawClassPick"></select>
+          </div>
+          <div>
+            <label>Export Format</label>
+            <div class="btn-group" style="margin-top:.2rem;">
+              <button class="btn btn-primary" id="rawExportCsvBtn" type="button">Download CSV</button>
+              <button class="btn btn-secondary" id="rawExportExcelBtn" type="button">Download Excel</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="rawExportMsg" class="alert hidden"></div>
+
+        <div class="small" style="margin-top:.6rem;">
+          Note: Signature exports as a <b>data URL</b> (base64) for verification.
+        </div>
+      </section>
+    </section>
+
+    <!-- ================= LECTURER DASHBOARD ================= -->
+    <section id="lecturerDashboard" class="hidden">
+      <section class="card">
+        <h2 style="margin:0;">Lecturer Dashboard</h2>
+        <p class="muted" style="margin:.4rem 0 0;">
+          Create sessions, share link (QR), view attendance & export official reports.
+        </p>
+      </section>
+
+      <!-- Create session -->
+      <section class="card">
+        <h3 style="margin:.1rem 0;">Create / Start Session</h3>
+
+        <div class="row">
+          <div>
+            <label for="lcType">Session Type</label>
+            <select id="lcType">
+              <option value="class">Lecture / Class</option>
+              <option value="meeting">Staff Meeting</option>
+            </select>
+          </div>
+
+          <div id="meetingModeWrap">
+            <label for="lcMeetingMode">Meeting Mode</label>
+            <select id="lcMeetingMode">
+              <option value="physical">Physical (Geo-fenced)</option>
+              <option value="online">Online (No Geo-fence)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div><label for="lcAcademicYear">Academic Year</label><select id="lcAcademicYear"></select></div>
+          <div><label for="lcFaculty">Faculty</label><select id="lcFaculty"></select></div>
+          <div><label for="lcCourse">Course</label><select id="lcCourse"></select></div>
+        </div>
+
+        <div class="row">
+          <div><label for="lcUnit">Unit</label><select id="lcUnit"></select></div>
+          <div>
+            <label for="lcUnitCode">Unit Code</label>
+            <input id="lcUnitCode" type="text" placeholder="e.g. CSC 210" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div><label for="lcYear">Study Year</label><select id="lcYear"></select></div>
+          <div><label for="lcSemester">Semester</label><select id="lcSemester"></select></div>
+        </div>
+
+        <div class="row">
+          <div><label for="lcVenue">Venue / Platform</label><input id="lcVenue" type="text" placeholder="LT1 / Zoom / Teams" /></div>
+          <div><label for="lcDateTime">Date & Time</label><input id="lcDateTime" type="datetime-local" /></div>
+        </div>
+
+        <!-- Geofence center picker -->
+        <div id="geoPickWrap" class="card" style="padding:.85rem;margin-top:.7rem;border:1px dashed rgba(0,82,204,.25);">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+            <div>
+              <b>Geofence Center (Physical only)</b>
+              <div class="small">Pick current location and enforce within <b>30m</b>.</div>
+            </div>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-secondary" type="button" id="pickSessionGeoBtn">Use My Current Location</button>
+              <button class="btn btn-secondary" type="button" id="clearSessionGeoBtn">Clear</button>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:.6rem;">
+            <div><label for="lcGeoLat">Latitude</label><input id="lcGeoLat" type="text" readonly placeholder="Auto-filled" /></div>
+            <div><label for="lcGeoLon">Longitude</label><input id="lcGeoLon" type="text" readonly placeholder="Auto-filled" /></div>
+            <div><label for="lcGeoAcc">Accuracy (m)</label><input id="lcGeoAcc" type="text" readonly placeholder="Auto-filled" /></div>
+          </div>
+
+          <div id="geoPickMsg" class="alert hidden" style="margin-top:.6rem;"></div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" id="createClassBtn" type="button">Create / Start</button>
+        </div>
+        <div id="createClassMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+      </section>
+
+      <!-- My sessions -->
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <h3 style="margin:.1rem 0;">My Sessions</h3>
+            <div class="small">Copy link/QR, close/open, view attendance & export.</div>
+          </div>
+          <div style="min-width:260px;">
+            <label for="lecClassFilter">Quick Filter</label>
+            <select id="lecClassFilter"></select>
+          </div>
+        </div>
+
+        <div id="lecturerClassesTableWrapper" class="muted" style="margin-top:.6rem;">No sessions yet.</div>
+      </section>
+
+      <!-- Lecturer reports -->
+      <section class="card">
+        <h3 style="margin:.1rem 0 .25rem;">Quick Reports (My Sessions)</h3>
+
+        <div class="row">
+          <div><label for="repAcademicYearL">Academic Year</label><select id="repAcademicYearL"></select></div>
+          <div><label for="repFacultyL">Faculty</label><select id="repFacultyL"></select></div>
+          <div><label for="repCourseL">Course</label><select id="repCourseL"></select></div>
+        </div>
+
+        <div class="row">
+          <div><label for="repUnitL">Unit</label><select id="repUnitL"></select></div>
+          <div><label for="repYearL">Study Year</label><select id="repYearL"></select></div>
+          <div><label for="repSemesterL">Semester</label><select id="repSemesterL"></select></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="repStatusL">Status</label>
+            <select id="repStatusL">
+              <option value="">All</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="generateReportLecturerBtn" type="button">Generate My Report</button>
+        </div>
+
+        <div id="reportAreaLecturer" class="hidden" style="margin-top:1rem;">
+          <div class="btn-group">
+            <button class="btn btn-primary" id="exportPdfBtnL" type="button">Download PDF</button>
+            <button class="btn btn-secondary" id="exportWordBtnL" type="button">Download Word</button>
+            <button class="btn btn-secondary" id="exportExcelBtnL" type="button">Download Excel</button>
+          </div>
+
+          <div id="reportMetaL" class="muted" style="margin-top:.6rem;"></div>
+          <table id="reportTableL"></table>
+
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0;" />
+
+          <h4 style="margin:.2rem 0 .35rem;">Student/Staff Attendance % (My Sessions)</h4>
+
+          <div class="row">
+            <div><label for="repPersonIdL">Student/Staff ID</label><input id="repPersonIdL" type="text" /></div>
+            <div><label for="repDateFromL">From Date</label><input id="repDateFromL" type="date" /></div>
+            <div><label for="repDateToL">To Date</label><input id="repDateToL" type="date" /></div>
+          </div>
+
+          <div id="personStatsBoxL" class="alert hidden" style="margin-top:.6rem;"></div>
+
+          <div class="card" style="margin-top:.7rem;">
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div>
+                <b>Chart</b>
+                <div class="small">Attended vs missed sessions over time (My Sessions).</div>
+              </div>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-secondary" id="clearPersonChartBtnL" type="button">Clear Chart</button>
+              </div>
+            </div>
+            <canvas id="personChartL" style="width:100%;max-height:320px;margin-top:.5rem;"></canvas>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      System created by <b>Gerotech Enterprises</b> © <b>2026</b>
+    </footer>
+  </main>
+
+  <!-- ================= MODALS (FULL - REQUIRED BY app.js) ================= -->
+
+  <!-- Change Password Modal -->
+  <div id="pwdModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+    <div class="card" style="width:min(520px,96%);">
+      <h3 style="margin:.1rem 0 .6rem;">Change Password</h3>
+      <div class="row">
+        <div>
+          <label for="pwdOld">Current Password</label>
+          <input id="pwdOld" type="password" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="pwdNew">New Password</label>
+          <input id="pwdNew" type="password" />
+        </div>
+        <div>
+          <label for="pwdNew2">Confirm New Password</label>
+          <input id="pwdNew2" type="password" />
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="pwdSaveBtn" type="button">Save</button>
+        <button class="btn btn-secondary" id="pwdCloseBtn" type="button">Close</button>
+      </div>
+      <div id="pwdMsg" class="alert hidden" style="margin-top:.8rem;"></div>
     </div>
-  </section>
-
-  <!-- ADMIN & LECTURER DASHBOARDS -->
-  <!-- (UNCHANGED – all sections already referenced by JS IDs) -->
-
-  <div class="footer">
-    System created by <b>Gerotech Enterprises</b> © 2026
   </div>
 
-</main>
+  <!-- Session Modal -->
+  <div id="sessionModal" class="hidden" style="position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+    <div class="card" style="width:min(980px,96%);max-height:90vh;overflow:auto;">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:.1rem 0 .2rem;" id="sessionModalTitle">Session</h3>
+          <div class="small" id="sessionModalMeta"></div>
+        </div>
+        <div class="btn-group" style="margin-top:0;">
+          <button class="btn btn-secondary" id="sessionModalPrintBtn" type="button">Print</button>
+          <button class="btn btn-secondary" id="sessionModalCloseBtn" type="button">Close</button>
+        </div>
+      </div>
 
-<!-- ================= MODALS ================= -->
-<!-- Change Password -->
-<div id="pwdModal" class="hidden"></div>
+      <div class="qrBox" id="sessionLinkBox">
+        <div class="qr" id="qrTarget"></div>
+        <div class="qrMeta">
+          <div class="small"><b>Share this sign-in link</b> (works on phones)</div>
+          <div class="linkBox" id="sessionLinkText"></div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="copyLinkBtn" type="button">Copy Link</button>
+            <button class="btn btn-secondary" id="openLinkBtn" type="button">Open Link</button>
+          </div>
+        </div>
+      </div>
 
-<!-- Session Modal -->
-<div id="sessionModal" class="hidden"></div>
+      <div class="btn-group">
+        <button class="btn btn-success" id="toggleStatusBtn" type="button">Close Session</button>
+        <button class="btn btn-primary" id="exportSessionPdfBtn" type="button">Download PDF</button>
+        <button class="btn btn-secondary" id="exportSessionWordBtn" type="button">Download Word</button>
+        <button class="btn btn-secondary" id="exportSessionExcelBtn" type="button">Download Excel</button>
+        <button class="btn btn-secondary" id="exportSessionCsvBtn" type="button">Download CSV</button>
+        <button class="btn btn-secondary" id="lecturerSignBtn" type="button">Add Lecturer Signature</button>
+        <button class="btn btn-secondary hidden" id="hodSignBtn" type="button">Add HOD Signature (Admin)</button>
+      </div>
 
-<!-- Signature Modal -->
-<div id="sigModal" class="hidden"></div>
+      <div class="alert hidden" id="sessionModalMsg"></div>
 
+      <h4 style="margin:1rem 0 .35rem;">Attendance (Signatures included)</h4>
+      <div class="muted" id="sessionAttendanceMeta"></div>
+      <table id="sessionAttendanceTable"></table>
+    </div>
+  </div>
+
+  <!-- Signature Modal -->
+  <div id="sigModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+    <div class="card" style="width:min(720px,96%);">
+      <h3 style="margin:.1rem 0 .6rem;" id="sigModalTitle">Signature</h3>
+
+      <div id="hodNameWrap" class="row hidden">
+        <div>
+          <label for="hodNameInput">HOD Name</label>
+          <input id="hodNameInput" type="text" placeholder="e.g. Dr. John Doe" />
+        </div>
+      </div>
+
+      <label>Draw Signature</label>
+      <canvas id="sigPad" class="signature-pad"></canvas>
+      <div class="btn-group" style="justify-content:flex-end;">
+        <button class="btn btn-secondary" id="sigClearBtn" type="button">Clear</button>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="sigSaveBtn" type="button">Save</button>
+        <button class="btn btn-secondary" id="sigCancelBtn" type="button">Cancel</button>
+      </div>
+      <div id="sigMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+    </div>
+  </div>
 </body>
 </html>
