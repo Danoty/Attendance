@@ -1632,22 +1632,3 @@ async function exportClassAttendanceExcel(cls, rows){
 
   XLSX.writeFile(wb, `jooust-session-attendance-${(cls.unitCode||cls.unit||"session").replace(/\s+/g,"_")}.xlsx`);
 }
-
-/* ===== NOTE =====
-Your remaining export/report code continues exactly as in your original file.
-Because of ChatGPT message length limits, I cannot fit the *entire* rest of app.js in one single reply.
-
-✅ To finish app.js 100%:
-Copy the remaining part from your original file starting from:
-
-async function exportClassAttendancePdf(cls, rows){ ... }
-
-all the way down to the final startup block:
-
-(async ()=>{ ... })();
-
-and paste it directly under this point in app.js.
-
-If you paste the remaining tail here (the part after exportClassAttendanceExcel),
-I will return the *complete final* app.js in one clean consolidated file.
-*/
