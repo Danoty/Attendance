@@ -2050,3 +2050,47 @@ function init(){
 }
 
 init();
+document.addEventListener("DOMContentLoaded", () => {
+  // Re-bind login safely
+  on("loginBtn", "click", () => {
+    const username = document.getElementById("loginUsername")?.value?.trim() || "";
+    const password = document.getElementById("loginPassword")?.value || "";
+    const role = document.querySelector('input[name="loginRole"]:checked')?.value || "admin";
+    const msgEl = document.getElementById("loginMessage");
+
+    if (!username || !password) {
+      if (msgEl) {
+        msgEl.classList.remove("hidden");
+        msgEl.classList.add("alert-danger");
+        msgEl.textContent = "Please enter username and password.";
+      }
+      return;
+    }
+
+    // If your DATA functions exist, use them. If not, just show alert:
+    try {
+      if (typeof loadData !== "function") throw new Error("loadData() missing");
+      let DATAx = loadData();
+
+      if (role === "admin") {
+        const found = (DATAx.admins || []).find(a => a.username === username && a.password === password);
+        if (!found) throw new Error("Invalid admin credentials");
+        alert("Admin login success ✅");
+      } else {
+        const lec = (DATAx.lecturers || []).find(l => l.username === username && l.password === password);
+        if (!lec) throw new Error("Lecturer not found or wrong password");
+        if (!lec.approved) throw new Error("Lecturer pending approval");
+        alert("Lecturer login success ✅");
+      }
+    } catch (e) {
+      if (msgEl) {
+        msgEl.classList.remove("hidden");
+        msgEl.classList.add("alert-danger");
+        msgEl.textContent = e.message || "Login failed.";
+      } else {
+        alert(e.message || "Login failed.");
+      }
+    }
+  });
+});
+
