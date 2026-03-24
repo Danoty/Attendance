@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JOOUST Attendance - Student Sign-In</title>
+  <title>JOOUST Attendance System - Lecturer Dashboard</title>
   <link rel="stylesheet" href="./css/styles.css" />
-  <style>
-    .student-wrap{
-      max-width:900px;
-      margin:1.2rem auto 2rem;
-      padding:0 1rem;
-    }
-  </style>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 </head>
 <body>
   <header id="mainHeader">
@@ -19,256 +16,584 @@
       <div class="brand">
         <img src="./assets/logo.jpg" alt="JOOUST Logo" />
         <h1>
-          JOOUST Attendance
-          <span>Student Sign-In</span>
+          JOOUST Attendance System
+          <span>Lecturer Dashboard · Classes · Links · Reports</span>
         </h1>
+      </div>
+
+      <div class="top-actions">
+        <div id="userSummary" class="user-pill"></div>
+        <button id="openChangePwdBtn" class="btn btn-outline">Change Password</button>
+        <button id="logoutBtn" class="btn btn-outline">Logout</button>
       </div>
     </div>
   </header>
 
-  <main class="student-wrap">
-    <section class="card">
-      <h2 style="margin:0 0 .6rem;">Class Attendance – Student Sign-In</h2>
-      <p class="page-intro">Confirm the class details below, then fill in your information and submit once.</p>
+  <main>
+    <section id="lecturerDashboard">
+      <section class="card">
+        <h2 style="margin:0;">Lecturer Dashboard</h2>
+        <p class="page-intro">Create classes, share student links, view attendance, and generate reports.</p>
+      </section>
 
-      <div id="studentClassInfo" class="alert alert-info"></div>
-      <div id="studentGeoInfo" class="alert alert-info hidden"></div>
+      <section class="card">
+        <h3 style="margin:.1rem 0;">Create / Start Class</h3>
+        <p class="page-intro">Enter class details and start a new attendance session.</p>
 
-      <div id="studentAlreadySubmitted" class="alert alert-success hidden">
-        You have already submitted attendance for this class on this device.
-      </div>
-
-      <div id="studentFormWrapper">
         <div class="row">
           <div>
-            <label for="stSurname">Surname</label>
-            <input id="stSurname" type="text" />
+            <label for="lcFacultySchool">Faculty / School</label>
+            <input id="lcFacultySchool" type="text" placeholder="e.g. School of Informatics" />
           </div>
           <div>
-            <label for="stMiddleName">Middle Name</label>
-            <input id="stMiddleName" type="text" />
-          </div>
-          <div>
-            <label for="stFirstName">First Name</label>
-            <input id="stFirstName" type="text" />
+            <label for="lcProgramme">Programme</label>
+            <input id="lcProgramme" type="text" placeholder="e.g. Diploma in Linux Engineering for IT Applications" />
           </div>
         </div>
 
         <div class="row">
           <div>
-            <label for="stAdmission">Admission Number</label>
-            <input id="stAdmission" type="text" />
+            <label for="lcAcademicYear">Academic Year</label>
+            <input id="lcAcademicYear" type="text" placeholder="e.g. 2025/2026" />
+          </div>
+          <div>
+            <label for="lcYearOfStudy">Year of Study</label>
+            <input id="lcYearOfStudy" type="text" placeholder="e.g. Year 1" />
+          </div>
+          <div>
+            <label for="lcSemester">Semester</label>
+            <input id="lcSemester" type="text" placeholder="e.g. Semester 1" />
           </div>
         </div>
 
-        <label>Digital Signature (use finger or mouse)</label>
-        <canvas id="stSignaturePad" class="signature-pad"></canvas>
-
-        <div class="signature-actions">
-          <button class="btn btn-secondary" id="stClearSignature">Clear</button>
+        <div class="row">
+          <div>
+            <label for="lcLecturerName">Lecturer Name</label>
+            <input id="lcLecturerName" type="text" readonly />
+          </div>
+          <div>
+            <label for="lcCourseTitle">Course Title</label>
+            <input id="lcCourseTitle" type="text" placeholder="e.g. Communication Skills" />
+          </div>
         </div>
 
-        <div class="btn-group">
-          <button class="btn btn-success" id="stSubmit">
-            <span id="stSubmitText">Submit Attendance</span>
+        <div class="row">
+          <div>
+            <label for="lcCourseCode">Course Code</label>
+            <input id="lcCourseCode" type="text" placeholder="e.g. BIT 1203" />
+          </div>
+          <div>
+            <label for="lcVenue">Venue</label>
+            <input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" />
+          </div>
+          <div>
+            <label for="lcDateTime">Date & Time</label>
+            <input id="lcDateTime" type="datetime-local" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="lcClassMode">Class Mode</label>
+            <select id="lcClassMode">
+              <option value="physical">Physical Class</option>
+              <option value="online">Online Class</option>
+            </select>
+          </div>
+          <div>
+            <label for="lcGeofenceRadius">Geofence Radius (meters)</label>
+            <input id="lcGeofenceRadius" type="number" value="50" min="10" max="500" />
+          </div>
+        </div>
+
+        <div id="physicalLocationBlock">
+          <div class="row">
+            <div>
+              <label for="lcLatitude">Latitude</label>
+              <input id="lcLatitude" type="text" placeholder="Picked from map" readonly />
+            </div>
+            <div>
+              <label for="lcLongitude">Longitude</label>
+              <input id="lcLongitude" type="text" placeholder="Picked from map" readonly />
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" id="pickLocationBtn">Choose Location on Map</button>
+            <button type="button" class="btn btn-secondary" id="useCurrentLocationBtn">Use My Current Location</button>
+          </div>
+
+          <div id="mapPicker" style="height:320px;border-radius:16px;margin-top:1rem;overflow:hidden;border:1px solid #d5dbe7;"></div>
+          <div id="mapHelpMsg" class="small" style="margin-top:.5rem;">Click on the map to set the class location for physical attendance.</div>
+        </div>
+
+        <div class="btn-group" style="margin-top:1rem;">
+          <button class="btn btn-success" id="createClassBtn">
+            <span id="createClassText">Create / Start Class</span>
           </button>
         </div>
 
-        <div id="studentSubmitMsg" class="alert hidden" style="margin-top:.8rem;"></div>
-      </div>
+        <div id="createClassMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+      </section>
 
-      <div class="small" style="margin-top:.8rem;">
-        Note: You may be asked to allow location access (GPS) to confirm you are within JOOUST.
+      <section class="card">
+        <h3 style="margin:.1rem 0;">My Classes</h3>
+        <p class="page-intro">Copy link, open student page, close or re-open classes, and track attendance.</p>
+
+        <div id="lecturerClassesTableWrapper" class="muted"></div>
+      </section>
+
+      <div class="footer">
+        © 2025 <b>Gerotech Enterprises</b> · JOOUST Smart Attendance System
+        <span class="footer-sub">Built with simplicity, security and performance in mind</span>
       </div>
     </section>
-
-    <div class="footer">
-      © 2025 <b>Gerotech Enterprises</b> · JOOUST Smart Attendance System
-      <span class="footer-sub">Built with simplicity, security and performance in mind</span>
-    </div>
   </main>
 
+  <div id="pwdModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+    <div class="card" style="width:min(520px,96%);box-shadow:var(--shadow-soft);">
+      <h3 style="margin:.1rem 0 .6rem;">Change Password</h3>
+
+      <div class="row">
+        <div class="input-wrap">
+          <label for="pwdOld">Current Password</label>
+          <input id="pwdOld" type="password" />
+          <span class="password-toggle" id="toggleOldPwd">Show</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="input-wrap">
+          <label for="pwdNew">New Password</label>
+          <input id="pwdNew" type="password" />
+          <span class="password-toggle" id="toggleNewPwd">Show</span>
+        </div>
+        <div class="input-wrap">
+          <label for="pwdNew2">Confirm New Password</label>
+          <input id="pwdNew2" type="password" />
+          <span class="password-toggle" id="toggleNewPwd2">Show</span>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="pwdSaveBtn"><span id="pwdSaveText">Save</span></button>
+        <button class="btn btn-secondary" id="pwdCloseBtn">Close</button>
+      </div>
+
+      <div id="pwdMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+    </div>
+  </div>
+
   <script src="./js/app.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    function getQueryParam(name){
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(name);
+    let currentUser = null;
+    let lecturerMap = null;
+    let lecturerMapMarker = null;
+    let lecturerLiveRefresh = null;
+
+    function setupPasswordToggle(toggleId, inputId){
+      const toggle = document.getElementById(toggleId);
+      const input = document.getElementById(inputId);
+      toggle.addEventListener("click", ()=>{
+        if(input.type === "password"){
+          input.type = "text";
+          toggle.textContent = "Hide";
+        } else {
+          input.type = "password";
+          toggle.textContent = "Show";
+        }
+      });
     }
 
-    function initStudentPage(){
-      const classId = getQueryParam("classId");
-      const msgEl = document.getElementById("studentClassInfo");
-
-      if(!classId){
-        msgEl.innerHTML = "<b>Error:</b> Invalid class link.";
-        return;
-      }
-
-      const data = loadData();
-      const cls = data.classes.find(c => c.id === classId);
-
-      if(!cls){
-        msgEl.innerHTML = "<b>Error:</b> Class not found.";
-        return;
-      }
-
-      msgEl.innerHTML = `
-        <b>${cls.courseTitle || "Course Title not set"}</b><br>
-        <b>Course Code:</b> ${cls.courseCode || "-"}<br>
-        <b>Faculty / School:</b> ${cls.facultySchool || "-"}<br>
-        <b>Programme:</b> ${cls.programme || "-"}<br>
-        <b>Academic Year:</b> ${cls.academicYear || "-"}<br>
-        <b>Year of Study:</b> ${cls.yearOfStudy || "-"}<br>
-        <b>Semester:</b> ${cls.semester || "-"}<br>
-        <b>Lecturer:</b> ${cls.lecturerName || "-"}<br>
-        <b>Venue:</b> ${cls.venue || "-"}<br>
-        <b>Date/Time:</b> ${formatDateTime(cls.dateTime)}
+    function showEmptyState(el, title, message){
+      el.innerHTML = `
+        <div class="empty-state">
+          <h3>${title}</h3>
+          <p>${message}</p>
+        </div>
       `;
     }
 
-    function checkAlreadySubmitted(classId){
-      const submittedKey = "submitted_" + classId;
-      if(localStorage.getItem(submittedKey)){
-        document.getElementById("studentAlreadySubmitted").classList.remove("hidden");
-        document.getElementById("studentFormWrapper").style.display = "none";
-        return true;
+    function getBasePath(){
+      const path = window.location.pathname;
+      const parts = path.split("/").filter(Boolean);
+      if(parts.length && parts[parts.length - 1].includes(".")) parts.pop();
+      return "/" + parts.join("/");
+    }
+
+    function buildStudentLink(classId){
+      return window.location.origin + getBasePath() + "/student.html?classId=" + encodeURIComponent(classId);
+    }
+
+    function copyClassLink(classId){
+      const link = buildStudentLink(classId);
+      navigator.clipboard?.writeText(link)
+        .then(()=> alert("Student link copied:\n" + link))
+        .catch(()=> alert("Copy failed. Use this link:\n" + link));
+    }
+
+    function openStudentPage(classId){
+      window.open(buildStudentLink(classId), "_blank");
+    }
+
+    function toggleClassStatus(classId, status){
+      const data = loadData();
+      const cls = data.classes.find(c=>c.id === classId);
+      if(!cls) return;
+      cls.status = status;
+      saveData(data);
+      renderLecturerClasses();
+    }
+
+    function initLecturerMap(){
+      const mapEl = document.getElementById("mapPicker");
+      if(!mapEl || lecturerMap) return;
+
+      lecturerMap = L.map("mapPicker").setView([-0.0936, 34.2809], 16);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(lecturerMap);
+
+      lecturerMap.on("click", function(e){
+        const { lat, lng } = e.latlng;
+        setLecturerLocation(lat, lng);
+      });
+
+      setTimeout(()=> lecturerMap.invalidateSize(), 300);
+    }
+
+    function setLecturerLocation(lat, lng){
+      document.getElementById("lcLatitude").value = lat.toFixed(6);
+      document.getElementById("lcLongitude").value = lng.toFixed(6);
+
+      if(lecturerMapMarker){
+        lecturerMapMarker.setLatLng([lat, lng]);
+      } else {
+        lecturerMapMarker = L.marker([lat, lng]).addTo(lecturerMap);
       }
-      return false;
+
+      lecturerMap.setView([lat, lng], 18);
     }
 
-    function markSubmitted(classId){
-      localStorage.setItem("submitted_" + classId, "true");
+    function toggleLocationBlock(){
+      const mode = document.getElementById("lcClassMode").value;
+      const block = document.getElementById("physicalLocationBlock");
+
+      if(mode === "online"){
+        block.classList.add("hidden");
+      } else {
+        block.classList.remove("hidden");
+        initLecturerMap();
+        setTimeout(()=>{
+          if(lecturerMap) lecturerMap.invalidateSize();
+        }, 200);
+      }
     }
 
-    function getDistanceKm(lat1, lon1, lat2, lon2){
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
+    function renderLecturerClasses(){
+      const wrap = document.getElementById("lecturerClassesTableWrapper");
+      const data = loadData();
+      const myClasses = data.classes.filter(c=>c.lecturerId === currentUser.id);
+
+      if(!myClasses.length){
+        showEmptyState(wrap, "No classes yet", "Create your first class to start tracking attendance.");
+        return;
+      }
+
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Class Details</th>
+              <th>Programme Info</th>
+              <th>Venue / Date</th>
+              <th>Status</th>
+              <th>Attendance</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${myClasses.map(cls=>{
+              const count = data.attendance.filter(a=>a.classId === cls.id).length;
+              return `
+                <tr>
+                  <td>
+                    <b>${cls.courseTitle || ""}</b><br>
+                    <span class="small">${cls.courseCode || ""}</span><br>
+                    <span class="small">${cls.lecturerName || ""}</span>
+                  </td>
+                  <td>
+                    <span class="small"><b>Faculty/School:</b> ${cls.facultySchool || ""}</span><br>
+                    <span class="small"><b>Programme:</b> ${cls.programme || ""}</span><br>
+                    <span class="small"><b>Academic Year:</b> ${cls.academicYear || ""}</span><br>
+                    <span class="small"><b>Year of Study:</b> ${cls.yearOfStudy || ""}</span><br>
+                    <span class="small"><b>Semester:</b> ${cls.semester || ""}</span><br>
+                    <span class="small"><b>Mode:</b> ${cls.classMode || "physical"}</span><br>
+                    ${(cls.classMode || "physical") === "physical"
+                      ? `<span class="small"><b>Geofence:</b> ${cls.geofenceRadius || 50}m</span>`
+                      : ``}
+                  </td>
+                  <td>
+                    ${cls.venue}<br>
+                    <span class="small">${formatDateTime(cls.dateTime)}</span>
+                  </td>
+                  <td>
+                    ${cls.status === "open"
+                      ? `<span class="badge open">Open</span>`
+                      : `<span class="badge closed">Closed</span>`}
+                  </td>
+                  <td><b>${count}</b> student(s)</td>
+                  <td>
+                    <div class="table-actions">
+                      <button class="btn btn-secondary" onclick="copyClassLink('${cls.id}')">Copy Link</button>
+                      <button class="btn btn-secondary" onclick="openStudentPage('${cls.id}')">Open Link</button>
+                      ${
+                        cls.status === "open"
+                          ? `<button class="btn btn-danger" onclick="toggleClassStatus('${cls.id}','closed')">End Class</button>`
+                          : `<button class="btn btn-success" onclick="toggleClassStatus('${cls.id}','open')">Re-open</button>`
+                      }
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
     }
 
-    const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 };
-    const MAX_DISTANCE_KM = 1;
+    function startLecturerLiveRefresh(){
+      if(lecturerLiveRefresh) clearInterval(lecturerLiveRefresh);
+      lecturerLiveRefresh = setInterval(()=>{
+        renderLecturerClasses();
+      }, 4000);
+    }
 
-    function checkGeolocation(callback){
-      const geoInfo = document.getElementById("studentGeoInfo");
+    document.getElementById("lcClassMode").addEventListener("change", toggleLocationBlock);
 
+    document.getElementById("pickLocationBtn").addEventListener("click", ()=>{
+      toggleLocationBlock();
+    });
+
+    document.getElementById("useCurrentLocationBtn").addEventListener("click", ()=>{
       if(!navigator.geolocation){
-        geoInfo.textContent = "Geolocation not supported.";
-        geoInfo.classList.remove("hidden");
-        callback(true);
+        alert("Geolocation is not supported in this browser.");
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         position=>{
           const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const distance = getDistanceKm(lat, lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
-
-          geoInfo.classList.remove("hidden");
-
-          if(distance <= MAX_DISTANCE_KM){
-            geoInfo.innerHTML = `Location verified successfully.`;
-            callback(true);
-          } else {
-            geoInfo.innerHTML = `You are outside the allowed attendance range (${distance.toFixed(2)} km).`;
-            callback(false);
-          }
+          const lng = position.coords.longitude;
+          setLecturerLocation(lat, lng);
         },
         ()=>{
-          geoInfo.textContent = "Location access denied.";
-          geoInfo.classList.remove("hidden");
-          callback(true);
-        }
+          alert("Unable to get your current location.");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
-    }
-
-    const pad = setupSignaturePad(document.getElementById("stSignaturePad"));
-
-    document.getElementById("stClearSignature").addEventListener("click", ()=>{
-      pad.clear();
     });
 
-    document.getElementById("stSubmit").addEventListener("click", ()=>{
-      const classId = getQueryParam("classId");
-      const surname = document.getElementById("stSurname").value.trim();
-      const middle = document.getElementById("stMiddleName").value.trim();
-      const first = document.getElementById("stFirstName").value.trim();
-      const admission = document.getElementById("stAdmission").value.trim();
-      const msgEl = document.getElementById("studentSubmitMsg");
-      const btn = document.getElementById("stSubmit");
-      const btnText = document.getElementById("stSubmitText");
+    document.getElementById("createClassBtn").addEventListener("click", ()=>{
+      const facultySchool = document.getElementById("lcFacultySchool").value.trim();
+      const programme = document.getElementById("lcProgramme").value.trim();
+      const academicYear = document.getElementById("lcAcademicYear").value.trim();
+      const yearOfStudy = document.getElementById("lcYearOfStudy").value.trim();
+      const semester = document.getElementById("lcSemester").value.trim();
+      const lecturerName = document.getElementById("lcLecturerName").value.trim();
+      const courseTitle = document.getElementById("lcCourseTitle").value.trim();
+      const courseCode = document.getElementById("lcCourseCode").value.trim();
+      const venue = document.getElementById("lcVenue").value.trim();
+      const dateTime = document.getElementById("lcDateTime").value;
+      const classMode = document.getElementById("lcClassMode").value;
+      const geofenceRadius = Number(document.getElementById("lcGeofenceRadius").value || 50);
+      const latitude = document.getElementById("lcLatitude").value.trim();
+      const longitude = document.getElementById("lcLongitude").value.trim();
 
-      if(!surname || !first || !admission){
-        setAlert(msgEl,"Please fill required fields.","danger");
+      const msgEl = document.getElementById("createClassMsg");
+      const btn = document.getElementById("createClassBtn");
+      const btnText = document.getElementById("createClassText");
+
+      if(
+        !facultySchool || !programme || !academicYear || !yearOfStudy ||
+        !semester || !lecturerName || !courseTitle || !courseCode ||
+        !venue || !dateTime
+      ){
+        setAlert(msgEl,"Please fill all class details.","danger");
         return;
       }
 
-      if(pad.isEmpty()){
-        setAlert(msgEl,"Please provide your signature before submitting.","danger");
+      if(classMode === "physical" && (!latitude || !longitude)){
+        setAlert(msgEl, "Please choose class coordinates on the map for a physical class.", "danger");
         return;
       }
-
-      const signature = pad.toDataUrl();
 
       btn.disabled = true;
-      btnText.textContent = "Submitting...";
+      btnText.textContent = "Creating...";
 
-      checkGeolocation((allowed)=>{
-        if(!allowed){
-          setAlert(msgEl,"You are outside the allowed attendance location.","danger");
-          btn.disabled = false;
-          btnText.textContent = "Submit Attendance";
-          return;
-        }
-
+      setTimeout(()=>{
         const data = loadData();
-        const cls = data.classes.find(c => c.id === classId);
+        const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
 
-        if(!cls){
-          setAlert(msgEl,"Class not found.","danger");
+        if(!lecturer){
+          setAlert(msgEl,"Lecturer account not found.","danger");
           btn.disabled = false;
-          btnText.textContent = "Submit Attendance";
+          btnText.textContent = "Create / Start Class";
           return;
         }
 
-        data.attendance.push({
+        data.classes.push({
           id: uuid(),
-          classId,
-          surname,
-          middle,
-          first,
-          admission,
-          signature,
-          createdAt: new Date().toISOString()
+          lecturerId: lecturer.id,
+          facultySchool,
+          programme,
+          academicYear,
+          yearOfStudy,
+          semester,
+          lecturerName,
+          courseTitle,
+          courseCode,
+          venue,
+          dateTime,
+          classMode,
+          geofenceRadius,
+          latitude: classMode === "physical" ? Number(latitude) : null,
+          longitude: classMode === "physical" ? Number(longitude) : null,
+          status: "open"
         });
 
         saveData(data);
-        markSubmitted(classId);
-        setAlert(msgEl,"Attendance submitted successfully.","success");
+        renderLecturerClasses();
+        setAlert(msgEl,"Class created successfully.","success");
 
-        setTimeout(()=>{
-          document.getElementById("studentFormWrapper").style.display = "none";
-          document.getElementById("studentAlreadySubmitted").classList.remove("hidden");
-          btn.disabled = false;
-          btnText.textContent = "Submit Attendance";
-        }, 700);
-      });
+        document.getElementById("lcFacultySchool").value = "";
+        document.getElementById("lcProgramme").value = "";
+        document.getElementById("lcAcademicYear").value = "";
+        document.getElementById("lcYearOfStudy").value = "";
+        document.getElementById("lcSemester").value = "";
+        document.getElementById("lcCourseTitle").value = "";
+        document.getElementById("lcCourseCode").value = "";
+        document.getElementById("lcVenue").value = "";
+        document.getElementById("lcDateTime").value = "";
+        document.getElementById("lcClassMode").value = "physical";
+        document.getElementById("lcGeofenceRadius").value = "50";
+        document.getElementById("lcLatitude").value = "";
+        document.getElementById("lcLongitude").value = "";
+
+        if(lecturerMapMarker){
+          lecturerMap.removeLayer(lecturerMapMarker);
+          lecturerMapMarker = null;
+        }
+
+        toggleLocationBlock();
+
+        btn.disabled = false;
+        btnText.textContent = "Create / Start Class";
+      }, 700);
     });
 
-    window.addEventListener("load", ()=>{
-      const classId = getQueryParam("classId");
-      initStudentPage();
+    setupPasswordToggle("toggleOldPwd","pwdOld");
+    setupPasswordToggle("toggleNewPwd","pwdNew");
+    setupPasswordToggle("toggleNewPwd2","pwdNew2");
 
-      if(classId){
-        checkAlreadySubmitted(classId);
+    document.getElementById("openChangePwdBtn").addEventListener("click", ()=>{
+      clearAlert(document.getElementById("pwdMsg"));
+      document.getElementById("pwdOld").value = "";
+      document.getElementById("pwdNew").value = "";
+      document.getElementById("pwdNew2").value = "";
+      document.getElementById("pwdModal").classList.remove("hidden");
+    });
+
+    document.getElementById("pwdCloseBtn").addEventListener("click", ()=>{
+      document.getElementById("pwdModal").classList.add("hidden");
+    });
+
+    document.getElementById("pwdSaveBtn").addEventListener("click", ()=>{
+      const oldP = document.getElementById("pwdOld").value;
+      const newP = document.getElementById("pwdNew").value;
+      const newP2 = document.getElementById("pwdNew2").value;
+      const msgEl = document.getElementById("pwdMsg");
+      const btn = document.getElementById("pwdSaveBtn");
+      const btnText = document.getElementById("pwdSaveText");
+
+      if(!oldP || !newP || !newP2){
+        setAlert(msgEl,"Fill all fields.","danger");
+        return;
       }
+      if(newP.length < 4){
+        setAlert(msgEl,"New password too short (min 4).","danger");
+        return;
+      }
+      if(newP !== newP2){
+        setAlert(msgEl,"New passwords do not match.","danger");
+        return;
+      }
+
+      btn.disabled = true;
+      btnText.textContent = "Saving...";
+
+      setTimeout(()=>{
+        const data = loadData();
+        const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
+
+        if(!lecturer || lecturer.password !== oldP){
+          setAlert(msgEl,"Current password is wrong.","danger");
+          btn.disabled = false;
+          btnText.textContent = "Save";
+          return;
+        }
+
+        lecturer.password = newP;
+        saveData(data);
+        setAlert(msgEl,"Password updated successfully.","success");
+        btn.disabled = false;
+        btnText.textContent = "Save";
+      }, 700);
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", ()=>{
+      localStorage.removeItem("currentUser");
+      window.location.href = "index.html";
+    });
+
+    console.log("Stored currentUser =", localStorage.getItem("currentUser"));
+
+    window.addEventListener("load", ()=>{
+      let savedUser = null;
+
+      try{
+        savedUser = JSON.parse(localStorage.getItem("currentUser"));
+      } catch(e){
+        savedUser = null;
+      }
+
+      if(!savedUser){
+        window.location.href = "index.html";
+        return;
+      }
+
+      if(savedUser.role !== "lecturer"){
+        window.location.href = "index.html";
+        return;
+      }
+
+      currentUser = savedUser;
+
+      const data = loadData();
+      const lecturer = data.lecturers.find(l => l.id === currentUser.id);
+
+      if(lecturer){
+        document.getElementById("lcLecturerName").value = `${lecturer.salutation} ${lecturer.fullName}`;
+      }
+
+      document.getElementById("userSummary").innerHTML =
+        `Logged in as <b>Lecturer</b> · <b>${currentUser.username || "Lecturer"}</b>`;
+
+      toggleLocationBlock();
+      renderLecturerClasses();
+      startLecturerLiveRefresh();
     });
   </script>
 </body>
