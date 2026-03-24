@@ -9,7 +9,8 @@ function baseData(){
     lecturers: [],
     facultyConfig: [],
     classes: [],
-    attendance: []
+    attendance: [],
+    fraudReviewed: []
   };
 }
 
@@ -29,7 +30,8 @@ function loadData(){
       lecturers: Array.isArray(parsed.lecturers) ? parsed.lecturers : [],
       facultyConfig: Array.isArray(parsed.facultyConfig) ? parsed.facultyConfig : [],
       classes: Array.isArray(parsed.classes) ? parsed.classes : [],
-      attendance: Array.isArray(parsed.attendance) ? parsed.attendance : []
+      attendance: Array.isArray(parsed.attendance) ? parsed.attendance : [],
+      fraudReviewed: Array.isArray(parsed.fraudReviewed) ? parsed.fraudReviewed : []
     };
   } catch (error){
     console.error("Failed to load local data:", error);
