@@ -19,28 +19,39 @@
 
       <nav class="admin-menu">
         <div class="admin-menu-group">MAIN</div>
+
         <button class="admin-menu-item active" data-admin-view="dashboardHome">
           <span>🏠</span><span>Dashboard</span>
         </button>
+
         <button class="admin-menu-item" data-admin-view="classesTab">
           <span>📚</span><span>Classes</span>
         </button>
+
         <button class="admin-menu-item" data-admin-view="lecturersTab">
           <span>👨🏽‍🏫</span><span>Lecturers</span>
         </button>
 
         <div class="admin-menu-group">MANAGE</div>
+
         <button class="admin-menu-item" data-admin-view="reportsTab">
           <span>📊</span><span>Reports</span>
         </button>
+
+        <button class="admin-menu-item" data-admin-view="fraudTab">
+          <span>🚨</span><span>Fraud Review</span>
+        </button>
+
         <button class="admin-menu-item" data-admin-view="exportsTab">
           <span>⬇️</span><span>Raw Exports</span>
         </button>
 
         <div class="admin-menu-group">SETTINGS</div>
+
         <button class="admin-menu-item" id="adminProfileBtn">
           <span>🔐</span><span>Change Password</span>
         </button>
+
         <button class="admin-menu-item" id="adminLogoutBtn">
           <span>🚪</span><span>Logout</span>
         </button>
@@ -205,6 +216,18 @@
           </div>
         </section>
 
+        <!-- FRAUD REVIEW -->
+        <section id="fraudTab" class="admin-view hidden admin-panel">
+          <h3>Fraud Review</h3>
+          <p class="page-intro">Review suspicious attendance submissions such as repeated devices and duplicate admission numbers.</p>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" id="refreshFraudBtn">Refresh Fraud Review</button>
+          </div>
+
+          <div id="fraudReviewWrapper" style="margin-top:1rem;"></div>
+        </section>
+
         <!-- RAW EXPORTS -->
         <section id="exportsTab" class="admin-view hidden admin-panel">
           <h3>Raw Attendance Export</h3>
@@ -235,6 +258,7 @@
     </div>
   </section>
 
+  <!-- CHANGE PASSWORD MODAL -->
   <div id="pwdModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
     <div class="card" style="width:min(520px,96%);box-shadow:var(--shadow-soft);">
       <h3 style="margin:.1rem 0 .6rem;">Change Password</h3>
@@ -355,6 +379,116 @@
         repeatedDevices,
         repeatedAdmissions
       };
+    }
+
+    function getFraudCases(){
+      const data = loadData();
+      const fraudCases = [];
+
+      const byClass = {};
+      data.attendance.forEach(record=>{
+        if(!byClass[record.classId]) byClass[record.classId] = [];
+        byClass[record.classId].push(record);
+      });
+
+      Object.keys(byClass).forEach(classId=>{
+        const records = byClass[classId];
+        const cls = data.classes.find(c=>c.id === classId);
+
+        const deviceMap = {};
+        const admissionMap = {};
+
+        records.forEach(r=>{
+          const device = r.deviceFingerprint || "";
+          const admission = String(r.admission || "").trim().toLowerCase();
+
+          if(device){
+            if(!deviceMap[device]) deviceMap[device] = [];
+            deviceMap[device].push(r);
+          }
+
+          if(admission){
+            if(!admissionMap[admission]) admissionMap[admission] = [];
+            admissionMap[admission].push(r);
+          }
+        });
+
+        Object.keys(deviceMap).forEach(device=>{
+          if(deviceMap[device].length > 1){
+            deviceMap[device].forEach(r=>{
+              fraudCases.push({
+                classId,
+                classLabel: cls ? `${cls.courseTitle || ""} (${cls.courseCode || ""})` : classId,
+                studentName: `${r.surname || ""} ${r.first || ""}`.trim(),
+                admission: r.admission || "",
+                deviceFingerprint: r.deviceFingerprint || "",
+                issue: "Repeated device",
+                createdAt: r.createdAt || ""
+              });
+            });
+          }
+        });
+
+        Object.keys(admissionMap).forEach(admission=>{
+          if(admissionMap[admission].length > 1){
+            admissionMap[admission].forEach(r=>{
+              fraudCases.push({
+                classId,
+                classLabel: cls ? `${cls.courseTitle || ""} (${cls.courseCode || ""})` : classId,
+                studentName: `${r.surname || ""} ${r.first || ""}`.trim(),
+                admission: r.admission || "",
+                deviceFingerprint: r.deviceFingerprint || "",
+                issue: "Repeated admission",
+                createdAt: r.createdAt || ""
+              });
+            });
+          }
+        });
+      });
+
+      return fraudCases;
+    }
+
+    function renderFraudReview(){
+      const wrapper = document.getElementById("fraudReviewWrapper");
+      const fraudCases = getFraudCases();
+
+      if(!fraudCases.length){
+        wrapper.innerHTML = `
+          <div class="empty-state">
+            <h3>No fraud flags found</h3>
+            <p>No repeated device or duplicate admission issues detected at the moment.</p>
+          </div>
+        `;
+        return;
+      }
+
+      wrapper.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Student</th>
+              <th>Admission</th>
+              <th>Device Fingerprint</th>
+              <th>Issue</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${fraudCases.map(item=>`
+              <tr>
+                <td>${item.classLabel}</td>
+                <td>${item.studentName}</td>
+                <td>${item.admission}</td>
+                <td><span class="small">${item.deviceFingerprint}</span></td>
+                <td><span class="chip red">${item.issue}</span></td>
+                <td>${formatDateTime(item.createdAt)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
     }
 
     function renderDashboardHome(){
@@ -691,6 +825,7 @@
         renderAdminLecturers();
         renderAdminClasses();
         refreshClassPickers();
+        renderFraudReview();
       }, 4000);
     }
 
@@ -759,6 +894,10 @@
         btn.disabled = false;
         btnText.textContent = "Generate Report";
       }, 600);
+    });
+
+    document.getElementById("refreshFraudBtn").addEventListener("click", ()=>{
+      renderFraudReview();
     });
 
     document.getElementById("rawExportCsvBtn").addEventListener("click", ()=>{
@@ -889,6 +1028,7 @@
       renderAdminLecturers();
       renderAdminClasses();
       refreshClassPickers();
+      renderFraudReview();
       showAdminView("dashboardHome");
       startAdminLiveRefresh();
     });
