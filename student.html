@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JOOUST Attendance - Student Sign-In</title>
+
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    .student-wrap{
+      max-width: 900px;
+      margin: 1.2rem auto 2rem;
+      padding: 0 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header id="mainHeader">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="assets/logo.jpg" alt="JOOUST Logo" />
+        <h1>
+          JOOUST Attendance
+          <span>Student Sign-In</span>
+        </h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="student-wrap">
+    <section class="card">
+      <h2 style="margin:0 0 .6rem;">Class Attendance – Student Sign-In</h2>
+
+      <div id="studentClassInfo" class="alert alert-info"></div>
+      <div id="studentGeoInfo" class="alert alert-info hidden"></div>
+
+      <div id="studentAlreadySubmitted" class="alert alert-success hidden">
+        You have already submitted attendance for this class on this device.
+      </div>
+
+      <div id="studentFormWrapper">
+        <div class="row">
+          <div>
+            <label for="stSurname">Surname</label>
+            <input id="stSurname" type="text" />
+          </div>
+          <div>
+            <label for="stMiddleName">Middle Name</label>
+            <input id="stMiddleName" type="text" />
+          </div>
+          <div>
+            <label for="stFirstName">First Name</label>
+            <input id="stFirstName" type="text" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="stAdmission">Admission Number</label>
+            <input id="stAdmission" type="text" />
+          </div>
+        </div>
+
+        <label>Digital Signature (use finger or mouse)</label>
+        <canvas id="stSignaturePad" class="signature-pad"></canvas>
+
+        <div class="signature-actions">
+          <button class="btn btn-secondary" id="stClearSignature">Clear</button>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" id="stSubmit">Submit Attendance</button>
+        </div>
+
+        <div id="studentSubmitMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+      </div>
+
+      <div class="small" style="margin-top:.8rem;">
+        Note: You may be asked to allow location access (GPS) to confirm you are within JOOUST.
+      </div>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    function getQueryParam(name){
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    function initStudentPage(){
+      const classId = getQueryParam("classId");
+      const msgEl = document.getElementById("studentClassInfo");
+
+      if(!classId){
+        msgEl.innerHTML = "<b>Error:</b> Invalid class link.";
+        return;
+      }
+
+      const data = loadData();
+      const cls = data.classes.find(c => c.id === classId);
+
+      if(!cls){
+        msgEl.innerHTML = "<b>Error:</b> Class not found.";
+        return;
+      }
+
+      msgEl.innerHTML = `
+        <b>${cls.unit}</b><br>
+        ${cls.course} · ${cls.faculty}<br>
+        ${cls.year} · ${cls.semester}<br>
+        Venue: ${cls.venue}<br>
+        Date/Time: ${formatDateTime(cls.dateTime)}
+      `;
+    }
+
+    function checkAlreadySubmitted(classId){
+      const submittedKey = "submitted_" + classId;
+      if(localStorage.getItem(submittedKey)){
+        document.getElementById("studentAlreadySubmitted").classList.remove("hidden");
+        document.getElementById("studentFormWrapper").style.display = "none";
+        return true;
+      }
+      return false;
+    }
+
+    function markSubmitted(classId){
+      localStorage.setItem("submitted_" + classId, "true");
+    }
+
+    function getDistanceKm(lat1, lon1, lat2, lon2){
+      const R = 6371;
+      const dLat = (lat2-lat1) * Math.PI/180;
+      const dLon = (lon2-lon1) * Math.PI/180;
+      const a =
+        Math.sin(dLat/2)*Math.sin(dLat/2) +
+        Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180) *
+        Math.sin(dLon/2)*Math.sin(dLon/2);
+      const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    const JOOUST_CENTER = { lat: -0.0936, lon: 34.2809 };
+    const MAX_DISTANCE_KM = 1;
+
+    function checkGeolocation(callback){
+      const geoInfo = document.getElementById("studentGeoInfo");
+
+      if(!navigator.geolocation){
+        geoInfo.textContent = "Geolocation not supported.";
+        geoInfo.classList.remove("hidden");
+        callback(true);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        position=>{
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          const distance = getDistanceKm(lat, lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
+
+          geoInfo.classList.remove("hidden");
+
+          if(distance <= MAX_DISTANCE_KM){
+            geoInfo.innerHTML = `Location verified (within JOOUST range).`;
+            callback(true);
+          } else {
+            geoInfo.innerHTML = `You are outside allowed range (${distance.toFixed(2)} km).`;
+            callback(false);
+          }
+        },
+        ()=>{
+          geoInfo.textContent = "Location access denied.";
+          geoInfo.classList.remove("hidden");
+          callback(true);
+        }
+      );
+    }
+
+    const pad = setupSignaturePad(document.getElementById("stSignaturePad"));
+
+    document.getElementById("stClearSignature").addEventListener("click", ()=>{
+      pad.clear();
+    });
+
+    document.getElementById("stSubmit").addEventListener("click", ()=>{
+      const classId = getQueryParam("classId");
+      const surname = document.getElementById("stSurname").value.trim();
+      const middle = document.getElementById("stMiddleName").value.trim();
+      const first = document.getElementById("stFirstName").value.trim();
+      const admission = document.getElementById("stAdmission").value.trim();
+      const signature = pad.toDataUrl();
+
+      const msgEl = document.getElementById("studentSubmitMsg");
+
+      if(!surname || !first || !admission){
+        setAlert(msgEl,"Please fill required fields.","danger");
+        return;
+      }
+
+      checkGeolocation((allowed)=>{
+        if(!allowed){
+          setAlert(msgEl,"You are outside the allowed attendance location.","danger");
+          return;
+        }
+
+        const data = loadData();
+        const cls = data.classes.find(c=>c.id === classId);
+
+        if(!cls){
+          setAlert(msgEl,"Class not found.","danger");
+          return;
+        }
+
+        data.attendance.push({
+          id: uuid(),
+          classId,
+          surname,
+          middle,
+          first,
+          admission,
+          signature,
+          createdAt: new Date().toISOString()
+        });
+
+        saveData(data);
+        markSubmitted(classId);
+
+        setAlert(msgEl,"Attendance submitted successfully.","success");
+
+        document.getElementById("studentFormWrapper").style.display = "none";
+      });
+    });
+
+    window.addEventListener("load", ()=>{
+      const classId = getQueryParam("classId");
+      initStudentPage();
+
+      if(classId){
+        checkAlreadySubmitted(classId);
+      }
+    });
+  </script>
+</body>
+</html>
