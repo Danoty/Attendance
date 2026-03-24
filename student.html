@@ -191,7 +191,13 @@
       const middle = document.getElementById("stMiddleName").value.trim();
       const first = document.getElementById("stFirstName").value.trim();
       const admission = document.getElementById("stAdmission").value.trim();
-      const signature = pad.toDataUrl();
+     const signature = pad.toDataUrl();
+if(pad.isEmpty()){
+  setAlert(msgEl,"Please provide your signature before submitting.","danger");
+  btn.disabled = false;
+  btnText.textContent = "Submit Attendance";
+  return;
+}
 
       const msgEl = document.getElementById("studentSubmitMsg");
 
