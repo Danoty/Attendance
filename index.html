@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JOOUST Attendance System - Login</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body>
@@ -14,7 +17,7 @@
         <img src="./assets/logo.jpg" alt="JOOUST Logo" />
         <h1>
           JOOUST Attendance System
-          <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
+          <span>Smart Attendance · Digital Signatures · Official Reports</span>
         </h1>
       </div>
     </div>
@@ -211,8 +214,13 @@
       }
     }
 
-    document.getElementById("showLoginTab").addEventListener("click", ()=> showAuthPanel("login"));
-    document.getElementById("showRegisterTab").addEventListener("click", ()=> showAuthPanel("register"));
+    document.getElementById("showLoginTab").addEventListener("click", ()=>{
+      showAuthPanel("login");
+    });
+
+    document.getElementById("showRegisterTab").addEventListener("click", ()=>{
+      showAuthPanel("register");
+    });
 
     document.getElementById("submitLecturerRegistration").addEventListener("click", ()=>{
       const salutation = document.getElementById("regSalutation").value;
@@ -269,6 +277,7 @@
 
       if(role === "admin"){
         const found = data.admins.find(a=>a.username===username && a.password===password);
+
         if(!found){
           setAlert(msgEl,"Invalid admin credentials.","danger");
           return;
@@ -279,11 +288,12 @@
           username
         }));
 
-        window.location.href = "admin.html";
+        window.location.href = "./admin.html";
         return;
       }
 
       const lecturer = data.lecturers.find(l=>l.username===username && l.password===password);
+
       if(!lecturer){
         setAlert(msgEl,"Lecturer not found or wrong password.","danger");
         return;
@@ -300,7 +310,7 @@
         username: lecturer.username
       }));
 
-      window.location.href = "lecturer.html";
+      window.location.href = "./lecturer.html";
     });
   </script>
 </body>
