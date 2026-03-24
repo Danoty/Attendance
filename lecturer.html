@@ -482,6 +482,77 @@
       renderLecturerClasses();
     });
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  let lecturerMap = null;
+let lecturerMapMarker = null;
+
+function initLecturerMap(){
+  const mapEl = document.getElementById("mapPicker");
+  if(!mapEl || lecturerMap) return;
+
+  lecturerMap = L.map("mapPicker").setView([-0.0936, 34.2809], 16);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(lecturerMap);
+
+  lecturerMap.on("click", function(e){
+    const { lat, lng } = e.latlng;
+    setLecturerLocation(lat, lng);
+  });
+
+  setTimeout(()=> lecturerMap.invalidateSize(), 300);
+}
+
+function setLecturerLocation(lat, lng){
+  document.getElementById("lcLatitude").value = lat.toFixed(6);
+  document.getElementById("lcLongitude").value = lng.toFixed(6);
+
+  if(lecturerMapMarker){
+    lecturerMapMarker.setLatLng([lat, lng]);
+  } else {
+    lecturerMapMarker = L.marker([lat, lng]).addTo(lecturerMap);
+  }
+
+  lecturerMap.setView([lat, lng], 18);
+}
+
+function toggleLocationBlock(){
+  const mode = document.getElementById("lcClassMode").value;
+  const block = document.getElementById("physicalLocationBlock");
+  if(mode === "online"){
+    block.classList.add("hidden");
+  } else {
+    block.classList.remove("hidden");
+    initLecturerMap();
+    setTimeout(()=>{
+      if(lecturerMap) lecturerMap.invalidateSize();
+    }, 200);
+  }
+}
+
+document.getElementById("lcClassMode").addEventListener("change", toggleLocationBlock);
+
+document.getElementById("pickLocationBtn").addEventListener("click", ()=>{
+  toggleLocationBlock();
+});
+
+document.getElementById("useCurrentLocationBtn").addEventListener("click", ()=>{
+  if(!navigator.geolocation){
+    alert("Geolocation is not supported in this browser.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    position=>{
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      setLecturerLocation(lat, lng);
+    },
+    ()=>{
+      alert("Unable to get your current location.");
+    }
+  );
+});
   </script>
 </body>
 </html>
