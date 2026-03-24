@@ -3,34 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JOOUST Attendance System - Admin Dashboard</title>
+  <title>JOOUST Admin Dashboard</title>
   <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body>
   <section id="adminDashboard" class="admin-shell">
     <aside class="admin-sidebar">
-     <div class="admin-brand">
-  <img src="./assets/logo.jpg" alt="JOOUST Logo" class="admin-brand-image" />
-  <div>
-    <div class="admin-brand-title">JOOUST</div>
-    <div class="admin-brand-subtitle">Attendance System</div>
-  </div>
-</div>
+      <div class="admin-brand">
+        <img src="./assets/logo.jpg" alt="JOOUST Logo" class="admin-brand-image" />
+        <div>
+          <div class="admin-brand-title">JOOUST</div>
+          <div class="admin-brand-subtitle">Attendance System</div>
+        </div>
+      </div>
 
       <nav class="admin-menu">
         <div class="admin-menu-group">MAIN</div>
-        <button class="admin-menu-item active" data-admin-view="dashboardHome"><span>🏠</span><span>Dashboard</span></button>
-        <button class="admin-menu-item" data-admin-view="classesTab"><span>📚</span><span>Classes</span></button>
-        <button class="admin-menu-item" data-admin-view="lecturersTab"><span>👨🏽‍🏫</span><span>Lecturers</span></button>
+        <button class="admin-menu-item active" data-admin-view="dashboardHome">
+          <span>🏠</span><span>Dashboard</span>
+        </button>
+        <button class="admin-menu-item" data-admin-view="classesTab">
+          <span>📚</span><span>Classes</span>
+        </button>
+        <button class="admin-menu-item" data-admin-view="lecturersTab">
+          <span>👨🏽‍🏫</span><span>Lecturers</span>
+        </button>
 
         <div class="admin-menu-group">MANAGE</div>
-        <button class="admin-menu-item" data-admin-view="facultyTab"><span>🗂️</span><span>Faculty Mapping</span></button>
-        <button class="admin-menu-item" data-admin-view="reportsTab"><span>📊</span><span>Reports</span></button>
-        <button class="admin-menu-item" data-admin-view="exportsTab"><span>⬇️</span><span>Raw Exports</span></button>
+        <button class="admin-menu-item" data-admin-view="reportsTab">
+          <span>📊</span><span>Reports</span>
+        </button>
+        <button class="admin-menu-item" data-admin-view="exportsTab">
+          <span>⬇️</span><span>Raw Exports</span>
+        </button>
 
         <div class="admin-menu-group">SETTINGS</div>
-        <button class="admin-menu-item" id="adminProfileBtn"><span>🔐</span><span>Change Password</span></button>
-        <button class="admin-menu-item" id="adminLogoutBtn"><span>🚪</span><span>Logout</span></button>
+        <button class="admin-menu-item" id="adminProfileBtn">
+          <span>🔐</span><span>Change Password</span>
+        </button>
+        <button class="admin-menu-item" id="adminLogoutBtn">
+          <span>🚪</span><span>Logout</span>
+        </button>
       </nav>
     </aside>
 
@@ -39,23 +52,24 @@
         <div class="admin-topbar-left">
           <button class="admin-menu-toggle" id="adminMenuToggle">☰</button>
           <div class="admin-search-wrap">
-            <input type="text" id="adminSearchBox" class="admin-search" placeholder="Search" />
+            <input type="text" id="adminSearchBox" class="admin-search" placeholder="Search by course title, code, programme, lecturer..." />
           </div>
         </div>
 
         <div class="admin-topbar-right">
-  <div class="admin-user-box">
-    <img src="./assets/logo.jpg" alt="JOOUST" class="admin-top-logo-small" />
-    <span id="adminTopName">Admin</span>
-  </div>
+          <div class="admin-user-box">
+            <img src="./assets/logo.jpg" alt="JOOUST" class="admin-top-logo-small" />
+            <span id="adminTopName">Admin</span>
+          </div>
         </div>
       </header>
 
       <div class="admin-content">
+        <!-- DASHBOARD -->
         <section id="dashboardHome" class="admin-view">
           <div class="admin-panel">
-            <h2>Dashboard</h2>
-            <p class="page-intro">Monitor lecturer accounts, classes, and attendance activity from one place.</p>
+            <h2>JOOUST Admin Dashboard</h2>
+            <p class="page-intro">Monitor lecturers, classes, attendance, and possible fraud indicators in real time.</p>
 
             <div class="admin-stat-grid">
               <div class="admin-stat-card green">
@@ -85,61 +99,84 @@
           </div>
         </section>
 
+        <!-- LECTURERS -->
         <section id="lecturersTab" class="admin-view hidden admin-panel">
           <h3>Lecturer Accounts</h3>
           <p class="page-intro">Approve new registrations and manage lecturer accounts.</p>
           <div id="lecturersTableWrapper" class="muted" style="margin-top:1rem;"></div>
         </section>
 
-        <section id="facultyTab" class="admin-view hidden admin-panel">
-          <h3>Faculty / Course / Unit Mapping</h3>
-          <p class="page-intro">Upload CSV to populate dropdown lists for class creation and reporting.</p>
-
-          <div class="alert alert-info" style="margin-top:1rem;">
-            CSV Structure: <code>Faculty,Course,Unit,Year,Semester</code><br />
-            Each row represents one unit/class option.
-          </div>
-
-          <input type="file" id="facultyCsvInput" accept=".csv" />
-
-          <div class="btn-group">
-            <button class="btn btn-primary" id="uploadFacultyCsvBtn"><span id="uploadFacultyText">Upload & Save</span></button>
-            <button class="btn btn-secondary" id="clearFacultyDataBtn">Clear All Mappings</button>
-          </div>
-
-          <div id="facultyUploadMsg" class="alert hidden" style="margin-top:.8rem;"></div>
-
-          <h4 style="margin-top:1rem;margin-bottom:.4rem;">Current Records</h4>
-          <div id="facultySummary" class="muted"></div>
-        </section>
-
+        <!-- CLASSES -->
         <section id="classesTab" class="admin-view hidden admin-panel">
           <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
             <div>
               <h3 style="margin:.1rem 0;">All Classes</h3>
-              <div class="small">Monitor all sessions and view attendance details.</div>
+              <div class="small">Monitor all sessions, geofence settings, and attendance counts.</div>
             </div>
-            <div style="min-width:260px;">
-              <label for="adminClassFilter">Quick Filter (Unit / Lecturer / Course)</label>
-              <select id="adminClassFilter"></select>
+            <div style="min-width:280px;">
+              <label for="adminClassFilter">Quick Filter</label>
+              <input id="adminClassFilter" type="text" placeholder="Type course, code, lecturer, programme..." />
             </div>
           </div>
+
           <div id="adminClassesTableWrapper" class="muted" style="margin-top:1rem;"></div>
         </section>
 
+        <!-- REPORTS -->
         <section id="reportsTab" class="admin-view hidden admin-panel">
           <h3>Reports</h3>
-          <p class="page-intro">Filter by academic details and export polished reports.</p>
+          <p class="page-intro">Filter by academic and class details and export polished reports.</p>
 
           <div class="row">
-            <div><label for="repFaculty">Faculty</label><select id="repFaculty"></select></div>
-            <div><label for="repCourse">Course</label><select id="repCourse"></select></div>
-            <div><label for="repUnit">Unit</label><select id="repUnit"></select></div>
+            <div>
+              <label for="repFacultySchool">Faculty / School</label>
+              <input id="repFacultySchool" type="text" placeholder="e.g. School of Informatics" />
+            </div>
+            <div>
+              <label for="repProgramme">Programme</label>
+              <input id="repProgramme" type="text" placeholder="e.g. Diploma in Linux Engineering" />
+            </div>
+            <div>
+              <label for="repAcademicYear">Academic Year</label>
+              <input id="repAcademicYear" type="text" placeholder="e.g. 2025/2026" />
+            </div>
           </div>
 
           <div class="row">
-            <div><label for="repYear">Year</label><select id="repYear"></select></div>
-            <div><label for="repSemester">Semester</label><select id="repSemester"></select></div>
+            <div>
+              <label for="repYearOfStudy">Year of Study</label>
+              <input id="repYearOfStudy" type="text" placeholder="e.g. Year 1" />
+            </div>
+            <div>
+              <label for="repSemester">Semester</label>
+              <input id="repSemester" type="text" placeholder="e.g. Semester 1" />
+            </div>
+            <div>
+              <label for="repCourseTitle">Course Title</label>
+              <input id="repCourseTitle" type="text" placeholder="e.g. Communication Skills" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="repCourseCode">Course Code</label>
+              <input id="repCourseCode" type="text" placeholder="e.g. BIT 1203" />
+            </div>
+            <div>
+              <label for="repLecturerName">Lecturer Name</label>
+              <input id="repLecturerName" type="text" placeholder="e.g. Dr. Jane Doe" />
+            </div>
+            <div>
+              <label for="repClassMode">Class Mode</label>
+              <select id="repClassMode">
+                <option value="">All</option>
+                <option value="physical">Physical</option>
+                <option value="online">Online</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
             <div>
               <label for="repStatus">Status</label>
               <select id="repStatus">
@@ -151,7 +188,9 @@
           </div>
 
           <div class="btn-group">
-            <button class="btn btn-primary" id="generateReportBtn"><span id="generateReportText">Generate Report</span></button>
+            <button class="btn btn-primary" id="generateReportBtn">
+              <span id="generateReportText">Generate Report</span>
+            </button>
           </div>
 
           <div id="reportArea" class="hidden" style="margin-top:1rem;">
@@ -166,9 +205,10 @@
           </div>
         </section>
 
+        <!-- RAW EXPORTS -->
         <section id="exportsTab" class="admin-view hidden admin-panel">
           <h3>Raw Attendance Export</h3>
-          <p class="page-intro">Export names, admission numbers, timestamps, and signatures for archive.</p>
+          <p class="page-intro">Export attendance with names, admission numbers, timestamps, signatures, and device fingerprint.</p>
 
           <div class="row">
             <div>
@@ -232,10 +272,12 @@
   <script src="./js/app.js"></script>
   <script>
     let currentUser = null;
+    let adminLiveRefresh = null;
 
     function setupPasswordToggle(toggleId, inputId){
       const toggle = document.getElementById(toggleId);
       const input = document.getElementById(inputId);
+
       toggle.addEventListener("click", ()=>{
         if(input.type === "password"){
           input.type = "text";
@@ -260,6 +302,7 @@
       document.querySelectorAll(".admin-view").forEach(v=>{
         v.classList.toggle("hidden", v.id !== viewId);
       });
+
       document.querySelectorAll(".admin-menu-item[data-admin-view]").forEach(btn=>{
         btn.classList.toggle("active", btn.getAttribute("data-admin-view") === viewId);
       });
@@ -290,13 +333,45 @@
       });
     }
 
+    function fraudSummaryForClass(classId, attendance){
+      const classAttendance = attendance.filter(a=>a.classId === classId);
+      const deviceCounts = {};
+      const admissionCounts = {};
+
+      classAttendance.forEach(a=>{
+        if(a.deviceFingerprint){
+          deviceCounts[a.deviceFingerprint] = (deviceCounts[a.deviceFingerprint] || 0) + 1;
+        }
+        const adm = String(a.admission || "").trim().toLowerCase();
+        if(adm){
+          admissionCounts[adm] = (admissionCounts[adm] || 0) + 1;
+        }
+      });
+
+      const repeatedDevices = Object.values(deviceCounts).filter(n=>n > 1).length;
+      const repeatedAdmissions = Object.values(admissionCounts).filter(n=>n > 1).length;
+
+      return {
+        repeatedDevices,
+        repeatedAdmissions
+      };
+    }
+
     function renderDashboardHome(){
       const data = loadData();
+
       document.getElementById("kpiClasses").textContent = data.classes.length;
       document.getElementById("kpiAttendance").textContent = data.attendance.length;
 
-      const recentClasses = data.classes.slice().sort((a,b)=>(b.dateTime||"").localeCompare(a.dateTime||"")).slice(0,5);
-      const latestAttendance = data.attendance.slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")).slice(0,5);
+      const recentClasses = data.classes
+        .slice()
+        .sort((a,b)=>(b.dateTime || "").localeCompare(a.dateTime || ""))
+        .slice(0,5);
+
+      const latestAttendance = data.attendance
+        .slice()
+        .sort((a,b)=>(b.createdAt || "").localeCompare(a.createdAt || ""))
+        .slice(0,5);
 
       const recentBox = document.getElementById("recentClassesBox");
       const latestBox = document.getElementById("latestAttendanceBox");
@@ -306,12 +381,20 @@
       } else {
         recentBox.innerHTML = `
           <table>
-            <thead><tr><th>Unit</th><th>Course</th><th>Date</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Code</th>
+                <th>Lecturer</th>
+                <th>Date</th>
+              </tr>
+            </thead>
             <tbody>
               ${recentClasses.map(c=>`
                 <tr>
-                  <td>${c.unit}</td>
-                  <td>${c.course}</td>
+                  <td>${c.courseTitle || ""}</td>
+                  <td>${c.courseCode || ""}</td>
+                  <td>${c.lecturerName || ""}</td>
                   <td>${formatDateTime(c.dateTime)}</td>
                 </tr>
               `).join("")}
@@ -325,7 +408,13 @@
       } else {
         latestBox.innerHTML = `
           <table>
-            <thead><tr><th>Name</th><th>Admission</th><th>Time</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Admission</th>
+                <th>Time</th>
+              </tr>
+            </thead>
             <tbody>
               ${latestAttendance.map(a=>`
                 <tr>
@@ -386,6 +475,7 @@
       const data = loadData();
       const lecturer = data.lecturers.find(l=>l.id===id);
       if(!lecturer) return;
+
       lecturer.approved = !lecturer.approved;
       saveData(data);
       renderAdminLecturers();
@@ -395,125 +485,100 @@
       const data = loadData();
       const lecturer = data.lecturers.find(l=>l.id===id);
       if(!lecturer) return;
+
       const newPwd = prompt("Enter new password for lecturer:", "1234");
       if(!newPwd) return;
+
       lecturer.password = newPwd;
       saveData(data);
       alert("Lecturer password reset successfully.");
     }
 
-    function renderFacultySummary(){
-      const wrap = document.getElementById("facultySummary");
-      const data = loadData();
-
-      if(!data.facultyConfig.length){
-        showEmptyState(wrap, "No mappings uploaded", "Upload a CSV file to populate faculties, courses, units, years, and semesters.");
-        return;
-      }
-
-      const total = data.facultyConfig.length;
-      const faculties = [...new Set(data.facultyConfig.map(r=>r.faculty))];
-      wrap.innerHTML = `<p class="muted">Total entries: <b>${total}</b><br>Faculties: ${faculties.join(", ")}</p>`;
-    }
-
-    function setClassFilterOptions(selectId, classes){
-      const sel = document.getElementById(selectId);
-      const old = sel.value;
-      const units = unique(classes.map(c=>c.unit).filter(Boolean));
-      const courses = unique(classes.map(c=>c.course).filter(Boolean));
-      const lecturers = unique(classes.map(c=>c.lecturerName).filter(Boolean));
-
-      sel.innerHTML = `<option value="">All Classes</option>`;
-
-      if(units.length){
-        const g1 = document.createElement("optgroup");
-        g1.label = "By Unit";
-        units.forEach(v=>{
-          const o = document.createElement("option");
-          o.value = v;
-          o.textContent = v;
-          g1.appendChild(o);
-        });
-        sel.appendChild(g1);
-      }
-
-      if(courses.length){
-        const g2 = document.createElement("optgroup");
-        g2.label = "By Course";
-        courses.forEach(v=>{
-          const o = document.createElement("option");
-          o.value = v;
-          o.textContent = v;
-          g2.appendChild(o);
-        });
-        sel.appendChild(g2);
-      }
-
-      if(lecturers.length){
-        const g3 = document.createElement("optgroup");
-        g3.label = "By Lecturer";
-        lecturers.forEach(v=>{
-          const o = document.createElement("option");
-          o.value = v;
-          o.textContent = v;
-          g3.appendChild(o);
-        });
-        sel.appendChild(g3);
-      }
-
-      if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
-    }
-
-    function classFilterMatch(cls, filterValue){
-      const v = filterValue.toLowerCase();
+    function classMatchesSearch(cls, q){
+      const s = q.toLowerCase();
       return (
-        (cls.unit || "").toLowerCase().includes(v) ||
-        (cls.course || "").toLowerCase().includes(v) ||
-        (cls.faculty || "").toLowerCase().includes(v) ||
-        (cls.lecturerName || "").toLowerCase().includes(v)
+        (cls.courseTitle || "").toLowerCase().includes(s) ||
+        (cls.courseCode || "").toLowerCase().includes(s) ||
+        (cls.lecturerName || "").toLowerCase().includes(s) ||
+        (cls.programme || "").toLowerCase().includes(s) ||
+        (cls.facultySchool || "").toLowerCase().includes(s) ||
+        (cls.academicYear || "").toLowerCase().includes(s) ||
+        (cls.yearOfStudy || "").toLowerCase().includes(s) ||
+        (cls.semester || "").toLowerCase().includes(s) ||
+        (cls.classMode || "").toLowerCase().includes(s)
       );
     }
 
     function renderAdminClasses(){
       const wrap = document.getElementById("adminClassesTableWrapper");
       const data = loadData();
-
-      setClassFilterOptions("adminClassFilter", data.classes);
+      const q = document.getElementById("adminClassFilter").value.trim();
 
       if(!data.classes.length){
         showEmptyState(wrap, "No classes available", "Classes created by lecturers will appear here for monitoring.");
         return;
       }
 
-      const filterValue = document.getElementById("adminClassFilter").value || "";
-      const filtered = filterValue ? data.classes.filter(cls=>classFilterMatch(cls, filterValue)) : data.classes;
+      const filtered = q ? data.classes.filter(cls=>classMatchesSearch(cls, q)) : data.classes;
 
       wrap.innerHTML = `
         <table>
           <thead>
             <tr>
-              <th>Class</th>
-              <th>Lecturer</th>
+              <th>Course Details</th>
+              <th>Programme Info</th>
+              <th>Mode / Geofence</th>
               <th>Venue / Date</th>
               <th>Status</th>
               <th>Attendance</th>
+              <th>Fraud Flags</th>
             </tr>
           </thead>
           <tbody>
             ${filtered.map(cls=>{
-              const count = data.attendance.filter(a=>a.classId===cls.id).length;
+              const count = data.attendance.filter(a=>a.classId === cls.id).length;
+              const fraud = fraudSummaryForClass(cls.id, data.attendance);
+
               return `
                 <tr>
                   <td>
-                    <b>${cls.unit}</b><br>
-                    <span class="small">${cls.course}</span><br>
-                    <span class="small">${cls.faculty}</span><br>
-                    <span class="small">${cls.year}, ${cls.semester}</span>
+                    <b>${cls.courseTitle || ""}</b><br>
+                    <span class="small">${cls.courseCode || ""}</span><br>
+                    <span class="small">${cls.lecturerName || ""}</span>
                   </td>
-                  <td>${cls.lecturerName || ""}</td>
-                  <td>${cls.venue}<br><span class="small">${formatDateTime(cls.dateTime)}</span></td>
-                  <td>${cls.status === "open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`}</td>
+                  <td>
+                    <span class="small"><b>Faculty/School:</b> ${cls.facultySchool || ""}</span><br>
+                    <span class="small"><b>Programme:</b> ${cls.programme || ""}</span><br>
+                    <span class="small"><b>Academic Year:</b> ${cls.academicYear || ""}</span><br>
+                    <span class="small"><b>Year of Study:</b> ${cls.yearOfStudy || ""}</span><br>
+                    <span class="small"><b>Semester:</b> ${cls.semester || ""}</span>
+                  </td>
+                  <td>
+                    <span class="small"><b>Mode:</b> ${cls.classMode || "physical"}</span><br>
+                    ${(cls.classMode || "physical") === "physical"
+                      ? `<span class="small"><b>Geofence:</b> ${cls.geofenceRadius || 50}m</span><br>
+                         <span class="small"><b>Lat:</b> ${cls.latitude ?? "-"}</span><br>
+                         <span class="small"><b>Lng:</b> ${cls.longitude ?? "-"}</span>`
+                      : `<span class="small">No geofence</span>`}
+                  </td>
+                  <td>
+                    ${cls.venue || ""}<br>
+                    <span class="small">${formatDateTime(cls.dateTime)}</span>
+                  </td>
+                  <td>
+                    ${cls.status === "open"
+                      ? `<span class="badge open">Open</span>`
+                      : `<span class="badge closed">Closed</span>`}
+                  </td>
                   <td><b>${count}</b></td>
+                  <td>
+                    ${fraud.repeatedDevices > 0
+                      ? `<span class="chip red">Repeated device</span><br>`
+                      : `<span class="chip green">Device OK</span><br>`}
+                    ${fraud.repeatedAdmissions > 0
+                      ? `<span class="chip red">Repeated admission</span>`
+                      : `<span class="chip green">Admission OK</span>`}
+                  </td>
                 </tr>
               `;
             }).join("")}
@@ -525,39 +590,46 @@
     function refreshClassPickers(){
       const pick = document.getElementById("rawClassPick");
       const data = loadData();
-      const all = data.classes.slice().sort((a,b)=>(b.dateTime||"").localeCompare(a.dateTime||""));
 
-      pick.innerHTML = `<option value="">Select Class</option>` + all.map(c=>`
-        <option value="${c.id}">${c.unit} - ${c.course} - ${formatDateTime(c.dateTime)}</option>
-      `).join("");
-    }
+      const all = data.classes
+        .slice()
+        .sort((a,b)=>(b.dateTime || "").localeCompare(a.dateTime || ""));
 
-    function populateReportDropdowns(){
-      const map = getMapping();
-      setOptions(document.getElementById("repFaculty"), unique(map.map(x=>x.faculty)), "All Faculties");
-      setOptions(document.getElementById("repCourse"), unique(map.map(x=>x.course)), "All Courses");
-      setOptions(document.getElementById("repUnit"), unique(map.map(x=>x.unit)), "All Units");
-      setOptions(document.getElementById("repYear"), unique(map.map(x=>x.year)), "All Years");
-      setOptions(document.getElementById("repSemester"), unique(map.map(x=>x.semester)), "All Semesters");
+      pick.innerHTML =
+        `<option value="">Select Class</option>` +
+        all.map(c=>`
+          <option value="${c.id}">
+            ${c.courseTitle || ""} - ${c.courseCode || ""} - ${formatDateTime(c.dateTime)}
+          </option>
+        `).join("");
     }
 
     function getFilteredReportClasses(){
       const data = loadData();
-      const faculty = document.getElementById("repFaculty").value;
-      const course = document.getElementById("repCourse").value;
-      const unit = document.getElementById("repUnit").value;
-      const year = document.getElementById("repYear").value;
-      const semester = document.getElementById("repSemester").value;
+
+      const facultySchool = document.getElementById("repFacultySchool").value.trim().toLowerCase();
+      const programme = document.getElementById("repProgramme").value.trim().toLowerCase();
+      const academicYear = document.getElementById("repAcademicYear").value.trim().toLowerCase();
+      const yearOfStudy = document.getElementById("repYearOfStudy").value.trim().toLowerCase();
+      const semester = document.getElementById("repSemester").value.trim().toLowerCase();
+      const courseTitle = document.getElementById("repCourseTitle").value.trim().toLowerCase();
+      const courseCode = document.getElementById("repCourseCode").value.trim().toLowerCase();
+      const lecturerName = document.getElementById("repLecturerName").value.trim().toLowerCase();
+      const classMode = document.getElementById("repClassMode").value;
       const status = document.getElementById("repStatus").value;
 
-      return data.classes.filter(cls =>
-        (!faculty || cls.faculty === faculty) &&
-        (!course || cls.course === course) &&
-        (!unit || cls.unit === unit) &&
-        (!year || cls.year === year) &&
-        (!semester || cls.semester === semester) &&
-        (!status || cls.status === status)
-      );
+      return data.classes.filter(cls=>{
+        return (!facultySchool || (cls.facultySchool || "").toLowerCase().includes(facultySchool)) &&
+               (!programme || (cls.programme || "").toLowerCase().includes(programme)) &&
+               (!academicYear || (cls.academicYear || "").toLowerCase().includes(academicYear)) &&
+               (!yearOfStudy || (cls.yearOfStudy || "").toLowerCase().includes(yearOfStudy)) &&
+               (!semester || (cls.semester || "").toLowerCase().includes(semester)) &&
+               (!courseTitle || (cls.courseTitle || "").toLowerCase().includes(courseTitle)) &&
+               (!courseCode || (cls.courseCode || "").toLowerCase().includes(courseCode)) &&
+               (!lecturerName || (cls.lecturerName || "").toLowerCase().includes(lecturerName)) &&
+               (!classMode || cls.classMode === classMode) &&
+               (!status || cls.status === status);
+      });
     }
 
     function renderReportTable(items){
@@ -572,27 +644,54 @@
       table.innerHTML = `
         <thead>
           <tr>
-            <th>Unit</th><th>Course</th><th>Faculty</th><th>Year</th><th>Semester</th>
-            <th>Lecturer</th><th>Venue</th><th>Date</th><th>Status</th><th>Attendance</th>
+            <th>Course Title</th>
+            <th>Course Code</th>
+            <th>Faculty / School</th>
+            <th>Programme</th>
+            <th>Academic Year</th>
+            <th>Year of Study</th>
+            <th>Semester</th>
+            <th>Lecturer</th>
+            <th>Mode</th>
+            <th>Geofence</th>
+            <th>Venue</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Attendance</th>
           </tr>
         </thead>
         <tbody>
           ${items.map(cls=>`
             <tr>
-              <td>${cls.unit}</td>
-              <td>${cls.course}</td>
-              <td>${cls.faculty}</td>
-              <td>${cls.year}</td>
-              <td>${cls.semester}</td>
+              <td>${cls.courseTitle || ""}</td>
+              <td>${cls.courseCode || ""}</td>
+              <td>${cls.facultySchool || ""}</td>
+              <td>${cls.programme || ""}</td>
+              <td>${cls.academicYear || ""}</td>
+              <td>${cls.yearOfStudy || ""}</td>
+              <td>${cls.semester || ""}</td>
               <td>${cls.lecturerName || ""}</td>
-              <td>${cls.venue}</td>
+              <td>${cls.classMode || "physical"}</td>
+              <td>${(cls.classMode || "physical") === "physical" ? ((cls.geofenceRadius || 50) + "m") : "N/A"}</td>
+              <td>${cls.venue || ""}</td>
               <td>${formatDateTime(cls.dateTime)}</td>
-              <td>${cls.status}</td>
-              <td>${data.attendance.filter(a=>a.classId===cls.id).length}</td>
+              <td>${cls.status || ""}</td>
+              <td>${data.attendance.filter(a=>a.classId === cls.id).length}</td>
             </tr>
           `).join("")}
         </tbody>
       `;
+    }
+
+    function startAdminLiveRefresh(){
+      if(adminLiveRefresh) clearInterval(adminLiveRefresh);
+
+      adminLiveRefresh = setInterval(()=>{
+        renderDashboardHome();
+        renderAdminLecturers();
+        renderAdminClasses();
+        refreshClassPickers();
+      }, 4000);
     }
 
     setupPasswordToggle("toggleOldPwd","pwdOld");
@@ -629,7 +728,7 @@
 
       setTimeout(()=>{
         const data = loadData();
-        const admin = data.admins.find(a=>a.username===currentUser.username);
+        const admin = data.admins.find(a=>a.username === currentUser.username);
 
         if(!admin || admin.password !== oldP){
           setAlert(msgEl,"Current password is wrong.","danger");
@@ -646,67 +745,12 @@
       }, 700);
     });
 
-    document.getElementById("uploadFacultyCsvBtn").addEventListener("click", ()=>{
-      const file = document.getElementById("facultyCsvInput").files[0];
-      const msgEl = document.getElementById("facultyUploadMsg");
-      const btn = document.getElementById("uploadFacultyCsvBtn");
-      const btnText = document.getElementById("uploadFacultyText");
-
-      if(!file){
-        setAlert(msgEl,"Select a CSV file first.","danger");
-        return;
-      }
-
-      btn.disabled = true;
-      btnText.textContent = "Uploading...";
-
-      const reader = new FileReader();
-      reader.onload = e=>{
-        const text = e.target.result || "";
-        const lines = text.split(/\r?\n/).filter(l=>l.trim());
-        const records = [];
-
-        for(const line of lines){
-          const parts = line.split(",").map(p=>p.trim());
-          if(parts.length < 5) continue;
-          const [faculty, course, unit, year, semester] = parts;
-          if(!faculty || !course || !unit || !year || !semester) continue;
-          records.push({ faculty, course, unit, year, semester });
-        }
-
-        const data = loadData();
-        data.facultyConfig = records;
-        saveData(data);
-
-        setAlert(msgEl, `Uploaded ${records.length} entries successfully.`, "success");
-        renderFacultySummary();
-        populateReportDropdowns();
-
-        btn.disabled = false;
-        btnText.textContent = "Upload & Save";
-      };
-
-      reader.readAsText(file);
-    });
-
-    document.getElementById("clearFacultyDataBtn").addEventListener("click", ()=>{
-      const msgEl = document.getElementById("facultyUploadMsg");
-      if(!confirm("Clear all existing faculty/course/unit mappings?")) return;
-
-      const data = loadData();
-      data.facultyConfig = [];
-      saveData(data);
-
-      setAlert(msgEl,"All mappings cleared.","success");
-      renderFacultySummary();
-      populateReportDropdowns();
-    });
-
-    document.getElementById("adminClassFilter").addEventListener("change", renderAdminClasses);
+    document.getElementById("adminClassFilter").addEventListener("input", renderAdminClasses);
 
     document.getElementById("generateReportBtn").addEventListener("click", ()=>{
       const btn = document.getElementById("generateReportBtn");
       const btnText = document.getElementById("generateReportText");
+
       btn.disabled = true;
       btnText.textContent = "Generating...";
 
@@ -727,17 +771,28 @@
       }
 
       const data = loadData();
-      const rows = data.attendance.filter(a=>a.classId===classId).map(a=>[
-        a.surname, a.middle || "", a.first, a.admission, a.createdAt, a.signature || ""
-      ]);
+      const rows = data.attendance
+        .filter(a=>a.classId===classId)
+        .map(a=>[
+          a.surname,
+          a.middle || "",
+          a.first,
+          a.admission,
+          a.deviceFingerprint || "",
+          a.createdAt,
+          a.signature || ""
+        ]);
 
       if(!rows.length){
         setAlert(msgEl,"No attendance records found for this class.","danger");
         return;
       }
 
-      const header = ["Surname","Middle Name","First Name","Admission","Timestamp","Signature"];
-      const csv = [header, ...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+      const header = ["Surname","Middle Name","First Name","Admission","DeviceFingerprint","Timestamp","Signature"];
+      const csv = [header, ...rows]
+        .map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(","))
+        .join("\n");
+
       downloadBlob(csv, `attendance_${classId}.csv`, "text/csv;charset=utf-8;");
       setAlert(msgEl,"CSV export ready.","success");
     });
@@ -752,14 +807,17 @@
       }
 
       const data = loadData();
-      const rows = data.attendance.filter(a=>a.classId===classId).map(a=>({
-        Surname:a.surname,
-        MiddleName:a.middle || "",
-        FirstName:a.first,
-        Admission:a.admission,
-        Timestamp:a.createdAt,
-        Signature:a.signature || ""
-      }));
+      const rows = data.attendance
+        .filter(a=>a.classId===classId)
+        .map(a=>({
+          Surname: a.surname,
+          MiddleName: a.middle || "",
+          FirstName: a.first,
+          Admission: a.admission,
+          DeviceFingerprint: a.deviceFingerprint || "",
+          Timestamp: a.createdAt,
+          Signature: a.signature || ""
+        }));
 
       if(!rows.length){
         setAlert(msgEl,"No attendance records found for this class.","danger");
@@ -775,16 +833,20 @@
       const data = loadData();
 
       const rows = items.map(cls=>({
-        Unit:cls.unit,
-        Course:cls.course,
-        Faculty:cls.faculty,
-        Year:cls.year,
-        Semester:cls.semester,
-        Lecturer:cls.lecturerName || "",
-        Venue:cls.venue,
-        Date:formatDateTime(cls.dateTime),
-        Status:cls.status,
-        Attendance:data.attendance.filter(a=>a.classId===cls.id).length
+        CourseTitle: cls.courseTitle || "",
+        CourseCode: cls.courseCode || "",
+        FacultySchool: cls.facultySchool || "",
+        Programme: cls.programme || "",
+        AcademicYear: cls.academicYear || "",
+        YearOfStudy: cls.yearOfStudy || "",
+        Semester: cls.semester || "",
+        Lecturer: cls.lecturerName || "",
+        Mode: cls.classMode || "physical",
+        Geofence: (cls.classMode || "physical") === "physical" ? ((cls.geofenceRadius || 50) + "m") : "N/A",
+        Venue: cls.venue || "",
+        Date: formatDateTime(cls.dateTime),
+        Status: cls.status || "",
+        Attendance: data.attendance.filter(a=>a.classId===cls.id).length
       }));
 
       exportJsonToExcel(rows, "admin_report.xlsx", "Report");
@@ -820,17 +882,15 @@
       }
 
       currentUser = savedUser;
-
       document.getElementById("adminTopName").textContent = currentUser.username || "Admin";
 
       setupAdminMenu();
       renderDashboardHome();
       renderAdminLecturers();
-      renderFacultySummary();
       renderAdminClasses();
       refreshClassPickers();
-      populateReportDropdowns();
       showAdminView("dashboardHome");
+      startAdminLiveRefresh();
     });
   </script>
 </body>
