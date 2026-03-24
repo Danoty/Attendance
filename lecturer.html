@@ -33,31 +33,69 @@
       </section>
 
       <section class="card">
-        <h3 style="margin:.1rem 0;">Create / Start Class</h3>
-        <p class="page-intro">Select academic details, venue, and session time to begin.</p>
+  <h3 style="margin:.1rem 0;">Create / Start Class</h3>
+  <p class="page-intro">Enter class details and start a new attendance session.</p>
 
-        <div class="row">
-          <div><label for="lcFaculty">Faculty</label><select id="lcFaculty"></select></div>
-          <div><label for="lcCourse">Course</label><select id="lcCourse"></select></div>
-        </div>
+  <div class="row">
+    <div>
+      <label for="lcFacultySchool">Faculty / School</label>
+      <input id="lcFacultySchool" type="text" placeholder="e.g. School of Informatics" />
+    </div>
+    <div>
+      <label for="lcProgramme">Programme</label>
+      <input id="lcProgramme" type="text" placeholder="e.g. Diploma in Linux Engineering for IT Applications" />
+    </div>
+  </div>
 
-        <div class="row">
-          <div><label for="lcUnit">Unit</label><select id="lcUnit"></select></div>
-          <div><label for="lcYear">Year</label><select id="lcYear"></select></div>
-          <div><label for="lcSemester">Semester</label><select id="lcSemester"></select></div>
-        </div>
+  <div class="row">
+    <div>
+      <label for="lcAcademicYear">Academic Year</label>
+      <input id="lcAcademicYear" type="text" placeholder="e.g. 2025/2026" />
+    </div>
+    <div>
+      <label for="lcYearOfStudy">Year of Study</label>
+      <input id="lcYearOfStudy" type="text" placeholder="e.g. Year 1" />
+    </div>
+    <div>
+      <label for="lcSemester">Semester</label>
+      <input id="lcSemester" type="text" placeholder="e.g. Semester 1" />
+    </div>
+  </div>
 
-        <div class="row">
-          <div><label for="lcVenue">Venue</label><input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" /></div>
-          <div><label for="lcDateTime">Date & Time</label><input id="lcDateTime" type="datetime-local" /></div>
-        </div>
+  <div class="row">
+    <div>
+      <label for="lcLecturerName">Lecturer Name</label>
+      <input id="lcLecturerName" type="text" readonly />
+    </div>
+    <div>
+      <label for="lcCourseTitle">Course Title</label>
+      <input id="lcCourseTitle" type="text" placeholder="e.g. Communication Skills" />
+    </div>
+  </div>
 
-        <div class="btn-group">
-          <button class="btn btn-success" id="createClassBtn"><span id="createClassText">Create / Start Class</span></button>
-        </div>
+  <div class="row">
+    <div>
+      <label for="lcCourseCode">Course Code</label>
+      <input id="lcCourseCode" type="text" placeholder="e.g. BIT 1203" />
+    </div>
+    <div>
+      <label for="lcVenue">Venue</label>
+      <input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" />
+    </div>
+    <div>
+      <label for="lcDateTime">Date & Time</label>
+      <input id="lcDateTime" type="datetime-local" />
+    </div>
+  </div>
 
-        <div id="createClassMsg" class="alert hidden" style="margin-top:.8rem;"></div>
-      </section>
+  <div class="btn-group">
+    <button class="btn btn-success" id="createClassBtn">
+      <span id="createClassText">Create / Start Class</span>
+    </button>
+  </div>
+
+  <div id="createClassMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+</section>
 
       <section class="card">
         <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
