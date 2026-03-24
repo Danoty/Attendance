@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JOOUST Attendance System - Lecturer Dashboard</title>
   <link rel="stylesheet" href="./css/styles.css" />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
   <header id="mainHeader">
@@ -43,26 +40,26 @@
         <div class="row">
           <div>
             <label for="lcFacultySchool">Faculty / School</label>
-            <input id="lcFacultySchool" type="text" placeholder="e.g. School of Informatics" />
+            <select id="lcFacultySchool"></select>
           </div>
           <div>
             <label for="lcProgramme">Programme</label>
-            <input id="lcProgramme" type="text" placeholder="e.g. Diploma in Linux Engineering for IT Applications" />
+            <select id="lcProgramme"></select>
           </div>
         </div>
 
         <div class="row">
           <div>
             <label for="lcAcademicYear">Academic Year</label>
-            <input id="lcAcademicYear" type="text" placeholder="e.g. 2025/2026" />
+            <select id="lcAcademicYear"></select>
           </div>
           <div>
             <label for="lcYearOfStudy">Year of Study</label>
-            <input id="lcYearOfStudy" type="text" placeholder="e.g. Year 1" />
+            <select id="lcYearOfStudy"></select>
           </div>
           <div>
             <label for="lcSemester">Semester</label>
-            <input id="lcSemester" type="text" placeholder="e.g. Semester 1" />
+            <select id="lcSemester"></select>
           </div>
         </div>
 
@@ -139,8 +136,31 @@
       <section class="card">
         <h3 style="margin:.1rem 0;">My Classes</h3>
         <p class="page-intro">Copy link, open student page, close or re-open classes, and track attendance.</p>
-
         <div id="lecturerClassesTableWrapper" class="muted"></div>
+      </section>
+
+      <section class="card">
+        <h3 style="margin:.1rem 0;">Student Link & QR Code</h3>
+        <p class="page-intro">Select a class to generate a student attendance link and QR code.</p>
+
+        <div class="row">
+          <div>
+            <label for="qrClassPick">Select Class</label>
+            <select id="qrClassPick"></select>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="generateQrBtn">Generate Link & QR</button>
+          <button class="btn btn-secondary" id="copyQrLinkBtn">Copy Student Link</button>
+          <button class="btn btn-secondary" id="openQrLinkBtn">Open Student Page</button>
+        </div>
+
+        <div id="qrLinkOutput" class="alert alert-info hidden" style="margin-top:1rem;"></div>
+
+        <div id="qrCanvasWrap" style="margin-top:1rem;display:none;">
+          <div id="qrCodeBox" style="padding:1rem;background:#fff;border:1px solid #e5e7eb;border-radius:16px;width:max-content;"></div>
+        </div>
       </section>
 
       <div class="footer">
@@ -186,6 +206,7 @@
 
   <script src="./js/app.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script>
     let currentUser = null;
     let lecturerMap = null;
@@ -244,6 +265,51 @@
       cls.status = status;
       saveData(data);
       renderLecturerClasses();
+      refreshQrClassPick();
+    }
+
+    function populateFacultyDropdown(){
+      const facultyOptions = [
+        "School of Informatics",
+        "School of Education",
+        "School of Business and Economics",
+        "School of Health Sciences",
+        "School of Engineering",
+        "School of Agriculture and Food Security",
+        "School of Arts and Social Sciences",
+        "School of Law"
+      ];
+
+      const programmeOptions = [
+        "Bachelor of Education Arts",
+        "Bachelor of Education Science",
+        "Bachelor of Science in Information Technology",
+        "Bachelor of Science in Computer Science",
+        "Diploma in Information Technology",
+        "Diploma in Linux Engineering for IT Applications",
+        "Bachelor of Business Administration",
+        "Bachelor of Science in Nursing",
+        "Bachelor of Science in Public Health"
+      ];
+
+      setOptions(document.getElementById("lcFacultySchool"), facultyOptions, "Select Faculty / School");
+      setOptions(document.getElementById("lcProgramme"), programmeOptions, "Select Programme");
+    }
+
+    function populateAcademicYears(){
+      const years = [];
+      for(let y = 2025; y <= 2050; y++){
+        years.push(`${y}/${y + 1}`);
+      }
+      setOptions(document.getElementById("lcAcademicYear"), years, "Select Academic Year");
+    }
+
+    function populateYearOfStudy(){
+      setOptions(document.getElementById("lcYearOfStudy"), ["1","2","3","4","5","6"], "Select Year of Study");
+    }
+
+    function populateSemesterDropdown(){
+      setOptions(document.getElementById("lcSemester"), ["1","2","3","4"], "Select Semester");
     }
 
     function initLecturerMap(){
@@ -364,10 +430,79 @@
       `;
     }
 
+    function refreshQrClassPick(){
+      const pick = document.getElementById("qrClassPick");
+      const data = loadData();
+
+      const myClasses = data.classes
+        .filter(c => c.lecturerId === currentUser.id)
+        .sort((a,b)=>(b.dateTime || "").localeCompare(a.dateTime || ""));
+
+      pick.innerHTML =
+        `<option value="">Select Class</option>` +
+        myClasses.map(c=>`
+          <option value="${c.id}">
+            ${c.courseTitle || ""} - ${c.courseCode || ""} - ${formatDateTime(c.dateTime)}
+          </option>
+        `).join("");
+    }
+
+    function generateQrForSelectedClass(){
+      const classId = document.getElementById("qrClassPick").value;
+      const output = document.getElementById("qrLinkOutput");
+      const qrWrap = document.getElementById("qrCanvasWrap");
+      const qrBox = document.getElementById("qrCodeBox");
+
+      if(!classId){
+        setAlert(output, "Please select a class first.", "danger");
+        qrWrap.style.display = "none";
+        return;
+      }
+
+      const link = buildStudentLink(classId);
+
+      output.classList.remove("hidden");
+      output.className = "alert alert-info";
+      output.innerHTML = `<b>Student Link:</b><br>${link}`;
+
+      qrBox.innerHTML = "";
+      new QRCode(qrBox, {
+        text: link,
+        width: 220,
+        height: 220
+      });
+
+      qrWrap.style.display = "block";
+    }
+
+    function copySelectedQrLink(){
+      const classId = document.getElementById("qrClassPick").value;
+      if(!classId){
+        alert("Please select a class first.");
+        return;
+      }
+
+      const link = buildStudentLink(classId);
+      navigator.clipboard?.writeText(link)
+        .then(()=> alert("Student link copied successfully."))
+        .catch(()=> alert("Copy failed. Use this link:\n" + link));
+    }
+
+    function openSelectedQrLink(){
+      const classId = document.getElementById("qrClassPick").value;
+      if(!classId){
+        alert("Please select a class first.");
+        return;
+      }
+
+      window.open(buildStudentLink(classId), "_blank");
+    }
+
     function startLecturerLiveRefresh(){
       if(lecturerLiveRefresh) clearInterval(lecturerLiveRefresh);
       lecturerLiveRefresh = setInterval(()=>{
         renderLecturerClasses();
+        refreshQrClassPick();
       }, 4000);
     }
 
@@ -396,6 +531,10 @@
       );
     });
 
+    document.getElementById("generateQrBtn").addEventListener("click", generateQrForSelectedClass);
+    document.getElementById("copyQrLinkBtn").addEventListener("click", copySelectedQrLink);
+    document.getElementById("openQrLinkBtn").addEventListener("click", openSelectedQrLink);
+
     document.getElementById("createClassBtn").addEventListener("click", ()=>{
       const facultySchool = document.getElementById("lcFacultySchool").value.trim();
       const programme = document.getElementById("lcProgramme").value.trim();
@@ -421,7 +560,7 @@
         !semester || !lecturerName || !courseTitle || !courseCode ||
         !venue || !dateTime
       ){
-        setAlert(msgEl,"Please fill all class details.","danger");
+        setAlert(msgEl, "Please fill all class details.", "danger");
         return;
       }
 
@@ -438,7 +577,7 @@
         const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
 
         if(!lecturer){
-          setAlert(msgEl,"Lecturer account not found.","danger");
+          setAlert(msgEl, "Lecturer account not found.", "danger");
           btn.disabled = false;
           btnText.textContent = "Create / Start Class";
           return;
@@ -466,7 +605,8 @@
 
         saveData(data);
         renderLecturerClasses();
-        setAlert(msgEl,"Class created successfully.","success");
+        refreshQrClassPick();
+        setAlert(msgEl, "Class created successfully.", "success");
 
         document.getElementById("lcFacultySchool").value = "";
         document.getElementById("lcProgramme").value = "";
@@ -519,15 +659,15 @@
       const btnText = document.getElementById("pwdSaveText");
 
       if(!oldP || !newP || !newP2){
-        setAlert(msgEl,"Fill all fields.","danger");
+        setAlert(msgEl, "Fill all fields.", "danger");
         return;
       }
       if(newP.length < 4){
-        setAlert(msgEl,"New password too short (min 4).","danger");
+        setAlert(msgEl, "New password too short (min 4).", "danger");
         return;
       }
       if(newP !== newP2){
-        setAlert(msgEl,"New passwords do not match.","danger");
+        setAlert(msgEl, "New passwords do not match.", "danger");
         return;
       }
 
@@ -539,7 +679,7 @@
         const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
 
         if(!lecturer || lecturer.password !== oldP){
-          setAlert(msgEl,"Current password is wrong.","danger");
+          setAlert(msgEl, "Current password is wrong.", "danger");
           btn.disabled = false;
           btnText.textContent = "Save";
           return;
@@ -547,7 +687,7 @@
 
         lecturer.password = newP;
         saveData(data);
-        setAlert(msgEl,"Password updated successfully.","success");
+        setAlert(msgEl, "Password updated successfully.", "success");
         btn.disabled = false;
         btnText.textContent = "Save";
       }, 700);
@@ -591,8 +731,14 @@
       document.getElementById("userSummary").innerHTML =
         `Logged in as <b>Lecturer</b> · <b>${currentUser.username || "Lecturer"}</b>`;
 
+      populateFacultyDropdown();
+      populateAcademicYears();
+      populateYearOfStudy();
+      populateSemesterDropdown();
+
       toggleLocationBlock();
       renderLecturerClasses();
+      refreshQrClassPick();
       startLecturerLiveRefresh();
     });
   </script>
