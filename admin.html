@@ -122,8 +122,8 @@
               <div class="small">Monitor all sessions, geofence settings, and attendance counts.</div>
             </div>
             <div style="min-width:280px;">
-              <label for="adminClassFilter">Quick Filter</label>
-              <input id="adminClassFilter" type="text" placeholder="Type course, code, lecturer, programme..." />
+              <label for="adminClassFilter">Search Classes</label>
+              <input id="adminClassFilter" type="text" placeholder="Search by title, code, lecturer, programme or faculty" />
             </div>
           </div>
 
@@ -683,69 +683,104 @@
       const q = document.getElementById("adminClassFilter").value.trim();
 
       if(!data.classes.length){
-        showEmptyState(wrap, "No classes available", "Classes created by lecturers will appear here for monitoring.");
+        wrap.innerHTML = `
+          <div class="table-empty">
+            <div class="empty-state">
+              <h3>No classes available</h3>
+              <p>Classes created by lecturers will appear here for monitoring.</p>
+            </div>
+          </div>
+        `;
         return;
       }
 
       const filtered = q ? data.classes.filter(cls=>classMatchesSearch(cls, q)) : data.classes;
 
+      function line(label, value){
+        return value ? `<div class="class-meta"><b>${label}:</b> ${value}</div>` : "";
+      }
+
       wrap.innerHTML = `
-        <table>
+        <table class="classes-table">
           <thead>
             <tr>
-              <th>Course Details</th>
-              <th>Programme Info</th>
-              <th>Mode / Geofence</th>
-              <th>Venue / Date</th>
-              <th>Status</th>
-              <th>Attendance</th>
-              <th>Fraud Flags</th>
+              <th style="width:22%;">Course Details</th>
+              <th style="width:28%;">Programme Info</th>
+              <th style="width:18%;">Mode / Geofence</th>
+              <th style="width:17%;">Venue / Date</th>
+              <th style="width:8%;">Status</th>
+              <th style="width:7%;">Attendance</th>
+              <th style="width:12%;">Fraud Flags</th>
             </tr>
           </thead>
           <tbody>
             ${filtered.map(cls=>{
               const count = data.attendance.filter(a=>a.classId === cls.id).length;
               const fraud = fraudSummaryForClass(cls.id, data.attendance);
+              const isPhysical = (cls.classMode || "physical") === "physical";
 
               return `
                 <tr>
                   <td>
-                    <b>${cls.courseTitle || ""}</b><br>
-                    <span class="small">${cls.courseCode || ""}</span><br>
-                    <span class="small">${cls.lecturerName || ""}</span>
+                    <div class="class-title">${cls.courseTitle || "Untitled Class"}</div>
+                    ${cls.courseCode ? `<div class="class-code">${cls.courseCode}</div>` : ""}
+                    <div class="class-meta"><b>Lecturer:</b> ${cls.lecturerName || "-"}</div>
                   </td>
+
                   <td>
-                    <span class="small"><b>Faculty/School:</b> ${cls.facultySchool || ""}</span><br>
-                    <span class="small"><b>Programme:</b> ${cls.programme || ""}</span><br>
-                    <span class="small"><b>Academic Year:</b> ${cls.academicYear || ""}</span><br>
-                    <span class="small"><b>Year of Study:</b> ${cls.yearOfStudy || ""}</span><br>
-                    <span class="small"><b>Semester:</b> ${cls.semester || ""}</span>
+                    ${line("Faculty / School", cls.facultySchool)}
+                    ${line("Programme", cls.programme)}
+                    ${line("Academic Year", cls.academicYear)}
+                    ${line("Year of Study", cls.yearOfStudy)}
+                    ${line("Semester", cls.semester)}
                   </td>
+
                   <td>
-                    <span class="small"><b>Mode:</b> ${cls.classMode || "physical"}</span><br>
-                    ${(cls.classMode || "physical") === "physical"
-                      ? `<span class="small"><b>Geofence:</b> ${cls.geofenceRadius || 50}m</span><br>
-                         <span class="small"><b>Lat:</b> ${cls.latitude ?? "-"}</span><br>
-                         <span class="small"><b>Lng:</b> ${cls.longitude ?? "-"}</span>`
-                      : `<span class="small">No geofence</span>`}
+                    <div class="mode-box">
+                      <div class="mode-line"><b>Mode:</b> ${isPhysical ? "Physical" : "Online"}</div>
+                      ${
+                        isPhysical
+                          ? `<div class="geo-chip">Geofence ${cls.geofenceRadius || 50}m</div>`
+                          : `<div class="geo-chip off">No geofence</div>`
+                      }
+                      ${
+                        isPhysical && cls.latitude && cls.longitude
+                          ? `<div class="mode-line"><b>Coords:</b> ${Number(cls.latitude).toFixed(5)}, ${Number(cls.longitude).toFixed(5)}</div>`
+                          : ""
+                      }
+                    </div>
                   </td>
+
                   <td>
-                    ${cls.venue || ""}<br>
-                    <span class="small">${formatDateTime(cls.dateTime)}</span>
+                    <div class="venue-box">${cls.venue || "-"}</div>
+                    <div class="venue-time">${formatDateTime(cls.dateTime)}</div>
                   </td>
+
                   <td>
-                    ${cls.status === "open"
-                      ? `<span class="badge open">Open</span>`
-                      : `<span class="badge closed">Closed</span>`}
+                    ${
+                      cls.status === "open"
+                        ? `<span class="badge open">Open</span>`
+                        : `<span class="badge closed">Closed</span>`
+                    }
                   </td>
-                  <td><b>${count}</b></td>
+
                   <td>
-                    ${fraud.repeatedDevices > 0
-                      ? `<span class="chip red">Repeated device</span><br>`
-                      : `<span class="chip green">Device OK</span><br>`}
-                    ${fraud.repeatedAdmissions > 0
-                      ? `<span class="chip red">Repeated admission</span>`
-                      : `<span class="chip green">Admission OK</span>`}
+                    <div class="attendance-count">${count}</div>
+                  </td>
+
+                  <td>
+                    <div class="flag-stack">
+                      ${
+                        fraud.repeatedDevices > 0
+                          ? `<span class="flag-bad">Repeated device</span>`
+                          : `<span class="flag-ok">Device OK</span>`
+                      }
+                      ${
+                        fraud.repeatedAdmissions > 0
+                          ? `<span class="flag-bad">Admission issue</span>`
+                          : `<span class="flag-ok">Admission OK</span>`
+                      }
+                    </div>
                   </td>
                 </tr>
               `;
