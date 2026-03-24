@@ -647,6 +647,13 @@ document.getElementById("createClassBtn").addEventListener("click", ()=>{
       }
 
       currentUser = savedUser;
+        const data = loadData();
+const lecturer = data.lecturers.find(l => l.id === currentUser.id);
+
+if(lecturer){
+  document.getElementById("lcLecturerName").value =
+    `${lecturer.salutation} ${lecturer.fullName}`;
+}
 
       document.getElementById("userSummary").innerHTML =
         `Logged in as <b>Lecturer</b> · <b>${currentUser.username || "Lecturer"}</b>`;
