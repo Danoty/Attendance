@@ -1048,6 +1048,154 @@ tr:nth-child(even) td{
   .btn-wide{
     width:100%;
   }
+  /* ===== ADMIN CLASSES TABLE IMPROVEMENT ===== */
+.classes-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border-radius:16px;
+}
+
+.classes-table th{
+  background:#eef4fb;
+  color:#1d4ed8;
+  font-size:.9rem;
+  font-weight:800;
+  padding:1rem .8rem;
+  border-bottom:1px solid #dbe5f0;
+}
+
+.classes-table td{
+  padding:1rem .8rem;
+  vertical-align:top;
+  background:#fff;
+  border-bottom:1px solid #edf2f7;
+}
+
+.classes-table tr:hover td{
+  background:#f9fbff;
+}
+
+.class-title{
+  font-size:1rem;
+  font-weight:800;
+  color:#172033;
+  margin-bottom:.2rem;
+}
+
+.class-code{
+  display:inline-block;
+  font-size:.78rem;
+  font-weight:800;
+  color:#0f52ba;
+  background:#edf4ff;
+  padding:.22rem .5rem;
+  border-radius:999px;
+  margin-bottom:.45rem;
+}
+
+.class-meta{
+  font-size:.84rem;
+  color:#667085;
+  line-height:1.6;
+}
+
+.class-meta b{
+  color:#475467;
+}
+
+.mode-box{
+  display:flex;
+  flex-direction:column;
+  gap:.35rem;
+}
+
+.mode-line{
+  font-size:.84rem;
+  color:#667085;
+}
+
+.mode-line b{
+  color:#475467;
+}
+
+.geo-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:.3rem;
+  padding:.26rem .58rem;
+  border-radius:999px;
+  font-size:.76rem;
+  font-weight:800;
+  background:#eefbf3;
+  color:#157347;
+  width:max-content;
+}
+
+.geo-chip.off{
+  background:#f3f4f6;
+  color:#6b7280;
+}
+
+.venue-box{
+  font-size:.9rem;
+  color:#172033;
+}
+
+.venue-time{
+  margin-top:.25rem;
+  font-size:.82rem;
+  color:#667085;
+}
+
+.attendance-count{
+  font-size:1.1rem;
+  font-weight:800;
+  color:#0f52ba;
+}
+
+.flag-stack{
+  display:flex;
+  flex-direction:column;
+  gap:.45rem;
+}
+
+.flag-ok{
+  display:inline-flex;
+  align-items:center;
+  padding:.28rem .62rem;
+  border-radius:999px;
+  font-size:.76rem;
+  font-weight:800;
+  background:#dcfce7;
+  color:#166534;
+  width:max-content;
+}
+
+.flag-bad{
+  display:inline-flex;
+  align-items:center;
+  padding:.28rem .62rem;
+  border-radius:999px;
+  font-size:.76rem;
+  font-weight:800;
+  background:#fee2e2;
+  color:#b91c1c;
+  width:max-content;
+}
+
+.table-empty{
+  padding:1.2rem 0 0;
+}
+
+@media (max-width: 980px){
+  .classes-table{
+    display:block;
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+}
 
   .password-toggle{
     top:40px;
