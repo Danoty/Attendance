@@ -4,14 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JOOUST Attendance - Student Sign-In</title>
-
-  <link rel="stylesheet" href="css/styles.css" />
-
+  <link rel="stylesheet" href="./css/styles.css" />
   <style>
     .student-wrap{
-      max-width: 900px;
-      margin: 1.2rem auto 2rem;
-      padding: 0 1rem;
+      max-width:900px;
+      margin:1.2rem auto 2rem;
+      padding:0 1rem;
     }
   </style>
 </head>
@@ -19,7 +17,7 @@
   <header id="mainHeader">
     <div class="header-inner">
       <div class="brand">
-        <img src="assets/logo.jpg" alt="JOOUST Logo" />
+        <img src="./assets/logo.jpg" alt="JOOUST Logo" />
         <h1>
           JOOUST Attendance
           <span>Student Sign-In</span>
@@ -31,6 +29,7 @@
   <main class="student-wrap">
     <section class="card">
       <h2 style="margin:0 0 .6rem;">Class Attendance – Student Sign-In</h2>
+      <p class="page-intro">Confirm the class details below, then fill in your information and submit once.</p>
 
       <div id="studentClassInfo" class="alert alert-info"></div>
       <div id="studentGeoInfo" class="alert alert-info hidden"></div>
@@ -70,7 +69,9 @@
         </div>
 
         <div class="btn-group">
-          <button class="btn btn-success" id="stSubmit">Submit Attendance</button>
+          <button class="btn btn-success" id="stSubmit">
+            <span id="stSubmitText">Submit Attendance</span>
+          </button>
         </div>
 
         <div id="studentSubmitMsg" class="alert hidden" style="margin-top:.8rem;"></div>
@@ -80,9 +81,14 @@
         Note: You may be asked to allow location access (GPS) to confirm you are within JOOUST.
       </div>
     </section>
+
+    <div class="footer">
+      © 2025 <b>Gerotech Enterprises</b> · JOOUST Smart Attendance System
+      <span class="footer-sub">Built with simplicity, security and performance in mind</span>
+    </div>
   </main>
 
-  <script src="js/app.js"></script>
+  <script src="./js/app.js"></script>
   <script>
     function getQueryParam(name){
       const urlParams = new URLSearchParams(window.location.search);
@@ -107,11 +113,16 @@
       }
 
       msgEl.innerHTML = `
-        <b>${cls.unit}</b><br>
-        ${cls.course} · ${cls.faculty}<br>
-        ${cls.year} · ${cls.semester}<br>
-        Venue: ${cls.venue}<br>
-        Date/Time: ${formatDateTime(cls.dateTime)}
+        <b>${cls.courseTitle || "Course Title not set"}</b><br>
+        <b>Course Code:</b> ${cls.courseCode || "-"}<br>
+        <b>Faculty / School:</b> ${cls.facultySchool || "-"}<br>
+        <b>Programme:</b> ${cls.programme || "-"}<br>
+        <b>Academic Year:</b> ${cls.academicYear || "-"}<br>
+        <b>Year of Study:</b> ${cls.yearOfStudy || "-"}<br>
+        <b>Semester:</b> ${cls.semester || "-"}<br>
+        <b>Lecturer:</b> ${cls.lecturerName || "-"}<br>
+        <b>Venue:</b> ${cls.venue || "-"}<br>
+        <b>Date/Time:</b> ${formatDateTime(cls.dateTime)}
       `;
     }
 
@@ -131,13 +142,13 @@
 
     function getDistanceKm(lat1, lon1, lat2, lon2){
       const R = 6371;
-      const dLat = (lat2-lat1) * Math.PI/180;
-      const dLon = (lon2-lon1) * Math.PI/180;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
       const a =
-        Math.sin(dLat/2)*Math.sin(dLat/2) +
-        Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180) *
-        Math.sin(dLon/2)*Math.sin(dLon/2);
-      const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     }
 
@@ -158,16 +169,15 @@
         position=>{
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-
           const distance = getDistanceKm(lat, lon, JOOUST_CENTER.lat, JOOUST_CENTER.lon);
 
           geoInfo.classList.remove("hidden");
 
           if(distance <= MAX_DISTANCE_KM){
-            geoInfo.innerHTML = `Location verified (within JOOUST range).`;
+            geoInfo.innerHTML = `Location verified successfully.`;
             callback(true);
           } else {
-            geoInfo.innerHTML = `You are outside allowed range (${distance.toFixed(2)} km).`;
+            geoInfo.innerHTML = `You are outside the allowed attendance range (${distance.toFixed(2)} km).`;
             callback(false);
           }
         },
@@ -191,32 +201,40 @@
       const middle = document.getElementById("stMiddleName").value.trim();
       const first = document.getElementById("stFirstName").value.trim();
       const admission = document.getElementById("stAdmission").value.trim();
-     const signature = pad.toDataUrl();
-if(pad.isEmpty()){
-  setAlert(msgEl,"Please provide your signature before submitting.","danger");
-  btn.disabled = false;
-  btnText.textContent = "Submit Attendance";
-  return;
-}
-
       const msgEl = document.getElementById("studentSubmitMsg");
+      const btn = document.getElementById("stSubmit");
+      const btnText = document.getElementById("stSubmitText");
 
       if(!surname || !first || !admission){
         setAlert(msgEl,"Please fill required fields.","danger");
         return;
       }
 
+      if(pad.isEmpty()){
+        setAlert(msgEl,"Please provide your signature before submitting.","danger");
+        return;
+      }
+
+      const signature = pad.toDataUrl();
+
+      btn.disabled = true;
+      btnText.textContent = "Submitting...";
+
       checkGeolocation((allowed)=>{
         if(!allowed){
           setAlert(msgEl,"You are outside the allowed attendance location.","danger");
+          btn.disabled = false;
+          btnText.textContent = "Submit Attendance";
           return;
         }
 
         const data = loadData();
-        const cls = data.classes.find(c=>c.id === classId);
+        const cls = data.classes.find(c => c.id === classId);
 
         if(!cls){
           setAlert(msgEl,"Class not found.","danger");
+          btn.disabled = false;
+          btnText.textContent = "Submit Attendance";
           return;
         }
 
@@ -233,10 +251,14 @@ if(pad.isEmpty()){
 
         saveData(data);
         markSubmitted(classId);
-
         setAlert(msgEl,"Attendance submitted successfully.","success");
 
-        document.getElementById("studentFormWrapper").style.display = "none";
+        setTimeout(()=>{
+          document.getElementById("studentFormWrapper").style.display = "none";
+          document.getElementById("studentAlreadySubmitted").classList.remove("hidden");
+          btn.disabled = false;
+          btnText.textContent = "Submit Attendance";
+        }, 700);
       });
     });
 
