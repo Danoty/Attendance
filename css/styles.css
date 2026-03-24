@@ -772,7 +772,7 @@ tr:nth-child(even) td{
 .admin-topbar{
   background:linear-gradient(135deg, #0f52ba, #0b3d91);
   color:#fff;
-  padding:.9rem 1.2rem;
+  padding:.7rem 1.2rem;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -806,21 +806,24 @@ tr:nth-child(even) td{
   background:#f8fafc;
 }
 
-.admin-user-box{
-  display:flex;
-  align-items:center;
-  gap:.55rem;
-  font-weight:800;
-  color:#fff;
+.admin-search{
+  width:260px;
+  border:none;
+  border-radius:8px;
+  padding:.6rem .8rem;
+  background:#f1f5f9;
+  font-size:.85rem;
+
 }
 
-.admin-top-logo{
-  width:28px;
-  height:28px;
+.admin-top-logo-small{
+  width:30px;
+  height:30px;
   object-fit:contain;
   background:#fff;
   border-radius:50%;
   padding:2px;
+  
 }
 
 .admin-content{
