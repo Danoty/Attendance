@@ -133,3 +133,162 @@ th{background:#f0f6ff}
 .hidden{display:none !important}
 .small{font-size:.8rem;color:var(--muted)}
 .muted{color:var(--muted)}
+.hero-premium{
+  padding:1.5rem;
+}
+
+.hero-premium-grid{
+  display:grid;
+  grid-template-columns:1.4fr .8fr;
+  gap:1rem;
+  align-items:center;
+}
+
+.eyebrow{
+  display:inline-block;
+  padding:.35rem .7rem;
+  border-radius:999px;
+  background:rgba(0,82,204,.10);
+  color:var(--jooust-blue-dark);
+  font-size:.78rem;
+  font-weight:800;
+  margin-bottom:.7rem;
+  letter-spacing:.3px;
+}
+
+.hero-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.55rem;
+  margin-top:1rem;
+}
+
+.hero-badge{
+  padding:.5rem .8rem;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid rgba(15,23,42,.06);
+  box-shadow:0 8px 18px rgba(15,23,42,.05);
+  font-size:.85rem;
+  font-weight:700;
+  color:var(--jooust-blue-dark);
+}
+
+.hero-mini-card{
+  background:#fff;
+  border-radius:16px;
+  padding:1rem;
+  border:1px solid rgba(15,23,42,.06);
+  box-shadow:0 10px 22px rgba(15,23,42,.06);
+}
+
+.hero-mini-title{
+  font-size:1rem;
+  font-weight:800;
+  margin-bottom:.6rem;
+  color:var(--jooust-blue-dark);
+}
+
+.hero-mini-list{
+  padding-left:1rem;
+  color:var(--muted);
+}
+
+.hero-mini-list li{
+  margin-bottom:.45rem;
+}
+
+.improved-auth-grid{
+  align-items:stretch;
+}
+
+.premium-side{
+  padding:1.4rem;
+}
+
+.section-label{
+  display:inline-block;
+  font-size:.78rem;
+  font-weight:800;
+  color:var(--jooust-blue-dark);
+  background:rgba(0,82,204,.08);
+  padding:.35rem .65rem;
+  border-radius:999px;
+  margin-bottom:.7rem;
+}
+
+.premium-auth-panel{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+}
+
+.better-tabs{
+  margin-bottom:1.2rem;
+}
+
+.form-heading{
+  margin-bottom:1rem;
+}
+
+.panel-subtitle{
+  color:var(--muted);
+  margin-top:.2rem;
+  font-size:.92rem;
+}
+
+.role-box{
+  background:#f8fafc;
+  border:1px solid rgba(15,23,42,.06);
+  border-radius:14px;
+  padding:.9rem 1rem;
+  margin-bottom:1rem;
+}
+
+.role-box-title{
+  font-size:.82rem;
+  font-weight:700;
+  color:var(--muted);
+  margin-bottom:.6rem;
+}
+
+.role-options{
+  display:flex;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+
+.role-option{
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  font-weight:600;
+  color:var(--text);
+}
+
+.btn-wide{
+  min-width:170px;
+}
+
+.premium-feature{
+  display:flex;
+  gap:.8rem;
+  align-items:flex-start;
+}
+
+.feature-icon{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  background:rgba(0,82,204,.10);
+  display:grid;
+  place-items:center;
+  font-size:1.1rem;
+  flex-shrink:0;
+}
+
+@media (max-width:980px){
+  .hero-premium-grid{
+    grid-template-columns:1fr;
+  }
+}
