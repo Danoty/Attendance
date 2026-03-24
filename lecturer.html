@@ -443,65 +443,81 @@
       `;
     }
 
-    document.getElementById("createClassBtn").addEventListener("click", ()=>{
-      const f = document.getElementById("lcFaculty").value.trim();
-      const c = document.getElementById("lcCourse").value.trim();
-      const u = document.getElementById("lcUnit").value.trim();
-      const y = document.getElementById("lcYear").value.trim();
-      const s = document.getElementById("lcSemester").value.trim();
-      const v = document.getElementById("lcVenue").value.trim();
-      const dt = document.getElementById("lcDateTime").value;
-      const msgEl = document.getElementById("createClassMsg");
-      const btn = document.getElementById("createClassBtn");
-      const btnText = document.getElementById("createClassText");
+   <script>
+document.getElementById("createClassBtn").addEventListener("click", ()=>{
+  const facultySchool = document.getElementById("lcFacultySchool").value.trim();
+  const programme = document.getElementById("lcProgramme").value.trim();
+  const academicYear = document.getElementById("lcAcademicYear").value.trim();
+  const yearOfStudy = document.getElementById("lcYearOfStudy").value.trim();
+  const semester = document.getElementById("lcSemester").value.trim();
+  const lecturerName = document.getElementById("lcLecturerName").value.trim();
+  const courseTitle = document.getElementById("lcCourseTitle").value.trim();
+  const courseCode = document.getElementById("lcCourseCode").value.trim();
+  const venue = document.getElementById("lcVenue").value.trim();
+  const dateTime = document.getElementById("lcDateTime").value;
 
-      if(!f || !c || !u || !y || !s || !v || !dt){
-        setAlert(msgEl,"Please fill all class details.","danger");
-        return;
-      }
+  const msgEl = document.getElementById("createClassMsg");
+  const btn = document.getElementById("createClassBtn");
+  const btnText = document.getElementById("createClassText");
 
-      btn.disabled = true;
-      btnText.textContent = "Creating...";
+  if(
+    !facultySchool || !programme || !academicYear || !yearOfStudy ||
+    !semester || !lecturerName || !courseTitle || !courseCode ||
+    !venue || !dateTime
+  ){
+    setAlert(msgEl,"Please fill all class details.","danger");
+    return;
+  }
 
-      setTimeout(()=>{
-        const data = loadData();
-        const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
+  btn.disabled = true;
+  btnText.textContent = "Creating...";
 
-        if(!lecturer){
-          setAlert(msgEl,"Lecturer account not found.","danger");
-          btn.disabled = false;
-          btnText.textContent = "Create / Start Class";
-          return;
-        }
+  setTimeout(()=>{
+    const data = loadData();
+    const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
 
-        data.classes.push({
-          id: uuid(),
-          lecturerId: lecturer.id,
-          faculty: f,
-          course: c,
-          unit: u,
-          year: y,
-          semester: s,
-          venue: v,
-          dateTime: dt,
-          status: "open",
-          lecturerName: `${lecturer.salutation} ${lecturer.fullName}`,
-          lecturerSignature: null,
-          hodName: "",
-          hodSignature: null
-        });
+    if(!lecturer){
+      setAlert(msgEl,"Lecturer account not found.","danger");
+      btn.disabled = false;
+      btnText.textContent = "Create / Start Class";
+      return;
+    }
 
-        saveData(data);
-        renderLecturerClasses();
-        setAlert(msgEl,"Class created successfully.","success");
-
-        document.getElementById("lcVenue").value = "";
-        document.getElementById("lcDateTime").value = "";
-
-        btn.disabled = false;
-        btnText.textContent = "Create / Start Class";
-      }, 700);
+    data.classes.push({
+      id: uuid(),
+      lecturerId: lecturer.id,
+      facultySchool,
+      programme,
+      academicYear,
+      yearOfStudy,
+      semester,
+      lecturerName,
+      courseTitle,
+      courseCode,
+      venue,
+      dateTime,
+      status: "open"
     });
+
+    saveData(data);
+    renderLecturerClasses();
+    setAlert(msgEl,"Class created successfully.","success");
+
+    document.getElementById("lcFacultySchool").value = "";
+    document.getElementById("lcProgramme").value = "";
+    document.getElementById("lcAcademicYear").value = "";
+    document.getElementById("lcYearOfStudy").value = "";
+    document.getElementById("lcSemester").value = "";
+    document.getElementById("lcCourseTitle").value = "";
+    document.getElementById("lcCourseCode").value = "";
+    document.getElementById("lcVenue").value = "";
+    document.getElementById("lcDateTime").value = "";
+
+    btn.disabled = false;
+    btnText.textContent = "Create / Start Class";
+  }, 700);
+});
+</script>
 
     document.getElementById("lecClassFilter").addEventListener("change", renderLecturerClasses);
 
