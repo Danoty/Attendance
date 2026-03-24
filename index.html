@@ -5,187 +5,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JOOUST Attendance System - Login</title>
 
-  <link rel="stylesheet" href="css/styles.css" />
-
-  <style>
-    .auth-wrap{
-      max-width: 1100px;
-      margin: 1.2rem auto 2rem;
-      padding: 0 1rem;
-    }
-    .auth-grid{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:1rem;
-    }
-    .auth-side{
-      background:
-        radial-gradient(900px 300px at 20% 10%, rgba(242,201,76,.18), transparent 55%),
-        radial-gradient(900px 300px at 80% 20%, rgba(36,161,72,.12), transparent 55%),
-        linear-gradient(135deg, rgba(0,82,204,.10), rgba(0,59,140,.05));
-      border:1px solid rgba(0,82,204,.10);
-      border-radius:18px;
-      box-shadow: var(--shadow);
-      padding:1.3rem;
-      min-height: 100%;
-    }
-    .auth-side h2{
-      margin:.2rem 0 .5rem;
-      font-size:1.35rem;
-    }
-    .auth-side p{
-      color:var(--muted);
-      line-height:1.6;
-    }
-    .feature-list{
-      display:grid;
-      gap:.75rem;
-      margin-top:1rem;
-    }
-    .feature-item{
-      background:#fff;
-      border:1px solid rgba(15,23,42,.06);
-      border-radius:14px;
-      padding:.9rem 1rem;
-      box-shadow:0 8px 18px rgba(15,23,42,.05);
-    }
-    .feature-item b{
-      display:block;
-      margin-bottom:.2rem;
-      color:var(--jooust-blue-dark);
-    }
-    .tabs-lite{
-      display:flex;
-      gap:.6rem;
-      flex-wrap:wrap;
-      margin-bottom:1rem;
-    }
-    .tab-lite{
-      border:none;
-      cursor:pointer;
-      border-radius:999px;
-      padding:.65rem 1rem;
-      font-weight:700;
-      background:#e5e7eb;
-      color:#111827;
-    }
-    .tab-lite.active{
-      background:linear-gradient(135deg,var(--jooust-blue),var(--jooust-blue-dark));
-      color:#fff;
-      box-shadow:0 10px 18px rgba(0,82,204,.22);
-    }
-    .auth-panel{
-      background:#fff;
-      border-radius:18px;
-      padding:1.25rem;
-      box-shadow: var(--shadow);
-      border:1px solid rgba(15,23,42,.06);
-    }
-    .panel-title{
-      margin:0 0 .8rem;
-      font-size:1.2rem;
-    }
-    @media (max-width: 900px){
-      .auth-grid{
-        grid-template-columns:1fr;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body>
   <header id="mainHeader">
     <div class="header-inner">
       <div class="brand">
-        <img src="assets/logo.jpg" alt="JOOUST Logo" />
+        <img src="./assets/logo.jpg" alt="JOOUST Logo" />
         <h1>
           JOOUST Attendance System
           <span>Faculty · Course · Unit · Digital Signatures · Smart Reports</span>
         </h1>
       </div>
-
-      <div class="top-actions">
-        <a href="index.html" class="btn btn-outline">Home</a>
-      </div>
     </div>
   </header>
 
   <main class="auth-wrap">
-    <div class="hero">
-      <h2>Smart Attendance for Lectures & Meetings</h2>
-      <p>
-        Login as Admin or Lecturer, manage teaching sessions, share student sign-in links,
-        and generate official reports for JOOUST.
-      </p>
+    <section class="hero hero-premium">
+      <div class="hero-premium-grid">
+        <div>
+          <div class="eyebrow">JOOUST Smart Attendance Platform</div>
+          <h2>Simple, secure, and professional attendance management</h2>
+          <p>
+            Manage lecturer access, create classes, share student sign-in links, capture digital signatures,
+            and generate official reports from one clean system.
+          </p>
 
-      <div class="kpi-grid">
-        <div class="kpi">
-          <div class="v">Admin Control</div>
-          <div class="t">Approve lecturers, upload mappings, monitor classes and exports</div>
+          <div class="hero-badges">
+            <span class="hero-badge">Admin Control</span>
+            <span class="hero-badge">Lecturer Tools</span>
+            <span class="hero-badge">Student Sign-In</span>
+            <span class="hero-badge">Export Reports</span>
+          </div>
         </div>
-        <div class="kpi">
-          <div class="v">Lecturer Tools</div>
-          <div class="t">Create classes, share QR links and generate reports</div>
-        </div>
-        <div class="kpi">
-          <div class="v">Student Sign-In</div>
-          <div class="t">Simple attendance form with digital signature support</div>
-        </div>
-        <div class="kpi">
-          <div class="v">GitHub Pages Ready</div>
-          <div class="t">Static multi-page structure for easy hosting</div>
+
+        <div class="hero-mini-card">
+          <div class="hero-mini-title">Why this system works</div>
+          <ul class="hero-mini-list">
+            <li>Fast lecturer approval and account management</li>
+            <li>Simple class creation and student link sharing</li>
+            <li>Attendance records with digital signatures</li>
+            <li>Clean exports for official reporting</li>
+          </ul>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="auth-grid">
-      <section class="auth-side">
+    <section class="auth-grid improved-auth-grid">
+      <div class="auth-side premium-side">
+        <div class="section-label">Overview</div>
         <h2>Welcome</h2>
         <p>
-          This system supports class attendance management for JOOUST through a clean,
-          role-based workflow. Admins oversee mappings and lecturer approvals, lecturers
-          create classes and share attendance links, while students submit attendance using
-          a simple browser-based form.
+          This system supports class attendance management for JOOUST through a clean, role-based workflow.
+          Admins oversee mappings and lecturer approvals, lecturers create classes and share attendance links,
+          while students submit attendance through a simple browser-based form.
         </p>
 
         <div class="feature-list">
-          <div class="feature-item">
-            <b>Admin Dashboard</b>
-            Approve lecturers, manage mappings, review classes and exports.
+          <div class="feature-item premium-feature">
+            <div class="feature-icon">🛡️</div>
+            <div>
+              <b>Admin Dashboard</b>
+              Approve lecturers, manage mappings, review classes, and monitor attendance operations.
+            </div>
           </div>
-          <div class="feature-item">
-            <b>Lecturer Dashboard</b>
-            Start classes, track attendance and export reports.
+
+          <div class="feature-item premium-feature">
+            <div class="feature-icon">👨🏽‍🏫</div>
+            <div>
+              <b>Lecturer Dashboard</b>
+              Start classes, copy attendance links, manage sessions, and generate reports easily.
+            </div>
           </div>
-          <div class="feature-item">
-            <b>Student Access</b>
-            Uses a shared class link with support for digital signatures.
+
+          <div class="feature-item premium-feature">
+            <div class="feature-icon">✍️</div>
+            <div>
+              <b>Student Access</b>
+              Uses a shared class link with support for digital signatures and simple submission.
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="auth-panel">
-        <div class="tabs-lite">
-          <button class="tab-lite active" id="showLoginTab">Login</button>
-          <button class="tab-lite" id="showRegisterTab">Register as Lecturer</button>
+      <div class="auth-panel premium-auth-panel">
+        <div class="tabs-lite better-tabs">
+          <button type="button" class="tab-lite active" id="showLoginTab">Login</button>
+          <button type="button" class="tab-lite" id="showRegisterTab">Register as Lecturer</button>
         </div>
 
         <!-- LOGIN -->
         <section id="loginSection">
-          <h2 class="panel-title">Login</h2>
+          <div class="form-heading">
+            <h2 class="panel-title">Login</h2>
+            <p class="panel-subtitle">Access your dashboard using your assigned account.</p>
+          </div>
 
-          <div class="row">
-            <div>
-              <label>Login as</label>
-              <div style="display:flex;gap:.9rem;flex-wrap:wrap;">
-                <label style="display:flex;align-items:center;gap:.45rem;color:var(--text);">
-                  <input type="radio" name="loginRole" value="admin" checked />
-                  Admin
-                </label>
-                <label style="display:flex;align-items:center;gap:.45rem;color:var(--text);">
-                  <input type="radio" name="loginRole" value="lecturer" />
-                  Lecturer
-                </label>
-              </div>
+          <div class="role-box">
+            <label class="role-box-title">Login as</label>
+            <div class="role-options">
+              <label class="role-option">
+                <input type="radio" name="loginRole" value="admin" checked />
+                <span>Admin</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="loginRole" value="lecturer" />
+                <span>Lecturer</span>
+              </label>
             </div>
           </div>
 
@@ -201,7 +127,7 @@
           </div>
 
           <div class="btn-group">
-            <button class="btn btn-primary" id="loginBtn">Login</button>
+            <button class="btn btn-primary btn-wide" id="loginBtn">Login</button>
           </div>
 
           <div id="loginMessage" class="alert hidden"></div>
@@ -209,7 +135,10 @@
 
         <!-- REGISTRATION -->
         <section id="lecturerRegistrationSection" class="hidden">
-          <h2 class="panel-title">Lecturer Registration</h2>
+          <div class="form-heading">
+            <h2 class="panel-title">Lecturer Registration</h2>
+            <p class="panel-subtitle">Create your lecturer account for admin approval.</p>
+          </div>
 
           <div class="alert alert-info">
             Your account will remain <b>pending</b> until approved by the Admin.
@@ -235,7 +164,7 @@
           <div class="row">
             <div>
               <label for="regPF">PF No / ID</label>
-              <input id="regPF" type="text" />
+              <input id="regPF" type="text" placeholder="Enter PF No / ID" />
             </div>
             <div>
               <label for="regUsername">Preferred Username</label>
@@ -243,25 +172,25 @@
             </div>
             <div>
               <label for="regPassword">Password</label>
-              <input id="regPassword" type="password" />
+              <input id="regPassword" type="password" placeholder="Create password" />
             </div>
           </div>
 
           <div class="btn-group">
-            <button class="btn btn-primary" id="submitLecturerRegistration">Submit Registration</button>
+            <button class="btn btn-primary btn-wide" id="submitLecturerRegistration">Submit Registration</button>
           </div>
 
           <div id="lecturerRegMessage" class="alert hidden"></div>
         </section>
-      </section>
-    </div>
+      </div>
+    </section>
 
     <div class="footer">
-      System created by <b>Gerotech</b> <b>Enterprises</b> <b>@2025</b>.
+      System created by <b>Gerotech Enterprises</b> <b>@2025</b>.
     </div>
   </main>
 
-  <script src="js/app.js"></script>
+  <script src="./js/app.js"></script>
   <script>
     function showAuthPanel(panel){
       const loginSection = document.getElementById("loginSection");
