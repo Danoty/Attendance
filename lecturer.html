@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JOOUST Attendance System - Lecturer Dashboard</title>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header id="mainHeader">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="assets/logo.jpg" alt="JOOUST Logo" />
+        <h1>
+          JOOUST Attendance System
+          <span>Lecturer Dashboard · Classes · Links · Reports</span>
+        </h1>
+      </div>
+
+      <div class="top-actions">
+        <div id="userSummary" class="user-pill"></div>
+        <button id="openChangePwdBtn" class="btn btn-outline">Change Password</button>
+        <button id="logoutBtn" class="btn btn-outline">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="lecturerDashboard">
+      <section class="card">
+        <h2 style="margin:0;">Lecturer Dashboard</h2>
+        <p class="muted" style="margin:.4rem 0 0;">
+          Create classes, share student links, view attendance, and generate reports.
+        </p>
+      </section>
+
+      <!-- Create class -->
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <h3 style="margin:.1rem 0;">Create / Start Class</h3>
+            <div class="small">Select Faculty, Course, Unit, Year, and Semester from uploaded mappings.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="lcFaculty">Faculty</label>
+            <select id="lcFaculty"></select>
+          </div>
+          <div>
+            <label for="lcCourse">Course</label>
+            <select id="lcCourse"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="lcUnit">Unit</label>
+            <select id="lcUnit"></select>
+          </div>
+          <div>
+            <label for="lcYear">Year</label>
+            <select id="lcYear"></select>
+          </div>
+          <div>
+            <label for="lcSemester">Semester</label>
+            <select id="lcSemester"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="lcVenue">Venue</label>
+            <input id="lcVenue" type="text" placeholder="e.g. LT1, Online, Lab 3" />
+          </div>
+          <div>
+            <label for="lcDateTime">Date & Time</label>
+            <input id="lcDateTime" type="datetime-local" />
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" id="createClassBtn">Create / Start Class</button>
+        </div>
+
+        <div id="createClassMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+      </section>
+
+      <!-- My classes -->
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <h3 style="margin:.1rem 0;">My Classes</h3>
+            <div class="small">Copy link, open student page, close or re-open classes, and track attendance.</div>
+          </div>
+
+          <div style="min-width:260px;">
+            <label for="lecClassFilter">Quick Filter (Unit / Course / Status)</label>
+            <select id="lecClassFilter"></select>
+          </div>
+        </div>
+
+        <div id="lecturerClassesTableWrapper" class="muted">No classes yet.</div>
+      </section>
+
+      <!-- Reports -->
+      <section class="card">
+        <h3 style="margin:.1rem 0 .25rem;">Quick Reports (My Classes)</h3>
+        <p class="muted" style="margin:.35rem 0 .9rem;">
+          Filter your classes and export official attendance reports.
+        </p>
+
+        <div class="row">
+          <div>
+            <label for="repFacultyL">Faculty</label>
+            <select id="repFacultyL"></select>
+          </div>
+          <div>
+            <label for="repCourseL">Course</label>
+            <select id="repCourseL"></select>
+          </div>
+          <div>
+            <label for="repUnitL">Unit</label>
+            <select id="repUnitL"></select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="repYearL">Year</label>
+            <select id="repYearL"></select>
+          </div>
+          <div>
+            <label for="repSemesterL">Semester</label>
+            <select id="repSemesterL"></select>
+          </div>
+          <div>
+            <label for="repStatusL">Status</label>
+            <select id="repStatusL">
+              <option value="">All</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="generateReportLecturerBtn">Generate My Report</button>
+        </div>
+
+        <div id="reportAreaLecturer" class="hidden" style="margin-top:1rem;">
+          <div class="btn-group">
+            <button class="btn btn-primary" id="exportPdfBtnL">Download PDF</button>
+            <button class="btn btn-secondary" id="exportWordBtnL">Download Word</button>
+            <button class="btn btn-secondary" id="exportExcelBtnL">Download Excel</button>
+          </div>
+
+          <div id="reportMetaL" class="muted" style="margin-top:.6rem;"></div>
+          <table id="reportTableL"></table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Change password modal -->
+  <div id="pwdModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+    <div class="card" style="width:min(520px,96%);box-shadow:var(--shadow2);">
+      <h3 style="margin:.1rem 0 .6rem;">Change Password</h3>
+
+      <div class="row">
+        <div>
+          <label for="pwdOld">Current Password</label>
+          <input id="pwdOld" type="password" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="pwdNew">New Password</label>
+          <input id="pwdNew" type="password" />
+        </div>
+        <div>
+          <label for="pwdNew2">Confirm New Password</label>
+          <input id="pwdNew2" type="password" />
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="pwdSaveBtn">Save</button>
+        <button class="btn btn-secondary" id="pwdCloseBtn">Close</button>
+      </div>
+
+      <div id="pwdMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    let currentUser = null;
+
+    function populateLecturerDropdowns(){
+      const map = getMapping();
+
+      setOptions(document.getElementById("lcFaculty"), unique(map.map(x=>x.faculty)), "Select Faculty");
+      setOptions(document.getElementById("lcCourse"), unique(map.map(x=>x.course)), "Select Course");
+      setOptions(document.getElementById("lcUnit"), unique(map.map(x=>x.unit)), "Select Unit");
+      setOptions(document.getElementById("lcYear"), unique(map.map(x=>x.year)), "Select Year");
+      setOptions(document.getElementById("lcSemester"), unique(map.map(x=>x.semester)), "Select Semester");
+
+      setOptions(document.getElementById("repFacultyL"), unique(map.map(x=>x.faculty)), "All Faculties");
+      setOptions(document.getElementById("repCourseL"), unique(map.map(x=>x.course)), "All Courses");
+      setOptions(document.getElementById("repUnitL"), unique(map.map(x=>x.unit)), "All Units");
+      setOptions(document.getElementById("repYearL"), unique(map.map(x=>x.year)), "All Years");
+      setOptions(document.getElementById("repSemesterL"), unique(map.map(x=>x.semester)), "All Semesters");
+    }
+
+    function setLecturerClassFilterOptions(classes){
+      const sel = document.getElementById("lecClassFilter");
+      const old = sel.value;
+
+      const units = unique(classes.map(c=>c.unit).filter(Boolean));
+      const courses = unique(classes.map(c=>c.course).filter(Boolean));
+      const statuses = unique(classes.map(c=>c.status).filter(Boolean));
+
+      sel.innerHTML = `<option value="">All Classes</option>`;
+
+      if(units.length){
+        const g1 = document.createElement("optgroup");
+        g1.label = "By Unit";
+        units.forEach(v=>{
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          g1.appendChild(o);
+        });
+        sel.appendChild(g1);
+      }
+
+      if(courses.length){
+        const g2 = document.createElement("optgroup");
+        g2.label = "By Course";
+        courses.forEach(v=>{
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          g2.appendChild(o);
+        });
+        sel.appendChild(g2);
+      }
+
+      if(statuses.length){
+        const g3 = document.createElement("optgroup");
+        g3.label = "By Status";
+        statuses.forEach(v=>{
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v.toUpperCase();
+          g3.appendChild(o);
+        });
+        sel.appendChild(g3);
+      }
+
+      if(old && [...sel.options].some(x=>x.value===old)){
+        sel.value = old;
+      }
+    }
+
+    function classFilterMatch(cls, filterValue){
+      const v = filterValue.toLowerCase();
+      return (
+        (cls.unit || "").toLowerCase().includes(v) ||
+        (cls.course || "").toLowerCase().includes(v) ||
+        (cls.faculty || "").toLowerCase().includes(v) ||
+        (cls.status || "").toLowerCase().includes(v)
+      );
+    }
+
+    function getBasePath(){
+      const path = window.location.pathname;
+      const parts = path.split("/").filter(Boolean);
+      if(parts.length && parts[parts.length - 1].includes(".")){
+        parts.pop();
+      }
+      return "/" + parts.join("/");
+    }
+
+    function buildStudentLink(classId){
+      const basePath = getBasePath();
+      return window.location.origin + basePath + "/student.html?classId=" + encodeURIComponent(classId);
+    }
+
+    function renderLecturerClasses(){
+      const wrap = document.getElementById("lecturerClassesTableWrapper");
+      const data = loadData();
+
+      const myClasses = data.classes.filter(c=>c.lecturerId === currentUser.id);
+      setLecturerClassFilterOptions(myClasses);
+
+      if(!myClasses.length){
+        wrap.textContent = "No classes created yet.";
+        return;
+      }
+
+      const filterValue = document.getElementById("lecClassFilter").value || "";
+      const filtered = filterValue
+        ? myClasses.filter(cls=> classFilterMatch(cls, filterValue))
+        : myClasses;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Venue / Date</th>
+              <th>Status</th>
+              <th>Attendance</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      filtered.forEach(cls=>{
+        const count = data.attendance.filter(a=>a.classId === cls.id).length;
+        const statusBadge = cls.status === "open"
+          ? `<span class="badge open">Open</span>`
+          : `<span class="badge closed">Closed</span>`;
+
+        html += `
+          <tr>
+            <td>
+              <b>${cls.unit}</b><br>
+              <span class="small">${cls.course}</span><br>
+              <span class="small">${cls.faculty}</span><br>
+              <span class="small">${cls.year}, ${cls.semester}</span>
+            </td>
+            <td>
+              ${cls.venue}<br>
+              <span class="small">${formatDateTime(cls.dateTime)}</span>
+            </td>
+            <td>${statusBadge}</td>
+            <td><b>${count}</b> student(s)</td>
+            <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="copyClassLink('${cls.id}')">Copy Link</button>
+              <button class="btn btn-secondary" onclick="openStudentPage('${cls.id}')">Open Link</button>
+              ${
+                cls.status === "open"
+                  ? `<button class="btn btn-danger" onclick="toggleClassStatus('${cls.id}','closed')">End Class</button>`
+                  : `<button class="btn btn-success" onclick="toggleClassStatus('${cls.id}','open')">Re-open</button>`
+              }
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
+    }
+
+    function copyClassLink(classId){
+      const link = buildStudentLink(classId);
+      navigator.clipboard?.writeText(link)
+        .then(()=> alert("Student link copied:\n" + link))
+        .catch(()=> alert("Copy failed. Use this link:\n" + link));
+    }
+
+    function openStudentPage(classId){
+      const link = buildStudentLink(classId);
+      window.open(link, "_blank");
+    }
+
+    function toggleClassStatus(classId, status){
+      const data = loadData();
+      const cls = data.classes.find(c=>c.id === classId);
+      if(!cls) return;
+
+      cls.status = status;
+      saveData(data);
+      renderLecturerClasses();
+    }
+
+    function getFilteredLecturerReportClasses(){
+      const data = loadData();
+
+      const faculty = document.getElementById("repFacultyL").value;
+      const course = document.getElementById("repCourseL").value;
+      const unit = document.getElementById("repUnitL").value;
+      const year = document.getElementById("repYearL").value;
+      const semester = document.getElementById("repSemesterL").value;
+      const status = document.getElementById("repStatusL").value;
+
+      return data.classes.filter(cls=>{
+        return cls.lecturerId === currentUser.id &&
+          (!faculty || cls.faculty === faculty) &&
+          (!course || cls.course === course) &&
+          (!unit || cls.unit === unit) &&
+          (!year || cls.year === year) &&
+          (!semester || cls.semester === semester) &&
+          (!status || cls.status === status);
+      });
+    }
+
+    function renderLecturerReportTable(items){
+      const table = document.getElementById("reportTableL");
+      const meta = document.getElementById("reportMetaL");
+      const reportArea = document.getElementById("reportAreaLecturer");
+      const data = loadData();
+
+      reportArea.classList.remove("hidden");
+      meta.textContent = `Total matching classes: ${items.length}`;
+
+      let html = `
+        <thead>
+          <tr>
+            <th>Unit</th>
+            <th>Course</th>
+            <th>Faculty</th>
+            <th>Year</th>
+            <th>Semester</th>
+            <th>Venue</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Attendance</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      items.forEach(cls=>{
+        const count = data.attendance.filter(a=>a.classId === cls.id).length;
+        html += `
+          <tr>
+            <td>${cls.unit}</td>
+            <td>${cls.course}</td>
+            <td>${cls.faculty}</td>
+            <td>${cls.year}</td>
+            <td>${cls.semester}</td>
+            <td>${cls.venue}</td>
+            <td>${formatDateTime(cls.dateTime)}</td>
+            <td>${cls.status}</td>
+            <td>${count}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody>`;
+      table.innerHTML = html;
+    }
+
+    document.getElementById("createClassBtn").addEventListener("click", ()=>{
+      const f = document.getElementById("lcFaculty").value.trim();
+      const c = document.getElementById("lcCourse").value.trim();
+      const u = document.getElementById("lcUnit").value.trim();
+      const y = document.getElementById("lcYear").value.trim();
+      const s = document.getElementById("lcSemester").value.trim();
+      const v = document.getElementById("lcVenue").value.trim();
+      const dt = document.getElementById("lcDateTime").value;
+      const msgEl = document.getElementById("createClassMsg");
+
+      if(!f || !c || !u || !y || !s || !v || !dt){
+        setAlert(msgEl,"Please fill all class details.","danger");
+        return;
+      }
+
+      const data = loadData();
+
+      const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
+      if(!lecturer){
+        setAlert(msgEl,"Lecturer account not found.","danger");
+        return;
+      }
+
+      data.classes.push({
+        id: uuid(),
+        lecturerId: lecturer.id,
+        faculty: f,
+        course: c,
+        unit: u,
+        year: y,
+        semester: s,
+        venue: v,
+        dateTime: dt,
+        status: "open",
+        lecturerName: `${lecturer.salutation} ${lecturer.fullName}`,
+        lecturerSignature: null,
+        hodName: "",
+        hodSignature: null
+      });
+
+      saveData(data);
+      renderLecturerClasses();
+      setAlert(msgEl,"Class created successfully.","success");
+
+      document.getElementById("lcVenue").value = "";
+      document.getElementById("lcDateTime").value = "";
+    });
+
+    document.getElementById("lecClassFilter").addEventListener("change", renderLecturerClasses);
+
+    document.getElementById("generateReportLecturerBtn").addEventListener("click", ()=>{
+      const items = getFilteredLecturerReportClasses();
+      renderLecturerReportTable(items);
+    });
+
+    document.getElementById("exportExcelBtnL").addEventListener("click", ()=>{
+      const items = getFilteredLecturerReportClasses();
+      const data = loadData();
+
+      const rows = items.map(cls=>({
+        Unit: cls.unit,
+        Course: cls.course,
+        Faculty: cls.faculty,
+        Year: cls.year,
+        Semester: cls.semester,
+        Venue: cls.venue,
+        Date: formatDateTime(cls.dateTime),
+        Status: cls.status,
+        Attendance: data.attendance.filter(a=>a.classId === cls.id).length
+      }));
+
+      exportJsonToExcel(rows, "lecturer_report.xlsx", "Report");
+    });
+
+    document.getElementById("exportWordBtnL").addEventListener("click", ()=>{
+      const tableHtml = document.getElementById("reportTableL").outerHTML;
+      exportHtmlToWord("Lecturer Attendance Report", tableHtml, "lecturer_report.doc");
+    });
+
+    document.getElementById("exportPdfBtnL").addEventListener("click", ()=>{
+      exportTableToPdf("Lecturer Attendance Report", "reportTableL", "lecturer_report.pdf");
+    });
+
+    document.getElementById("openChangePwdBtn").addEventListener("click", ()=>{
+      clearAlert(document.getElementById("pwdMsg"));
+      document.getElementById("pwdOld").value = "";
+      document.getElementById("pwdNew").value = "";
+      document.getElementById("pwdNew2").value = "";
+      document.getElementById("pwdModal").classList.remove("hidden");
+    });
+
+    document.getElementById("pwdCloseBtn").addEventListener("click", ()=>{
+      document.getElementById("pwdModal").classList.add("hidden");
+    });
+
+    document.getElementById("pwdSaveBtn").addEventListener("click", ()=>{
+      const oldP = document.getElementById("pwdOld").value;
+      const newP = document.getElementById("pwdNew").value;
+      const newP2 = document.getElementById("pwdNew2").value;
+      const msgEl = document.getElementById("pwdMsg");
+
+      if(!oldP || !newP || !newP2){
+        setAlert(msgEl,"Fill all fields.","danger");
+        return;
+      }
+      if(newP.length < 4){
+        setAlert(msgEl,"New password too short (min 4).","danger");
+        return;
+      }
+      if(newP !== newP2){
+        setAlert(msgEl,"New passwords do not match.","danger");
+        return;
+      }
+
+      const data = loadData();
+      const lecturer = data.lecturers.find(l=>l.id === currentUser.id);
+
+      if(!lecturer || lecturer.password !== oldP){
+        setAlert(msgEl,"Current password is wrong.","danger");
+        return;
+      }
+
+      lecturer.password = newP;
+      saveData(data);
+      setAlert(msgEl,"Password updated successfully.","success");
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", ()=>{
+      localStorage.removeItem("currentUser");
+      window.location.href = "index.html";
+    });
+
+    window.addEventListener("load", ()=>{
+      currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+      if(!currentUser || currentUser.role !== "lecturer"){
+        window.location.href = "index.html";
+        return;
+      }
+
+      document.getElementById("userSummary").innerHTML = `Logged in as <b>Lecturer</b> · <b>${currentUser.username}</b>`;
+
+      populateLecturerDropdowns();
+      renderLecturerClasses();
+    });
+  </script>
+</body>
+</html>
