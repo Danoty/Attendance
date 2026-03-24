@@ -135,13 +135,13 @@
 
       <section class="card">
         <h3 style="margin:.1rem 0;">My Classes</h3>
-        <p class="page-intro">Copy link, open student page, close or re-open classes, and track attendance.</p>
+        <p class="page-intro">Copy link, open student page, show QR, share on WhatsApp, close or re-open classes.</p>
         <div id="lecturerClassesTableWrapper" class="muted"></div>
       </section>
 
       <section class="card">
         <h3 style="margin:.1rem 0;">Student Link & QR Code</h3>
-        <p class="page-intro">Select a class to generate a student attendance link and QR code.</p>
+        <p class="page-intro">Generate, copy, open, and share the attendance link for students.</p>
 
         <div class="row">
           <div>
@@ -154,12 +154,22 @@
           <button class="btn btn-primary" id="generateQrBtn">Generate Link & QR</button>
           <button class="btn btn-secondary" id="copyQrLinkBtn">Copy Student Link</button>
           <button class="btn btn-secondary" id="openQrLinkBtn">Open Student Page</button>
+          <button class="btn btn-secondary" id="shareQrWhatsappBtn">Share on WhatsApp</button>
         </div>
 
         <div id="qrLinkOutput" class="alert alert-info hidden" style="margin-top:1rem;"></div>
 
         <div id="qrCanvasWrap" style="margin-top:1rem;display:none;">
-          <div id="qrCodeBox" style="padding:1rem;background:#fff;border:1px solid #e5e7eb;border-radius:16px;width:max-content;"></div>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;">
+            <div id="qrCodeBox" style="padding:1rem;background:#fff;border:1px solid #e5e7eb;border-radius:16px;width:max-content;"></div>
+
+            <div class="card" style="padding:1rem;min-width:260px;box-shadow:none;border:1px solid #e5e7eb;">
+              <h4 style="margin:0 0 .5rem;">Sharing Tip</h4>
+              <p class="small" style="margin:0;">
+                Students can scan the QR code or open the copied link directly on their phones to fill the attendance form.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -247,6 +257,24 @@
       return window.location.origin + getBasePath() + "/student.html?classId=" + encodeURIComponent(classId);
     }
 
+    function generateClassShareText(classId){
+      const data = loadData();
+      const cls = data.classes.find(c => c.id === classId);
+      if(!cls) return "";
+
+      const link = buildStudentLink(classId);
+
+      return `JOOUST Attendance Link
+Course: ${cls.courseTitle || ""}
+Code: ${cls.courseCode || ""}
+Lecturer: ${cls.lecturerName || ""}
+Venue: ${cls.venue || ""}
+Date/Time: ${formatDateTime(cls.dateTime)}
+
+Fill attendance here:
+${link}`;
+    }
+
     function copyClassLink(classId){
       const link = buildStudentLink(classId);
       navigator.clipboard?.writeText(link)
@@ -256,6 +284,16 @@
 
     function openStudentPage(classId){
       window.open(buildStudentLink(classId), "_blank");
+    }
+
+    function shareClassWhatsapp(classId){
+      const message = generateClassShareText(classId);
+      if(!message){
+        alert("Unable to prepare WhatsApp message.");
+        return;
+      }
+      const url = "https://wa.me/?text=" + encodeURIComponent(message);
+      window.open(url, "_blank");
     }
 
     function toggleClassStatus(classId, status){
@@ -415,6 +453,8 @@
                     <div class="table-actions">
                       <button class="btn btn-secondary" onclick="copyClassLink('${cls.id}')">Copy Link</button>
                       <button class="btn btn-secondary" onclick="openStudentPage('${cls.id}')">Open Link</button>
+                      <button class="btn btn-primary" onclick="showClassQr('${cls.id}')">Show QR</button>
+                      <button class="btn btn-secondary" onclick="shareClassWhatsapp('${cls.id}')">WhatsApp</button>
                       ${
                         cls.status === "open"
                           ? `<button class="btn btn-danger" onclick="toggleClassStatus('${cls.id}','closed')">End Class</button>`
@@ -435,7 +475,7 @@
       const data = loadData();
 
       const myClasses = data.classes
-        .filter(c => c.lecturerId === currentUser.id)
+        .filter(c => c.lecturerId === currentUser.id && c.status === "open")
         .sort((a,b)=>(b.dateTime || "").localeCompare(a.dateTime || ""));
 
       pick.innerHTML =
@@ -447,8 +487,7 @@
         `).join("");
     }
 
-    function generateQrForSelectedClass(){
-      const classId = document.getElementById("qrClassPick").value;
+    function generateQrForClassId(classId){
       const output = document.getElementById("qrLinkOutput");
       const qrWrap = document.getElementById("qrCanvasWrap");
       const qrBox = document.getElementById("qrCodeBox");
@@ -460,10 +499,16 @@
       }
 
       const link = buildStudentLink(classId);
+      const data = loadData();
+      const cls = data.classes.find(c => c.id === classId);
 
       output.classList.remove("hidden");
       output.className = "alert alert-info";
-      output.innerHTML = `<b>Student Link:</b><br>${link}`;
+      output.innerHTML = `
+        <b>Class:</b> ${cls?.courseTitle || ""} ${cls?.courseCode ? `(${cls.courseCode})` : ""}<br>
+        <b>Student Link:</b><br>
+        ${link}
+      `;
 
       qrBox.innerHTML = "";
       new QRCode(qrBox, {
@@ -473,6 +518,20 @@
       });
 
       qrWrap.style.display = "block";
+    }
+
+    function generateQrForSelectedClass(){
+      const classId = document.getElementById("qrClassPick").value;
+      generateQrForClassId(classId);
+    }
+
+    function showClassQr(classId){
+      document.getElementById("qrClassPick").value = classId;
+      generateQrForClassId(classId);
+      const qrSection = document.getElementById("qrCanvasWrap");
+      if(qrSection){
+        qrSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
 
     function copySelectedQrLink(){
@@ -496,6 +555,15 @@
       }
 
       window.open(buildStudentLink(classId), "_blank");
+    }
+
+    function shareSelectedQrWhatsapp(){
+      const classId = document.getElementById("qrClassPick").value;
+      if(!classId){
+        alert("Please select a class first.");
+        return;
+      }
+      shareClassWhatsapp(classId);
     }
 
     function startLecturerLiveRefresh(){
@@ -534,6 +602,7 @@
     document.getElementById("generateQrBtn").addEventListener("click", generateQrForSelectedClass);
     document.getElementById("copyQrLinkBtn").addEventListener("click", copySelectedQrLink);
     document.getElementById("openQrLinkBtn").addEventListener("click", openSelectedQrLink);
+    document.getElementById("shareQrWhatsappBtn").addEventListener("click", shareSelectedQrWhatsapp);
 
     document.getElementById("createClassBtn").addEventListener("click", ()=>{
       const facultySchool = document.getElementById("lcFacultySchool").value.trim();
