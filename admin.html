@@ -1,1 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JOOUST Attendance System - Admin Dashboard</title>
 
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <section id="adminDashboard" class="admin-shell">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="admin-brand-logo">S</div>
+        <div>
+          <div class="admin-brand-title">Saijili</div>
+        </div>
+      </div>
+
+      <nav class="admin-menu">
+        <div class="admin-menu-group">MAIN</div>
+
+        <button class="admin-menu-item active" data-admin-view="dashboardHome">
+          <span>🏠</span><span>Dashboard</span>
+        </button>
+
+        <button class="admin-menu-item" data-admin-view="classesTab">
+          <span>📚</span><span>Classes</span>
+        </button>
+
+        <button class="admin-menu-item" data-admin-view="lecturersTab">
+          <span>👨🏽‍🏫</span><span>Lecturers</span>
+        </button>
+
+        <div class="admin-menu-group">MANAGE</div>
+
+        <button class="admin-menu-item" data-admin-view="facultyTab">
+          <span>🗂️</span><span>Faculty Mapping</span>
+        </button>
+
+        <button class="admin-menu-item" data-admin-view="reportsTab">
+          <span>📊</span><span>Reports</span>
+        </button>
+
+        <button class="admin-menu-item" data-admin-view="exportsTab">
+          <span>⬇️</span><span>Raw Exports</span>
+        </button>
+
+        <div class="admin-menu-group">SETTINGS</div>
+
+        <button class="admin-menu-item" id="adminProfileBtn">
+          <span>🔐</span><span>Change Password</span>
+        </button>
+
+        <button class="admin-menu-item" id="adminLogoutBtn">
+          <span>🚪</span><span>Logout</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div class="admin-topbar-left">
+          <button class="admin-menu-toggle" id="adminMenuToggle">☰</button>
+          <div class="admin-search-wrap">
+            <input type="text" id="adminSearchBox" class="admin-search" placeholder="Search" />
+          </div>
+        </div>
+
+        <div class="admin-topbar-right">
+          <div class="admin-user-box">
+            <span>👤</span>
+            <span id="adminTopName">Admin</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <!-- Dashboard -->
+        <section id="dashboardHome" class="admin-view">
+          <div class="admin-panel">
+            <h2>Dashboard</h2>
+
+            <div class="admin-stat-grid">
+              <div class="admin-stat-card green">
+                <div class="admin-stat-number" id="kpiClasses">0</div>
+                <div class="admin-stat-label">Classes</div>
+                <div class="admin-stat-footer">Live overview</div>
+              </div>
+
+              <div class="admin-stat-card red">
+                <div class="admin-stat-number" id="kpiAttendance">0</div>
+                <div class="admin-stat-label">Attendance Records</div>
+                <div class="admin-stat-footer">Live overview</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-grid-2">
+            <div class="admin-panel">
+              <h3>Recent Classes</h3>
+              <div id="recentClassesBox" class="admin-table-wrap">No items</div>
+            </div>
+
+            <div class="admin-panel">
+              <h3>Latest Attendance</h3>
+              <div id="latestAttendanceBox" class="admin-table-wrap">No items</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Lecturers -->
+        <section id="lecturersTab" class="admin-view hidden admin-panel">
+          <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+            <div>
+              <h3 style="margin:.1rem 0;">Lecturer Accounts</h3>
+              <div class="small">Approve new registrations and manage lecturer accounts.</div>
+            </div>
+          </div>
+
+          <div id="lecturersTableWrapper" class="muted" style="margin-top:1rem;">No lecturers yet.</div>
+        </section>
+
+        <!-- Faculty mapping -->
+        <section id="facultyTab" class="admin-view hidden admin-panel">
+          <h3>Faculty / Course / Unit Mapping</h3>
+          <div class="small">Upload CSV to populate dropdown lists.</div>
+
+          <div class="alert alert-info" style="margin-top:1rem;">
+            CSV Structure: <code>Faculty,Course,Unit,Year,Semester</code><br />
+            Each row represents one unit/class option.
+          </div>
+
+          <input type="file" id="facultyCsvInput" accept=".csv" />
+
+          <div class="btn-group">
+            <button class="btn btn-primary" id="uploadFacultyCsvBtn">Upload & Save</button>
+            <button class="btn btn-secondary" id="clearFacultyDataBtn">Clear All Mappings</button>
+          </div>
+
+          <div id="facultyUploadMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+
+          <h4 style="margin-top:1rem;margin-bottom:.4rem;">Current Records</h4>
+          <div id="facultySummary" class="muted"></div>
+        </section>
+
+        <!-- Classes -->
+        <section id="classesTab" class="admin-view hidden admin-panel">
+          <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+            <div>
+              <h3 style="margin:.1rem 0;">All Classes</h3>
+              <div class="small">Monitor all sessions and view attendance details.</div>
+            </div>
+
+            <div style="min-width:260px;">
+              <label for="adminClassFilter">Quick Filter (Unit / Lecturer / Course)</label>
+              <select id="adminClassFilter"></select>
+            </div>
+          </div>
+
+          <div id="adminClassesTableWrapper" class="muted" style="margin-top:1rem;">No classes created yet.</div>
+        </section>
+
+        <!-- Reports -->
+        <section id="reportsTab" class="admin-view hidden admin-panel">
+          <h3 style="margin:.1rem 0 .25rem;">Reports</h3>
+          <div class="muted" style="margin-bottom:.8rem;">
+            Filter using dropdowns and export as PDF, Word, or Excel.
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="repFaculty">Faculty</label>
+              <select id="repFaculty"></select>
+            </div>
+            <div>
+              <label for="repCourse">Course</label>
+              <select id="repCourse"></select>
+            </div>
+            <div>
+              <label for="repUnit">Unit</label>
+              <select id="repUnit"></select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="repYear">Year</label>
+              <select id="repYear"></select>
+            </div>
+            <div>
+              <label for="repSemester">Semester</label>
+              <select id="repSemester"></select>
+            </div>
+            <div>
+              <label for="repStatus">Status</label>
+              <select id="repStatus">
+                <option value="">All</option>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" id="generateReportBtn">Generate Report</button>
+          </div>
+
+          <div id="reportArea" class="hidden" style="margin-top:1rem;">
+            <div class="btn-group">
+              <button class="btn btn-primary" id="exportPdfBtn">Download PDF</button>
+              <button class="btn btn-secondary" id="exportWordBtn">Download Word</button>
+              <button class="btn btn-secondary" id="exportExcelBtn">Download Excel</button>
+            </div>
+
+            <div id="reportMeta" class="muted" style="margin-top:.6rem;"></div>
+            <table id="reportTable"></table>
+          </div>
+        </section>
+
+        <!-- Raw Exports -->
+        <section id="exportsTab" class="admin-view hidden admin-panel">
+          <h3 style="margin:.1rem 0 .25rem;">Raw Attendance Export</h3>
+          <div class="muted" style="margin-bottom:.8rem;">
+            Export student attendance with names, admission, timestamps, and signatures.
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="rawClassPick">Pick Class</label>
+              <select id="rawClassPick"></select>
+            </div>
+            <div>
+              <label>Export Format</label>
+              <div class="btn-group" style="margin-top:.2rem;">
+                <button class="btn btn-primary" id="rawExportCsvBtn">Download CSV</button>
+                <button class="btn btn-secondary" id="rawExportExcelBtn">Download Excel</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="rawExportMsg" class="alert hidden"></div>
+
+          <div class="small" style="margin-top:.6rem;">
+            Note: Signature is exported as a <b>data URL</b> (base64) for archive and verification.
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- Change Password Modal -->
+  <div id="pwdModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
+    <div class="card" style="width:min(520px,96%);box-shadow:var(--shadow2);">
+      <h3 style="margin:.1rem 0 .6rem;">Change Password</h3>
+
+      <div class="row">
+        <div>
+          <label for="pwdOld">Current Password</label>
+          <input id="pwdOld" type="password" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="pwdNew">New Password</label>
+          <input id="pwdNew" type="password" />
+        </div>
+        <div>
+          <label for="pwdNew2">Confirm New Password</label>
+          <input id="pwdNew2" type="password" />
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="pwdSaveBtn">Save</button>
+        <button class="btn btn-secondary" id="pwdCloseBtn">Close</button>
+      </div>
+
+      <div id="pwdMsg" class="alert hidden" style="margin-top:.8rem;"></div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    let currentUser = null;
+
+    function showAdminView(viewId){
+      document.querySelectorAll(".admin-view").forEach(v=>{
+        v.classList.toggle("hidden", v.id !== viewId);
+      });
+
+      document.querySelectorAll(".admin-menu-item[data-admin-view]").forEach(btn=>{
+        btn.classList.toggle("active", btn.getAttribute("data-admin-view") === viewId);
+      });
+    }
+
+    function setupAdminMenu(){
+      document.querySelectorAll(".admin-menu-item[data-admin-view]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const viewId = btn.getAttribute("data-admin-view");
+          showAdminView(viewId);
+        });
+      });
+
+      const toggle = document.getElementById("adminMenuToggle");
+      if(toggle){
+        toggle.addEventListener("click", ()=>{
+          document.getElementById("adminDashboard").classList.toggle("sidebar-open");
+        });
+      }
+
+      document.getElementById("adminProfileBtn").addEventListener("click", ()=>{
+        clearAlert(document.getElementById("pwdMsg"));
+        document.getElementById("pwdOld").value = "";
+        document.getElementById("pwdNew").value = "";
+        document.getElementById("pwdNew2").value = "";
+        document.getElementById("pwdModal").classList.remove("hidden");
+      });
+
+      document.getElementById("adminLogoutBtn").addEventListener("click", ()=>{
+        localStorage.removeItem("currentUser");
+        window.location.href = "index.html";
+      });
+    }
+
+    function renderDashboardHome(){
+      const data = loadData();
+
+      document.getElementById("kpiClasses").textContent = data.classes.length;
+      document.getElementById("kpiAttendance").textContent = data.attendance.length;
+
+      const recentClasses = data.classes
+        .slice()
+        .sort((a,b)=>(b.dateTime || "").localeCompare(a.dateTime || ""))
+        .slice(0,5);
+
+      const latestAttendance = data.attendance
+        .slice()
+        .sort((a,b)=>(b.createdAt || "").localeCompare(a.createdAt || ""))
+        .slice(0,5);
+
+      const recentBox = document.getElementById("recentClassesBox");
+      if(!recentClasses.length){
+        recentBox.innerHTML = `<div class="muted">No items</div>`;
+      } else {
+        recentBox.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Unit</th>
+                <th>Course</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recentClasses.map(c=>`
+                <tr>
+                  <td>${c.unit}</td>
+                  <td>${c.course}</td>
+                  <td>${formatDateTime(c.dateTime)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      }
+
+      const latestBox = document.getElementById("latestAttendanceBox");
+      if(!latestAttendance.length){
+        latestBox.innerHTML = `<div class="muted">No items</div>`;
+      } else {
+        latestBox.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Admission</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${latestAttendance.map(a=>`
+                <tr>
+                  <td>${a.surname} ${a.first}</td>
+                  <td>${a.admission}</td>
+                  <td>${formatDateTime(a.createdAt)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      }
+    }
+
+    function renderAdminLecturers(){
+      const wrapper = document.getElementById("lecturersTableWrapper");
+      const data = loadData();
+
+      if(!data.lecturers.length){
+        wrapper.textContent = "No lecturers registered yet.";
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Lecturer</th>
+              <th>PF/ID</th>
+              <th>Username</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      data.lecturers.forEach(lec=>{
+        const status = lec.approved
+          ? `<span class="chip green">Approved</span>`
+          : `<span class="chip red">Pending</span>`;
+
+        html += `
+          <tr>
+            <td><b>${lec.salutation} ${lec.fullName}</b></td>
+            <td>${lec.pf}</td>
+            <td>${lec.username}</td>
+            <td>${status}</td>
+            <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+              <button class="btn ${lec.approved ? "btn-secondary" : "btn-success"}" onclick="toggleLecturer('${lec.id}')">
+                ${lec.approved ? "Revoke" : "Approve"}
+              </button>
+              <button class="btn btn-danger" onclick="resetLecturerPwd('${lec.id}')">
+                Reset Password
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      wrapper.innerHTML = html;
+    }
+
+    function toggleLecturer(id){
+      const data = loadData();
+      const lecturer = data.lecturers.find(l=>l.id===id);
+      if(!lecturer) return;
+
+      lecturer.approved = !lecturer.approved;
+      saveData(data);
+      renderAdminLecturers();
+    }
+
+    function resetLecturerPwd(id){
+      const data = loadData();
+      const lecturer = data.lecturers.find(l=>l.id===id);
+      if(!lecturer) return;
+
+      const newPwd = prompt("Enter new password for lecturer:", "1234");
+      if(!newPwd) return;
+
+      lecturer.password = newPwd;
+      saveData(data);
+      alert("Lecturer password reset successfully.");
+    }
+
+    function renderFacultySummary(){
+      const wrap = document.getElementById("facultySummary");
+      const data = loadData();
+
+      if(!data.facultyConfig.length){
+        wrap.textContent = "No mappings uploaded yet.";
+        return;
+      }
+
+      const total = data.facultyConfig.length;
+      const faculties = [...new Set(data.facultyConfig.map(r=>r.faculty))];
+
+      wrap.innerHTML = `
+        <p class="muted" style="margin:.2rem 0 0;">
+          Total entries: <b>${total}</b><br />
+          Faculties: ${faculties.join(", ")}
+        </p>
+      `;
+    }
+
+    function setClassFilterOptions(selectId, classes){
+      const sel = document.getElementById(selectId);
+      if(!sel) return;
+
+      const old = sel.value;
+      const units = unique(classes.map(c=>c.unit).filter(Boolean));
+      const courses = unique(classes.map(c=>c.course).filter(Boolean));
+      const lecturers = unique(classes.map(c=>c.lecturerName).filter(Boolean));
+
+      sel.innerHTML = `<option value="">All Classes</option>`;
+
+      if(units.length){
+        const g1 = document.createElement("optgroup");
+        g1.label = "By Unit";
+        units.forEach(v=>{
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          g1.appendChild(o);
+        });
+        sel.appendChild(g1);
+      }
+
+      if(courses.length){
+        const g2 = document.createElement("optgroup");
+        g2.label = "By Course";
+        courses.forEach(v=>{
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          g2.appendChild(o);
+        });
+        sel.appendChild(g2);
+      }
+
+      if(lecturers.length){
+        const g3 = document.createElement("optgroup");
+        g3.label = "By Lecturer";
+        lecturers.forEach(v=>{
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          g3.appendChild(o);
+        });
+        sel.appendChild(g3);
+      }
+
+      if(old && [...sel.options].some(x=>x.value===old)) sel.value = old;
+    }
+
+    function classFilterMatch(cls, filterValue){
+      const v = filterValue.toLowerCase();
+      return (
+        (cls.unit || "").toLowerCase().includes(v) ||
+        (cls.course || "").toLowerCase().includes(v) ||
+        (cls.faculty || "").toLowerCase().includes(v) ||
+        (cls.lecturerName || "").toLowerCase().includes(v)
+      );
+    }
+
+    function renderAdminClasses(){
+      const wrap = document.getElementById("adminClassesTableWrapper");
+      const data = loadData();
+
+      setClassFilterOptions("adminClassFilter", data.classes);
+
+      if(!data.classes.length){
+        wrap.textContent = "No classes created yet.";
+        return;
+      }
+
+      const filterValue = document.getElementById("adminClassFilter").value || "";
+      const filtered = filterValue
+        ? data.classes.filter(cls=> classFilterMatch(cls, filterValue))
+        : data.classes;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Lecturer</th>
+              <th>Venue / Date</th>
+              <th>Status</th>
+              <th>Attendance</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      filtered.forEach(cls=>{
+        const count = data.attendance.filter(a=>a.classId===cls.id).length;
+        const statusBadge = cls.status === "open"
+          ? `<span class="badge open">Open</span>`
+          : `<span class="badge closed">Closed</span>`;
+
+        html += `
+          <tr>
+            <td>
+              <b>${cls.unit}</b><br>
+              <span class="small">${cls.course}</span><br>
+              <span class="small">${cls.faculty}</span><br>
+              <span class="small">${cls.year}, ${cls.semester}</span>
+            </td>
+            <td>${cls.lecturerName || ""}</td>
+            <td>
+              ${cls.venue}<br>
+              <span class="small">${formatDateTime(cls.dateTime)}</span>
+            </td>
+            <td>${statusBadge}</td>
+            <td><b>${count}</b></td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
+    }
+
+    function refreshClassPickers(){
+      const pick = document.getElementById("rawClassPick");
+      if(!pick) return;
+
+      const data = loadData();
+      const all = data.classes
+        .slice()
+        .sort((a,b)=>(b.dateTime || "").localeCompare(a.dateTime || ""));
+
+      pick.innerHTML = `<option value="">Select Class</option>` + all.map(c=>`
+        <option value="${c.id}">
+          ${c.unit} - ${c.course} - ${formatDateTime(c.dateTime)}
+        </option>
+      `).join("");
+    }
+
+    function populateReportDropdowns(){
+      const map = getMapping();
+
+      setOptions(document.getElementById("repFaculty"), unique(map.map(x=>x.faculty)), "All Faculties");
+      setOptions(document.getElementById("repCourse"), unique(map.map(x=>x.course)), "All Courses");
+      setOptions(document.getElementById("repUnit"), unique(map.map(x=>x.unit)), "All Units");
+      setOptions(document.getElementById("repYear"), unique(map.map(x=>x.year)), "All Years");
+      setOptions(document.getElementById("repSemester"), unique(map.map(x=>x.semester)), "All Semesters");
+    }
+
+    function getFilteredReportClasses(){
+      const data = loadData();
+
+      const faculty = document.getElementById("repFaculty").value;
+      const course = document.getElementById("repCourse").value;
+      const unit = document.getElementById("repUnit").value;
+      const year = document.getElementById("repYear").value;
+      const semester = document.getElementById("repSemester").value;
+      const status = document.getElementById("repStatus").value;
+
+      return data.classes.filter(cls=>{
+        return (!faculty || cls.faculty === faculty) &&
+               (!course || cls.course === course) &&
+               (!unit || cls.unit === unit) &&
+               (!year || cls.year === year) &&
+               (!semester || cls.semester === semester) &&
+               (!status || cls.status === status);
+      });
+    }
+
+    function renderReportTable(items){
+      const table = document.getElementById("reportTable");
+      const meta = document.getElementById("reportMeta");
+      const reportArea = document.getElementById("reportArea");
+      const data = loadData();
+
+      reportArea.classList.remove("hidden");
+      meta.textContent = `Total matching classes: ${items.length}`;
+
+      let html = `
+        <thead>
+          <tr>
+            <th>Unit</th>
+            <th>Course</th>
+            <th>Faculty</th>
+            <th>Year</th>
+            <th>Semester</th>
+            <th>Lecturer</th>
+            <th>Venue</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Attendance</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      items.forEach(cls=>{
+        const count = data.attendance.filter(a=>a.classId===cls.id).length;
+        html += `
+          <tr>
+            <td>${cls.unit}</td>
+            <td>${cls.course}</td>
+            <td>${cls.faculty}</td>
+            <td>${cls.year}</td>
+            <td>${cls.semester}</td>
+            <td>${cls.lecturerName || ""}</td>
+            <td>${cls.venue}</td>
+            <td>${formatDateTime(cls.dateTime)}</td>
+            <td>${cls.status}</td>
+            <td>${count}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody>`;
+      table.innerHTML = html;
+    }
+
+    document.getElementById("pwdCloseBtn").addEventListener("click", ()=>{
+      document.getElementById("pwdModal").classList.add("hidden");
+    });
+
+    document.getElementById("pwdSaveBtn").addEventListener("click", ()=>{
+      const oldP = document.getElementById("pwdOld").value;
+      const newP = document.getElementById("pwdNew").value;
+      const newP2 = document.getElementById("pwdNew2").value;
+      const msgEl = document.getElementById("pwdMsg");
+
+      if(!currentUser){
+        setAlert(msgEl,"Not logged in.","danger");
+        return;
+      }
+      if(!oldP || !newP || !newP2){
+        setAlert(msgEl,"Fill all fields.","danger");
+        return;
+      }
+      if(newP.length < 4){
+        setAlert(msgEl,"New password too short (min 4).","danger");
+        return;
+      }
+      if(newP !== newP2){
+        setAlert(msgEl,"New passwords do not match.","danger");
+        return;
+      }
+
+      const data = loadData();
+      const admin = data.admins.find(a=>a.username===currentUser.username);
+
+      if(!admin || admin.password !== oldP){
+        setAlert(msgEl,"Current password is wrong.","danger");
+        return;
+      }
+
+      admin.password = newP;
+      saveData(data);
+      setAlert(msgEl,"Password updated successfully.","success");
+    });
+
+    document.getElementById("uploadFacultyCsvBtn").addEventListener("click", ()=>{
+      const file = document.getElementById("facultyCsvInput").files[0];
+      const msgEl = document.getElementById("facultyUploadMsg");
+
+      if(!file){
+        setAlert(msgEl,"Select a CSV file first.","danger");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = e=>{
+        const text = e.target.result || "";
+        const lines = text.split(/\r?\n/).filter(l=>l.trim());
+        const records = [];
+
+        for(const line of lines){
+          const parts = line.split(",").map(p=>p.trim());
+          if(parts.length < 5) continue;
+          const [faculty, course, unit, year, semester] = parts;
+          if(!faculty || !course || !unit || !year || !semester) continue;
+          records.push({ faculty, course, unit, year, semester });
+        }
+
+        const data = loadData();
+        data.facultyConfig = records;
+        saveData(data);
+
+        setAlert(msgEl, `Uploaded ${records.length} entries successfully.`, "success");
+        renderFacultySummary();
+        populateReportDropdowns();
+      };
+
+      reader.readAsText(file);
+    });
+
+    document.getElementById("clearFacultyDataBtn").addEventListener("click", ()=>{
+      const msgEl = document.getElementById("facultyUploadMsg");
+      if(!confirm("Clear all existing faculty/course/unit mappings?")) return;
+
+      const data = loadData();
+      data.facultyConfig = [];
+      saveData(data);
+
+      setAlert(msgEl,"All mappings cleared.","success");
+      renderFacultySummary();
+      populateReportDropdowns();
+    });
+
+    document.getElementById("adminClassFilter").addEventListener("change", renderAdminClasses);
+
+    document.getElementById("generateReportBtn").addEventListener("click", ()=>{
+      const items = getFilteredReportClasses();
+      renderReportTable(items);
+    });
+
+    document.getElementById("rawExportCsvBtn").addEventListener("click", ()=>{
+      const classId = document.getElementById("rawClassPick").value;
+      const msgEl = document.getElementById("rawExportMsg");
+
+      if(!classId){
+        setAlert(msgEl,"Please pick a class first.","danger");
+        return;
+      }
+
+      const data = loadData();
+      const rows = data.attendance
+        .filter(a=>a.classId===classId)
+        .map(a=>[
+          a.surname,
+          a.middle || "",
+          a.first,
+          a.admission,
+          a.createdAt,
+          a.signature || ""
+        ]);
+
+      if(!rows.length){
+        setAlert(msgEl,"No attendance records found for this class.","danger");
+        return;
+      }
+
+      const header = ["Surname","Middle Name","First Name","Admission","Timestamp","Signature"];
+      const csv = [header, ...rows]
+        .map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(","))
+        .join("\n");
+
+      downloadBlob(csv, `attendance_${classId}.csv`, "text/csv;charset=utf-8;");
+      setAlert(msgEl,"CSV export ready.","success");
+    });
+
+    document.getElementById("rawExportExcelBtn").addEventListener("click", ()=>{
+      const classId = document.getElementById("rawClassPick").value;
+      const msgEl = document.getElementById("rawExportMsg");
+
+      if(!classId){
+        setAlert(msgEl,"Please pick a class first.","danger");
+        return;
+      }
+
+      const data = loadData();
+      const rows = data.attendance
+        .filter(a=>a.classId===classId)
+        .map(a=>({
+          Surname: a.surname,
+          MiddleName: a.middle || "",
+          FirstName: a.first,
+          Admission: a.admission,
+          Timestamp: a.createdAt,
+          Signature: a.signature || ""
+        }));
+
+      if(!rows.length){
+        setAlert(msgEl,"No attendance records found for this class.","danger");
+        return;
+      }
+
+      exportJsonToExcel(rows, `attendance_${classId}.xlsx`, "Attendance");
+      setAlert(msgEl,"Excel export ready.","success");
+    });
+
+    document.getElementById("exportExcelBtn").addEventListener("click", ()=>{
+      const items = getFilteredReportClasses();
+      const data = loadData();
+
+      const rows = items.map(cls=>({
+        Unit: cls.unit,
+        Course: cls.course,
+        Faculty: cls.faculty,
+        Year: cls.year,
+        Semester: cls.semester,
+        Lecturer: cls.lecturerName || "",
+        Venue: cls.venue,
+        Date: formatDateTime(cls.dateTime),
+        Status: cls.status,
+        Attendance: data.attendance.filter(a=>a.classId===cls.id).length
+      }));
+
+      exportJsonToExcel(rows, "admin_report.xlsx", "Report");
+    });
+
+    document.getElementById("exportWordBtn").addEventListener("click", ()=>{
+      const tableHtml = document.getElementById("reportTable").outerHTML;
+      exportHtmlToWord("Admin Attendance Report", tableHtml, "admin_report.doc");
+    });
+
+    document.getElementById("exportPdfBtn").addEventListener("click", ()=>{
+      exportTableToPdf("Admin Attendance Report", "reportTable", "admin_report.pdf");
+    });
+
+    window.addEventListener("load", ()=>{
+      currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+      if(!currentUser || currentUser.role !== "admin"){
+        window.location.href = "index.html";
+        return;
+      }
+
+      document.getElementById("adminTopName").textContent = currentUser.username;
+
+      setupAdminMenu();
+      renderDashboardHome();
+      renderAdminLecturers();
+      renderFacultySummary();
+      renderAdminClasses();
+      refreshClassPickers();
+      populateReportDropdowns();
+      showAdminView("dashboardHome");
+    });
+  </script>
+</body>
+</html>
