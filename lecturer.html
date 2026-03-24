@@ -303,63 +303,72 @@
       return window.location.origin + getBasePath() + "/student.html?classId=" + encodeURIComponent(classId);
     }
 
-    function renderLecturerClasses(){
-      const wrap = document.getElementById("lecturerClassesTableWrapper");
-      const data = loadData();
-      const myClasses = data.classes.filter(c=>c.lecturerId === currentUser.id);
+   function renderLecturerClasses(){
+  const wrap = document.getElementById("lecturerClassesTableWrapper");
+  const data = loadData();
+  const myClasses = data.classes.filter(c=>c.lecturerId === currentUser.id);
 
-      setLecturerClassFilterOptions(myClasses);
+  if(!myClasses.length){
+    showEmptyState(wrap, "No classes yet", "Create your first class to start tracking attendance.");
+    return;
+  }
 
-      if(!myClasses.length){
-        showEmptyState(wrap, "No classes yet", "Create your first class to start tracking attendance.");
-        return;
-      }
-
-      const filterValue = document.getElementById("lecClassFilter").value || "";
-      const filtered = filterValue ? myClasses.filter(cls=>classFilterMatch(cls, filterValue)) : myClasses;
-
-      wrap.innerHTML = `
-        <table>
-          <thead>
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Class Details</th>
+          <th>Programme Info</th>
+          <th>Venue / Date</th>
+          <th>Status</th>
+          <th>Attendance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${myClasses.map(cls=>{
+          const count = data.attendance.filter(a=>a.classId === cls.id).length;
+          return `
             <tr>
-              <th>Class</th>
-              <th>Venue / Date</th>
-              <th>Status</th>
-              <th>Attendance</th>
-              <th>Actions</th>
+              <td>
+                <b>${cls.courseTitle || ""}</b><br>
+                <span class="small">${cls.courseCode || ""}</span><br>
+                <span class="small">${cls.lecturerName || ""}</span>
+              </td>
+              <td>
+                <span class="small"><b>Faculty/School:</b> ${cls.facultySchool || ""}</span><br>
+                <span class="small"><b>Programme:</b> ${cls.programme || ""}</span><br>
+                <span class="small"><b>Academic Year:</b> ${cls.academicYear || ""}</span><br>
+                <span class="small"><b>Year of Study:</b> ${cls.yearOfStudy || ""}</span><br>
+                <span class="small"><b>Semester:</b> ${cls.semester || ""}</span>
+              </td>
+              <td>
+                ${cls.venue}<br>
+                <span class="small">${formatDateTime(cls.dateTime)}</span>
+              </td>
+              <td>
+                ${cls.status === "open"
+                  ? `<span class="badge open">Open</span>`
+                  : `<span class="badge closed">Closed</span>`}
+              </td>
+              <td><b>${count}</b> student(s)</td>
+              <td>
+                <div class="table-actions">
+                  <button class="btn btn-secondary" onclick="copyClassLink('${cls.id}')">Copy Link</button>
+                  <button class="btn btn-secondary" onclick="openStudentPage('${cls.id}')">Open Link</button>
+                  ${
+                    cls.status === "open"
+                      ? `<button class="btn btn-danger" onclick="toggleClassStatus('${cls.id}','closed')">End Class</button>`
+                      : `<button class="btn btn-success" onclick="toggleClassStatus('${cls.id}','open')">Re-open</button>`
+                  }
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            ${filtered.map(cls=>{
-              const count = data.attendance.filter(a=>a.classId === cls.id).length;
-              return `
-                <tr>
-                  <td>
-                    <b>${cls.unit}</b><br>
-                    <span class="small">${cls.course}</span><br>
-                    <span class="small">${cls.faculty}</span><br>
-                    <span class="small">${cls.year}, ${cls.semester}</span>
-                  </td>
-                  <td>${cls.venue}<br><span class="small">${formatDateTime(cls.dateTime)}</span></td>
-                  <td>${cls.status === "open" ? `<span class="badge open">Open</span>` : `<span class="badge closed">Closed</span>`}</td>
-                  <td><b>${count}</b> student(s)</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="btn btn-secondary" onclick="copyClassLink('${cls.id}')">Copy Link</button>
-                      <button class="btn btn-secondary" onclick="openStudentPage('${cls.id}')">Open Link</button>
-                      ${
-                        cls.status === "open"
-                          ? `<button class="btn btn-danger" onclick="toggleClassStatus('${cls.id}','closed')">End Class</button>`
-                          : `<button class="btn btn-success" onclick="toggleClassStatus('${cls.id}','open')">Re-open</button>`
-                      }
-                    </div>
-                  </td>
-                </tr>
-              `;
-            }).join("")}
-          </tbody>
-        </table>
-      `;
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
     }
 
     function copyClassLink(classId){
