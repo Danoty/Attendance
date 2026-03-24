@@ -76,7 +76,6 @@
       </header>
 
       <div class="admin-content">
-        <!-- DASHBOARD -->
         <section id="dashboardHome" class="admin-view">
           <div class="admin-panel">
             <h2>JOOUST Admin Dashboard</h2>
@@ -110,14 +109,12 @@
           </div>
         </section>
 
-        <!-- LECTURERS -->
         <section id="lecturersTab" class="admin-view hidden admin-panel">
           <h3>Lecturer Accounts</h3>
           <p class="page-intro">Approve new registrations and manage lecturer accounts.</p>
           <div id="lecturersTableWrapper" class="muted" style="margin-top:1rem;"></div>
         </section>
 
-        <!-- CLASSES -->
         <section id="classesTab" class="admin-view hidden admin-panel">
           <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
             <div>
@@ -133,7 +130,6 @@
           <div id="adminClassesTableWrapper" class="muted" style="margin-top:1rem;"></div>
         </section>
 
-        <!-- REPORTS -->
         <section id="reportsTab" class="admin-view hidden admin-panel">
           <h3>Reports</h3>
           <p class="page-intro">Filter by academic and class details and export polished reports.</p>
@@ -216,19 +212,18 @@
           </div>
         </section>
 
-        <!-- FRAUD REVIEW -->
         <section id="fraudTab" class="admin-view hidden admin-panel">
           <h3>Fraud Review</h3>
           <p class="page-intro">Review suspicious attendance submissions such as repeated devices and duplicate admission numbers.</p>
 
           <div class="btn-group">
             <button class="btn btn-primary" id="refreshFraudBtn">Refresh Fraud Review</button>
+            <button class="btn btn-secondary" id="exportFraudBtn">Export Fraud Report</button>
           </div>
 
           <div id="fraudReviewWrapper" style="margin-top:1rem;"></div>
         </section>
 
-        <!-- RAW EXPORTS -->
         <section id="exportsTab" class="admin-view hidden admin-panel">
           <h3>Raw Attendance Export</h3>
           <p class="page-intro">Export attendance with names, admission numbers, timestamps, signatures, and device fingerprint.</p>
@@ -258,7 +253,6 @@
     </div>
   </section>
 
-  <!-- CHANGE PASSWORD MODAL -->
   <div id="pwdModal" class="hidden" style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:1rem;">
     <div class="card" style="width:min(520px,96%);box-shadow:var(--shadow-soft);">
       <h3 style="margin:.1rem 0 .6rem;">Change Password</h3>
@@ -452,12 +446,13 @@
     function renderFraudReview(){
       const wrapper = document.getElementById("fraudReviewWrapper");
       const fraudCases = getFraudCases();
+      const data = loadData();
 
       if(!fraudCases.length){
         wrapper.innerHTML = `
           <div class="empty-state">
             <h3>No fraud flags found</h3>
-            <p>No repeated device or duplicate admission issues detected at the moment.</p>
+            <p>System clean ✔</p>
           </div>
         `;
         return;
@@ -470,25 +465,64 @@
               <th>Class</th>
               <th>Student</th>
               <th>Admission</th>
-              <th>Device Fingerprint</th>
+              <th>Device</th>
               <th>Issue</th>
-              <th>Time</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            ${fraudCases.map(item=>`
-              <tr>
-                <td>${item.classLabel}</td>
-                <td>${item.studentName}</td>
-                <td>${item.admission}</td>
-                <td><span class="small">${item.deviceFingerprint}</span></td>
-                <td><span class="chip red">${item.issue}</span></td>
-                <td>${formatDateTime(item.createdAt)}</td>
-              </tr>
-            `).join("")}
+            ${fraudCases.map(item=>{
+              const isReviewed = data.fraudReviewed.includes(item.createdAt);
+
+              return `
+                <tr>
+                  <td>${item.classLabel}</td>
+                  <td>${item.studentName}</td>
+                  <td>${item.admission}</td>
+                  <td class="small">${item.deviceFingerprint}</td>
+                  <td><span class="chip red">${item.issue}</span></td>
+                  <td>
+                    ${isReviewed
+                      ? `<span class="chip green">Reviewed</span>`
+                      : `<span class="chip red">Pending</span>`}
+                  </td>
+                  <td>
+                    <div class="table-actions">
+                      <button class="btn btn-danger" onclick="deleteFraudRecord('${item.createdAt}')">Delete</button>
+                      <button class="btn btn-secondary" onclick="markFraudReviewed('${item.createdAt}')">Mark Reviewed</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
           </tbody>
         </table>
       `;
+    }
+
+    function deleteFraudRecord(createdAt){
+      if(!confirm("Delete this suspicious attendance record?")) return;
+
+      const data = loadData();
+      data.attendance = data.attendance.filter(a => a.createdAt !== createdAt);
+      data.fraudReviewed = data.fraudReviewed.filter(x => x !== createdAt);
+
+      saveData(data);
+      renderFraudReview();
+      renderAdminClasses();
+      renderDashboardHome();
+    }
+
+    function markFraudReviewed(createdAt){
+      const data = loadData();
+
+      if(!data.fraudReviewed.includes(createdAt)){
+        data.fraudReviewed.push(createdAt);
+      }
+
+      saveData(data);
+      renderFraudReview();
     }
 
     function renderDashboardHome(){
@@ -898,6 +932,26 @@
 
     document.getElementById("refreshFraudBtn").addEventListener("click", ()=>{
       renderFraudReview();
+    });
+
+    document.getElementById("exportFraudBtn").addEventListener("click", ()=>{
+      const fraudCases = getFraudCases();
+
+      if(!fraudCases.length){
+        alert("No fraud data to export.");
+        return;
+      }
+
+      const rows = fraudCases.map(f=>({
+        Class: f.classLabel,
+        Student: f.studentName,
+        Admission: f.admission,
+        Device: f.deviceFingerprint,
+        Issue: f.issue,
+        Time: f.createdAt
+      }));
+
+      exportJsonToExcel(rows, "fraud_report.xlsx", "Fraud");
     });
 
     document.getElementById("rawExportCsvBtn").addEventListener("click", ()=>{
