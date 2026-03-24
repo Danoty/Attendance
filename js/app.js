@@ -112,6 +112,26 @@ function getMapping(){
 }
 
 /* =========================
+   DEVICE FINGERPRINT
+========================= */
+function getDeviceFingerprint(){
+  const raw = [
+    navigator.userAgent || "",
+    navigator.language || "",
+    screen.width || "",
+    screen.height || "",
+    new Date().getTimezoneOffset()
+  ].join("|");
+
+  let hash = 0;
+  for(let i = 0; i < raw.length; i++){
+    hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+    hash |= 0;
+  }
+  return "dev_" + Math.abs(hash);
+}
+
+/* =========================
    SIGNATURE PAD
 ========================= */
 function setupSignaturePad(canvas){
