@@ -87,7 +87,40 @@
             <input id="lcDateTime" type="datetime-local" />
           </div>
         </div>
+<div class="row">
+  <div>
+    <label for="lcClassMode">Class Mode</label>
+    <select id="lcClassMode">
+      <option value="physical">Physical Class</option>
+      <option value="online">Online Class</option>
+    </select>
+  </div>
+  <div>
+    <label for="lcGeofenceRadius">Geofence Radius (meters)</label>
+    <input id="lcGeofenceRadius" type="number" value="50" min="10" max="500" />
+  </div>
+</div>
 
+<div id="physicalLocationBlock">
+  <div class="row">
+    <div>
+      <label for="lcLatitude">Latitude</label>
+      <input id="lcLatitude" type="text" placeholder="Picked from map" readonly />
+    </div>
+    <div>
+      <label for="lcLongitude">Longitude</label>
+      <input id="lcLongitude" type="text" placeholder="Picked from map" readonly />
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button type="button" class="btn btn-secondary" id="pickLocationBtn">Choose Location on Map</button>
+    <button type="button" class="btn btn-secondary" id="useCurrentLocationBtn">Use My Current Location</button>
+  </div>
+
+  <div id="mapPicker" style="height:320px;border-radius:16px;margin-top:1rem;overflow:hidden;border:1px solid #d5dbe7;"></div>
+  <div id="mapHelpMsg" class="small" style="margin-top:.5rem;">Click on the map to set the class location for physical attendance.</div>
+</div>
         <div class="btn-group">
           <button class="btn btn-success" id="createClassBtn">
             <span id="createClassText">Create / Start Class</span>
