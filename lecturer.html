@@ -141,7 +141,7 @@
 
       <section class="card">
         <h3 style="margin:.1rem 0;">Student Link & QR Code</h3>
-        <p class="page-intro">Generate, copy, open, and share the attendance link for students.</p>
+        <p class="page-intro">Generate, copy, open, share, download, and print the attendance access for students.</p>
 
         <div class="row">
           <div>
@@ -155,19 +155,19 @@
           <button class="btn btn-secondary" id="copyQrLinkBtn">Copy Student Link</button>
           <button class="btn btn-secondary" id="openQrLinkBtn">Open Student Page</button>
           <button class="btn btn-secondary" id="shareQrWhatsappBtn">Share on WhatsApp</button>
+          <button class="btn btn-secondary" id="downloadQrBtn">Download QR Image</button>
+          <button class="btn btn-secondary" id="printQrSlipBtn">Print QR Slip</button>
         </div>
 
         <div id="qrLinkOutput" class="alert alert-info hidden" style="margin-top:1rem;"></div>
 
         <div id="qrCanvasWrap" style="margin-top:1rem;display:none;">
-          <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;">
+          <div id="qrSlipCard" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;padding:1rem;background:#fff;border:1px solid #e5e7eb;border-radius:16px;">
             <div id="qrCodeBox" style="padding:1rem;background:#fff;border:1px solid #e5e7eb;border-radius:16px;width:max-content;"></div>
 
-            <div class="card" style="padding:1rem;min-width:260px;box-shadow:none;border:1px solid #e5e7eb;">
-              <h4 style="margin:0 0 .5rem;">Sharing Tip</h4>
-              <p class="small" style="margin:0;">
-                Students can scan the QR code or open the copied link directly on their phones to fill the attendance form.
-              </p>
+            <div id="qrSlipMeta" class="card" style="padding:1rem;min-width:280px;box-shadow:none;border:1px solid #e5e7eb;">
+              <h4 style="margin:0 0 .6rem;">Class QR Slip</h4>
+              <div class="small" id="qrSlipText">Generate a class QR to see details here.</div>
             </div>
           </div>
         </div>
@@ -487,6 +487,25 @@ ${link}`;
         `).join("");
     }
 
+    function updateQrSlipMeta(classId){
+      const data = loadData();
+      const cls = data.classes.find(c => c.id === classId);
+      const slipText = document.getElementById("qrSlipText");
+
+      if(!cls || !slipText) return;
+
+      slipText.innerHTML = `
+        <b>Course:</b> ${cls.courseTitle || "-"}<br>
+        <b>Code:</b> ${cls.courseCode || "-"}<br>
+        <b>Lecturer:</b> ${cls.lecturerName || "-"}<br>
+        <b>Venue:</b> ${cls.venue || "-"}<br>
+        <b>Date/Time:</b> ${formatDateTime(cls.dateTime)}<br>
+        <b>Mode:</b> ${cls.classMode || "physical"}<br>
+        <b>Link:</b><br>
+        <span style="word-break:break-word;">${buildStudentLink(classId)}</span>
+      `;
+    }
+
     function generateQrForClassId(classId){
       const output = document.getElementById("qrLinkOutput");
       const qrWrap = document.getElementById("qrCanvasWrap");
@@ -517,6 +536,7 @@ ${link}`;
         height: 220
       });
 
+      updateQrSlipMeta(classId);
       qrWrap.style.display = "block";
     }
 
@@ -566,6 +586,200 @@ ${link}`;
       shareClassWhatsapp(classId);
     }
 
+    function downloadQrImage(){
+      const classId = document.getElementById("qrClassPick").value;
+      if(!classId){
+        alert("Please generate a QR code first.");
+        return;
+      }
+
+      const img = document.querySelector("#qrCodeBox img");
+      const canvas = document.querySelector("#qrCodeBox canvas");
+
+      let dataUrl = "";
+
+      if(img){
+        dataUrl = img.src;
+      } else if(canvas){
+        dataUrl = canvas.toDataURL("image/png");
+      } else {
+        alert("No QR code found. Please generate it first.");
+        return;
+      }
+
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `jooust_qr_${classId}.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    function printQrSlip(){
+      const classId = document.getElementById("qrClassPick").value;
+      if(!classId){
+        alert("Please generate a QR code first.");
+        return;
+      }
+
+      const data = loadData();
+      const cls = data.classes.find(c => c.id === classId);
+      if(!cls){
+        alert("Class not found.");
+        return;
+      }
+
+      const img = document.querySelector("#qrCodeBox img");
+      const canvas = document.querySelector("#qrCodeBox canvas");
+
+      let qrData = "";
+      if(img){
+        qrData = img.src;
+      } else if(canvas){
+        qrData = canvas.toDataURL("image/png");
+      } else {
+        alert("No QR code found. Please generate it first.");
+        return;
+      }
+
+      const studentLink = buildStudentLink(classId);
+
+      const printWindow = window.open("", "_blank", "width=900,height=700");
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>JOOUST QR Slip</title>
+          <style>
+            body{
+              font-family: Arial, sans-serif;
+              padding: 24px;
+              color:#172033;
+            }
+            .slip{
+              max-width: 800px;
+              margin: 0 auto;
+              border: 2px solid #dbe5f0;
+              border-radius: 16px;
+              padding: 24px;
+            }
+            .head{
+              display:flex;
+              align-items:center;
+              gap:16px;
+              border-bottom:1px solid #e5e7eb;
+              padding-bottom:16px;
+              margin-bottom:20px;
+            }
+            .head img.logo{
+              width:72px;
+              height:72px;
+              object-fit:contain;
+              border-radius:12px;
+            }
+            .title{
+              font-size:28px;
+              font-weight:700;
+              margin:0;
+            }
+            .sub{
+              color:#475467;
+              margin-top:4px;
+            }
+            .content{
+              display:flex;
+              gap:24px;
+              align-items:flex-start;
+              flex-wrap:wrap;
+            }
+            .qr{
+              border:1px solid #dbe5f0;
+              border-radius:14px;
+              padding:16px;
+              background:#fff;
+            }
+            .meta{
+              flex:1;
+              min-width:280px;
+              line-height:1.8;
+              font-size:16px;
+            }
+            .meta b{
+              color:#0f172a;
+            }
+            .link{
+              margin-top:14px;
+              padding:12px;
+              background:#f8fafc;
+              border:1px dashed #cbd5e1;
+              border-radius:10px;
+              word-break:break-word;
+              font-size:14px;
+            }
+            .note{
+              margin-top:20px;
+              padding:14px;
+              border-radius:10px;
+              background:#eff6ff;
+              color:#1d4ed8;
+              font-size:14px;
+            }
+            @media print{
+              body{ padding:0; }
+              .slip{ border:none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="slip">
+            <div class="head">
+              <img src="./assets/logo.jpg" class="logo" alt="JOOUST Logo">
+              <div>
+                <div class="title">JOOUST Attendance QR Slip</div>
+                <div class="sub">Student attendance access for this class session</div>
+              </div>
+            </div>
+
+            <div class="content">
+              <div class="qr">
+                <img src="${qrData}" alt="QR Code" style="width:260px;height:260px;">
+              </div>
+
+              <div class="meta">
+                <div><b>Course:</b> ${cls.courseTitle || "-"}</div>
+                <div><b>Course Code:</b> ${cls.courseCode || "-"}</div>
+                <div><b>Lecturer:</b> ${cls.lecturerName || "-"}</div>
+                <div><b>Faculty / School:</b> ${cls.facultySchool || "-"}</div>
+                <div><b>Programme:</b> ${cls.programme || "-"}</div>
+                <div><b>Academic Year:</b> ${cls.academicYear || "-"}</div>
+                <div><b>Year of Study:</b> ${cls.yearOfStudy || "-"}</div>
+                <div><b>Semester:</b> ${cls.semester || "-"}</div>
+                <div><b>Venue:</b> ${cls.venue || "-"}</div>
+                <div><b>Date & Time:</b> ${formatDateTime(cls.dateTime)}</div>
+                <div><b>Mode:</b> ${cls.classMode || "physical"}</div>
+
+                <div class="link">
+                  <b>Attendance Link:</b><br>
+                  ${studentLink}
+                </div>
+              </div>
+            </div>
+
+            <div class="note">
+              Students may scan this QR code or open the attendance link directly to submit attendance.
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }
+
     function startLecturerLiveRefresh(){
       if(lecturerLiveRefresh) clearInterval(lecturerLiveRefresh);
       lecturerLiveRefresh = setInterval(()=>{
@@ -603,6 +817,8 @@ ${link}`;
     document.getElementById("copyQrLinkBtn").addEventListener("click", copySelectedQrLink);
     document.getElementById("openQrLinkBtn").addEventListener("click", openSelectedQrLink);
     document.getElementById("shareQrWhatsappBtn").addEventListener("click", shareSelectedQrWhatsapp);
+    document.getElementById("downloadQrBtn").addEventListener("click", downloadQrImage);
+    document.getElementById("printQrSlipBtn").addEventListener("click", printQrSlip);
 
     document.getElementById("createClassBtn").addEventListener("click", ()=>{
       const facultySchool = document.getElementById("lcFacultySchool").value.trim();
@@ -766,8 +982,6 @@ ${link}`;
       localStorage.removeItem("currentUser");
       window.location.href = "index.html";
     });
-
-    console.log("Stored currentUser =", localStorage.getItem("currentUser"));
 
     window.addEventListener("load", ()=>{
       let savedUser = null;
