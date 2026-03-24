@@ -659,7 +659,7 @@ tr:nth-child(even) td{
   color:var(--jooust-blue-dark);
 }
 
-/* ADMIN */
+/* ADMIN - JOOUST BRANDING */
 .admin-shell{
   display:grid;
   grid-template-columns:280px 1fr;
@@ -668,7 +668,7 @@ tr:nth-child(even) td{
 }
 
 .admin-sidebar{
-  background:linear-gradient(180deg,#071524,#08111d);
+  background:linear-gradient(180deg, #0b2c6b, #071a3d);
   color:#fff;
 }
 
@@ -676,8 +676,20 @@ tr:nth-child(even) td{
   display:flex;
   align-items:center;
   gap:.8rem;
-  padding:1rem 1.2rem;
-  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:1rem 1.1rem;
+  border-bottom:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+}
+
+.admin-brand-image{
+  width:52px;
+  height:52px;
+  object-fit:contain;
+  border-radius:14px;
+  background:#fff;
+  padding:5px;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+  flex-shrink:0;
 }
 
 .admin-brand-logo{
@@ -692,8 +704,18 @@ tr:nth-child(even) td{
 }
 
 .admin-brand-title{
-  font-size:2rem;
+  font-size:1.55rem;
   font-weight:800;
+  line-height:1;
+  letter-spacing:-.02em;
+  color:#ffffff;
+}
+
+.admin-brand-subtitle{
+  margin-top:4px;
+  font-size:.82rem;
+  color:rgba(255,255,255,.82);
+  font-weight:600;
 }
 
 .admin-menu{
@@ -724,8 +746,10 @@ tr:nth-child(even) td{
 }
 
 .admin-menu-item.active{
-  background:#088538;
+  background:linear-gradient(135deg, #179c52, #128243);
   position:relative;
+  color:#fff;
+  box-shadow:0 10px 18px rgba(23,156,82,.18);
 }
 
 .admin-menu-item.active::before{
@@ -735,7 +759,7 @@ tr:nth-child(even) td{
   top:0;
   bottom:0;
   width:4px;
-  background:#ff4d4d;
+  background:#f2c94c;
   border-radius:8px 0 0 8px;
 }
 
@@ -746,13 +770,14 @@ tr:nth-child(even) td{
 }
 
 .admin-topbar{
-  background:#088538;
+  background:linear-gradient(135deg, #0f52ba, #0b3d91);
   color:#fff;
   padding:.9rem 1.2rem;
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:1rem;
+  box-shadow:0 4px 16px rgba(15,82,186,.16);
 }
 
 .admin-topbar-left{
@@ -776,16 +801,26 @@ tr:nth-child(even) td{
 .admin-search{
   width:100%;
   border:none;
-  border-radius:8px;
-  padding:.78rem .9rem;
-  background:#f3f4f6;
+  border-radius:10px;
+  padding:.78rem .95rem;
+  background:#f8fafc;
 }
 
 .admin-user-box{
   display:flex;
   align-items:center;
-  gap:.45rem;
-  font-weight:700;
+  gap:.55rem;
+  font-weight:800;
+  color:#fff;
+}
+
+.admin-top-logo{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:50%;
+  padding:2px;
 }
 
 .admin-content{
@@ -851,64 +886,7 @@ tr:nth-child(even) td{
   min-height:180px;
 }
 
-/* RESPONSIVE */
-@media (max-width: 980px){
-  .hero-premium-grid,
-  .auth-grid,
-  .admin-grid-2,
-  .admin-stat-grid{
-    grid-template-columns:1fr;
-  }
-
-  .admin-shell{
-    grid-template-columns:1fr;
-  }
-
-  .admin-sidebar{
-    display:none;
-  }
-
-  .admin-shell.sidebar-open .admin-sidebar{
-    display:block;
-    position:fixed;
-    inset:0 auto 0 0;
-    width:280px;
-    height:100vh;
-    z-index:1000;
-  }
-}
-
-@media (max-width: 640px){
-  #mainHeader{
-    padding:12px 14px;
-  }
-
-  .header-inner{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .brand{
-    align-items:flex-start;
-  }
-
-  .brand h1{
-    font-size:1rem;
-  }
-
-  .hero h2{
-    font-size:1.55rem;
-  }
-
-  .tabs-lite{
-    flex-direction:column;
-  }
-
-  .btn-wide{
-    width:100%;
-  }
-}
-/* ===== PREMIUM UX UPGRADES ===== */
+/* PREMIUM UX UPGRADES */
 .card,
 .feature-item,
 .hero-mini-card,
@@ -974,14 +952,6 @@ tr:nth-child(even) td{
   font-weight:600;
 }
 
-.footer{
-  margin-top:1rem;
-  text-align:center;
-  padding:1.2rem .5rem 1.4rem;
-  color:rgba(23,32,51,.76);
-  font-size:.9rem;
-}
-
 .footer .footer-sub{
   display:block;
   margin-top:.3rem;
@@ -1019,7 +989,63 @@ tr:nth-child(even) td{
   font-size:.95rem;
 }
 
-@media (max-width:640px){
+/* RESPONSIVE */
+@media (max-width: 980px){
+  .hero-premium-grid,
+  .auth-grid,
+  .admin-grid-2,
+  .admin-stat-grid{
+    grid-template-columns:1fr;
+  }
+
+  .admin-shell{
+    grid-template-columns:1fr;
+  }
+
+  .admin-sidebar{
+    display:none;
+  }
+
+  .admin-shell.sidebar-open .admin-sidebar{
+    display:block;
+    position:fixed;
+    inset:0 auto 0 0;
+    width:280px;
+    height:100vh;
+    z-index:1000;
+  }
+}
+
+@media (max-width: 640px){
+  #mainHeader{
+    padding:12px 14px;
+  }
+
+  .header-inner{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .brand{
+    align-items:flex-start;
+  }
+
+  .brand h1{
+    font-size:1rem;
+  }
+
+  .hero h2{
+    font-size:1.55rem;
+  }
+
+  .tabs-lite{
+    flex-direction:column;
+  }
+
+  .btn-wide{
+    width:100%;
+  }
+
   .password-toggle{
     top:40px;
   }
