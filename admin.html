@@ -166,7 +166,7 @@
 
               <div>
                 <label for="filterLecturer">Lecturer</label>
-               <select id="repLecturerName"></select>
+                <input id="filterLecturer" type="text" placeholder="e.g. Dr. Jane Doe" />
               </div>
 
               <div>
@@ -303,7 +303,7 @@
             </div>
             <div>
               <label for="repLecturerName">Lecturer Name</label>
-              <input id="repLecturerName" type="text" placeholder="e.g. Dr. Jane Doe" />
+              <select id="repLecturerName"></select>
             </div>
             <div>
               <label for="repClassMode">Class Mode</label>
@@ -483,6 +483,8 @@
     }
 
     function populateReportDropdowns(){
+      const data = loadData();
+
       const facultyOptions = [
         "School of Informatics",
         "School of Education",
@@ -514,11 +516,16 @@
       const yearOfStudyOptions = ["1", "2", "3", "4", "5", "6"];
       const semesterOptions = ["1", "2", "3", "4"];
 
+      const lecturerOptions = data.lecturers
+        .filter(l => l.approved)
+        .map(l => `${l.salutation} ${l.fullName}`);
+
       setOptions(document.getElementById("repFacultySchool"), facultyOptions, "All Faculties / Schools");
       setOptions(document.getElementById("repProgramme"), programmeOptions, "All Programmes");
       setOptions(document.getElementById("repAcademicYear"), academicYears, "All Academic Years");
       setOptions(document.getElementById("repYearOfStudy"), yearOfStudyOptions, "All Years of Study");
       setOptions(document.getElementById("repSemester"), semesterOptions, "All Semesters");
+      setOptions(document.getElementById("repLecturerName"), lecturerOptions, "All Lecturers");
     }
 
     function fraudSummaryForClass(classId, attendance){
@@ -815,6 +822,7 @@
       lecturer.approved = !lecturer.approved;
       saveData(data);
       renderAdminLecturers();
+      populateReportDropdowns();
     }
 
     function resetLecturerPwd(id){
@@ -1205,7 +1213,7 @@
                (!semester || (cls.semester || "").toLowerCase() === semester) &&
                (!courseTitle || (cls.courseTitle || "").toLowerCase().includes(courseTitle)) &&
                (!courseCode || (cls.courseCode || "").toLowerCase().includes(courseCode)) &&
-               (!lecturerName || (cls.lecturerName || "").toLowerCase().includes(lecturerName)) &&
+               (!lecturerName || (cls.lecturerName || "").toLowerCase() === lecturerName) &&
                (!classMode || cls.classMode === classMode) &&
                (!status || cls.status === status);
       });
@@ -1270,6 +1278,7 @@
         renderAdminClasses();
         refreshClassPickers();
         renderFraudReview();
+        populateReportDropdowns();
         if(selectedClassId && !document.getElementById("classSheetTab").classList.contains("hidden")){
           openClassSheet(selectedClassId);
         }
