@@ -269,26 +269,26 @@
           <div class="row">
             <div>
               <label for="repFacultySchool">Faculty / School</label>
-              <input id="repFacultySchool" type="text" placeholder="e.g. School of Informatics" />
+              <select id="repFacultySchool"></select>
             </div>
             <div>
               <label for="repProgramme">Programme</label>
-              <input id="repProgramme" type="text" placeholder="e.g. Diploma in Linux Engineering" />
+              <select id="repProgramme"></select>
             </div>
             <div>
               <label for="repAcademicYear">Academic Year</label>
-              <input id="repAcademicYear" type="text" placeholder="e.g. 2025/2026" />
+              <select id="repAcademicYear"></select>
             </div>
           </div>
 
           <div class="row">
             <div>
               <label for="repYearOfStudy">Year of Study</label>
-              <input id="repYearOfStudy" type="text" placeholder="e.g. Year 1" />
+              <select id="repYearOfStudy"></select>
             </div>
             <div>
               <label for="repSemester">Semester</label>
-              <input id="repSemester" type="text" placeholder="e.g. Semester 1" />
+              <select id="repSemester"></select>
             </div>
             <div>
               <label for="repCourseTitle">Course Title</label>
@@ -482,6 +482,45 @@
       });
     }
 
+    function populateReportDropdowns(){
+      const facultyOptions = [
+        "School of Informatics",
+        "School of Education",
+        "School of Business and Economics",
+        "School of Health Sciences",
+        "School of Engineering",
+        "School of Agriculture and Food Security",
+        "School of Arts and Social Sciences",
+        "School of Law"
+      ];
+
+      const programmeOptions = [
+        "Bachelor of Education Arts",
+        "Bachelor of Education Science",
+        "Bachelor of Science in Information Technology",
+        "Bachelor of Science in Computer Science",
+        "Diploma in Information Technology",
+        "Diploma in Linux Engineering for IT Applications",
+        "Bachelor of Business Administration",
+        "Bachelor of Science in Nursing",
+        "Bachelor of Science in Public Health"
+      ];
+
+      const academicYears = [];
+      for(let y = 2025; y <= 2050; y++){
+        academicYears.push(`${y}/${y + 1}`);
+      }
+
+      const yearOfStudyOptions = ["1", "2", "3", "4", "5", "6"];
+      const semesterOptions = ["1", "2", "3", "4"];
+
+      setOptions(document.getElementById("repFacultySchool"), facultyOptions, "All Faculties / Schools");
+      setOptions(document.getElementById("repProgramme"), programmeOptions, "All Programmes");
+      setOptions(document.getElementById("repAcademicYear"), academicYears, "All Academic Years");
+      setOptions(document.getElementById("repYearOfStudy"), yearOfStudyOptions, "All Years of Study");
+      setOptions(document.getElementById("repSemester"), semesterOptions, "All Semesters");
+    }
+
     function fraudSummaryForClass(classId, attendance){
       const classAttendance = attendance.filter(a=>a.classId === classId);
       const deviceCounts = {};
@@ -535,7 +574,6 @@
       Object.keys(byClass).forEach(classId=>{
         const records = byClass[classId];
         const cls = data.classes.find(c=>c.id === classId);
-
         const deviceMap = {};
         const admissionMap = {};
 
@@ -1020,7 +1058,6 @@
 
       selectedClassId = classId;
       const attendance = getFilteredSheetAttendance();
-
       const suspicious = getSuspiciousKeysForClass(classId, data.attendance);
 
       document.getElementById("classSheetTitle").textContent = `${cls.courseTitle || "Class"} Attendance Sheet`;
@@ -1148,6 +1185,7 @@
 
     function getFilteredReportClasses(){
       const data = loadData();
+
       const facultySchool = document.getElementById("repFacultySchool").value.trim().toLowerCase();
       const programme = document.getElementById("repProgramme").value.trim().toLowerCase();
       const academicYear = document.getElementById("repAcademicYear").value.trim().toLowerCase();
@@ -1160,11 +1198,11 @@
       const status = document.getElementById("repStatus").value;
 
       return data.classes.filter(cls=>{
-        return (!facultySchool || (cls.facultySchool || "").toLowerCase().includes(facultySchool)) &&
-               (!programme || (cls.programme || "").toLowerCase().includes(programme)) &&
-               (!academicYear || (cls.academicYear || "").toLowerCase().includes(academicYear)) &&
-               (!yearOfStudy || (cls.yearOfStudy || "").toLowerCase().includes(yearOfStudy)) &&
-               (!semester || (cls.semester || "").toLowerCase().includes(semester)) &&
+        return (!facultySchool || (cls.facultySchool || "").toLowerCase() === facultySchool) &&
+               (!programme || (cls.programme || "").toLowerCase() === programme) &&
+               (!academicYear || (cls.academicYear || "").toLowerCase() === academicYear) &&
+               (!yearOfStudy || (cls.yearOfStudy || "").toLowerCase() === yearOfStudy) &&
+               (!semester || (cls.semester || "").toLowerCase() === semester) &&
                (!courseTitle || (cls.courseTitle || "").toLowerCase().includes(courseTitle)) &&
                (!courseCode || (cls.courseCode || "").toLowerCase().includes(courseCode)) &&
                (!lecturerName || (cls.lecturerName || "").toLowerCase().includes(lecturerName)) &&
@@ -1449,8 +1487,6 @@
       exportTableToPdf("Admin Attendance Report", "reportTable", "admin_report.pdf");
     });
 
-    console.log("Stored currentUser =", localStorage.getItem("currentUser"));
-
     window.addEventListener("load", ()=>{
       let savedUser = null;
 
@@ -1474,6 +1510,7 @@
       document.getElementById("adminTopName").textContent = currentUser.username || "Admin";
 
       setupAdminMenu();
+      populateReportDropdowns();
       renderDashboardHome();
       renderAdminLecturers();
       renderAdminClasses();
